@@ -1,0 +1,1022 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
+import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
+import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:kalayanaexpresstracker/gemini.dart';
+import 'package:image_picker/image_picker.dart';
+
+Future<void> showExpenseDialog(
+  BuildContext context, {
+  ExpenseItem? item,
+}) async {
+  final controller = Get.find<DashboardController>();
+  final name = TextEditingController(text: item?.name ?? '');
+  final total = TextEditingController(text: moneyText(item?.totalAmount));
+  final paid = TextEditingController(text: moneyText(item?.paidAmount));
+  final paidBy = TextEditingController(text: item?.paidBy ?? '');
+  final repayPerson = TextEditingController(text: item?.repayPerson ?? '');
+  final repayAmount = TextEditingController(text: moneyText(item?.repayAmount));
+  final notes = TextEditingController(text: item?.notes ?? '');
+  var category = expenseCategories.contains(item?.category)
+      ? item!.category
+      : expenseCategories.first;
+  var dueDate = item?.dueDate;
+  var needsRepayment = item?.needsRepayment ?? false;
+  var scanningInvoice = false;
+  final formKey = GlobalKey<FormState>();
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => _PlannerDialog(
+        icon: Icons.payments_rounded,
+        title: item == null ? 'Add expense' : 'Edit expense',
+        subtitle: 'Track totals, payments, due dates, and repayment.',
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              await controller.saveExpense(
+                buildExpense(
+                  existing: item,
+                  name: name.text,
+                  category: category,
+                  total: total.text,
+                  paid: paid.text,
+                  paidBy: paidBy.text,
+                  repayPerson: repayPerson.text,
+                  needsRepayment: needsRepayment,
+                  repayAmount: repayAmount.text,
+                  dueDate: dueDate,
+                  notes: notes.text,
+                ),
+              );
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (item == null) ...[
+                _InvoiceScanPanel(
+                  loading: scanningInvoice,
+                  onCamera: () => _scanInvoice(
+                    context,
+                    setState,
+                    ImageSource.camera,
+                    setLoading: (value) => scanningInvoice = value,
+                    name: name,
+                    total: total,
+                    paid: paid,
+                    notes: notes,
+                    updateCategory: (value) => category = value,
+                    updateDueDate: (value) => dueDate = value,
+                  ),
+                  onGallery: () => _scanInvoice(
+                    context,
+                    setState,
+                    ImageSource.gallery,
+                    setLoading: (value) => scanningInvoice = value,
+                    name: name,
+                    total: total,
+                    paid: paid,
+                    notes: notes,
+                    updateCategory: (value) => category = value,
+                    updateDueDate: (value) => dueDate = value,
+                  ),
+                ),
+                const SizedBox(height: 14),
+              ],
+              TextFormField(
+                controller: name,
+                decoration: const InputDecoration(
+                  labelText: 'Expense name',
+                  prefixIcon: Icon(Icons.storefront_rounded),
+                ),
+                validator: _required,
+              ),
+              const SizedBox(height: 14),
+              DropdownButtonFormField<String>(
+                key: ValueKey(category),
+                initialValue: category,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category_rounded),
+                ),
+                items: expenseCategories
+                    .map(
+                      (value) =>
+                          DropdownMenuItem(value: value, child: Text(value)),
+                    )
+                    .toList(),
+                onChanged: (value) => category = value ?? category,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: total,
+                decoration: const InputDecoration(
+                  labelText: 'Total amount',
+                  prefixIcon: Icon(Icons.account_balance_wallet_rounded),
+                ),
+                keyboardType: TextInputType.number,
+                validator: _required,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: paid,
+                decoration: const InputDecoration(
+                  labelText: 'Paid amount',
+                  prefixIcon: Icon(Icons.paid_rounded),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: paidBy,
+                decoration: const InputDecoration(
+                  labelText: 'Paid by',
+                  prefixIcon: Icon(Icons.person_rounded),
+                  hintText: 'Self, family member, friend...',
+                ),
+              ),
+              const SizedBox(height: 14),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Need to repay someone'),
+                value: needsRepayment,
+                onChanged: (value) => setState(() => needsRepayment = value),
+              ),
+              if (needsRepayment) ...[
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: repayPerson,
+                  decoration: const InputDecoration(
+                    labelText: 'Need to repay person',
+                    prefixIcon: Icon(Icons.person_add_alt_1_rounded),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: repayAmount,
+                  decoration: const InputDecoration(
+                    labelText: 'Repay amount',
+                    prefixIcon: Icon(Icons.currency_rupee_rounded),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+              const SizedBox(height: 14),
+              _DatePickerTile(
+                icon: Icons.event_rounded,
+                title: 'Due date',
+                value: dueDate == null ? 'Not set' : formatDate(dueDate!),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: dueDate ?? DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2040),
+                  );
+                  if (picked != null) setState(() => dueDate = picked);
+                },
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: notes,
+                decoration: const InputDecoration(
+                  labelText: 'Notes',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> _scanInvoice(
+  BuildContext context,
+  void Function(void Function()) setState,
+  ImageSource source, {
+  required void Function(bool value) setLoading,
+  required TextEditingController name,
+  required TextEditingController total,
+  required TextEditingController paid,
+  required TextEditingController notes,
+  required void Function(String value) updateCategory,
+  required void Function(DateTime? value) updateDueDate,
+}) async {
+  final picked = await ImagePicker().pickImage(
+    source: source,
+    imageQuality: 82,
+    maxWidth: 1600,
+  );
+  if (picked == null) return;
+
+  setState(() => setLoading(true));
+  try {
+    final invoice = await GeminiInovieAppData().extractInvoice(
+      await picked.readAsBytes(),
+    );
+    if (!invoice.isInvoice) {
+      throw const FormatException(
+        'The selected image does not look like a bill.',
+      );
+    }
+    final category = expenseCategories.contains(invoice.category)
+        ? invoice.category
+        : expenseCategories.first;
+    setState(() {
+      name.text = invoice.expenseName;
+      total.text = moneyText(invoice.totalAmount);
+      paid.text = invoice.paidAmount <= invoice.totalAmount
+          ? moneyText(invoice.paidAmount)
+          : moneyText(invoice.totalAmount);
+      notes.text = invoice.billNotes;
+      updateCategory(category);
+      updateDueDate(invoice.dueDate ?? invoice.invoiceDate);
+    });
+    if (!context.mounted) return;
+    Get.snackbar(
+      'Invoice scanned',
+      'Review the bill details, then tap Save.',
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
+  } catch (error) {
+    if (!context.mounted) return;
+    Get.snackbar(
+      'Invoice scan failed',
+      error.toString(),
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.all(16),
+    );
+  } finally {
+    setState(() => setLoading(false));
+  }
+}
+
+class _InvoiceScanPanel extends StatelessWidget {
+  const _InvoiceScanPanel({
+    required this.loading,
+    required this.onCamera,
+    required this.onGallery,
+  });
+
+  final bool loading;
+  final VoidCallback onCamera;
+  final VoidCallback onGallery;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: ThemeColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ThemeColors.primary.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.document_scanner_rounded, color: scheme.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  loading ? 'Reading invoice...' : 'Scan invoice to fill bill',
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+              ),
+              if (loading)
+                const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: loading ? null : onCamera,
+                  icon: const Icon(Icons.photo_camera_rounded),
+                  label: const Text('Camera'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: loading ? null : onGallery,
+                  icon: const Icon(Icons.photo_library_rounded),
+                  label: const Text('Gallery'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Future<void> showAddExpensePaymentDialog(
+  BuildContext context, {
+  required ExpenseItem item,
+}) async {
+  final controller = Get.find<DashboardController>();
+  final amount = TextEditingController(text: moneyText(item.pendingForSummary));
+  final paidBy = TextEditingController(text: 'Self');
+  final notes = TextEditingController();
+  var date = DateTime.now();
+  final formKey = GlobalKey<FormState>();
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => _PlannerDialog(
+        icon: Icons.add_card_rounded,
+        title: 'Add payment',
+        subtitle: item.name,
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              await controller.addExpensePayment(
+                item,
+                amount: moneyFromText(amount.text) ?? 0,
+                paidBy: paidBy.text,
+                date: date,
+                notes: notes.text,
+              );
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text('Save payment'),
+          ),
+        ],
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: amount,
+                decoration: const InputDecoration(
+                  labelText: 'Payment amount',
+                  prefixIcon: Icon(Icons.currency_rupee_rounded),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  final requiredError = _required(value);
+                  if (requiredError != null) return requiredError;
+                  final parsed = moneyFromText(value ?? '') ?? 0;
+                  if (parsed <= 0) return 'Enter an amount above zero';
+                  if (parsed > item.pendingForSummary) {
+                    return 'Cannot exceed pending balance';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: paidBy,
+                decoration: const InputDecoration(
+                  labelText: 'Paid by',
+                  prefixIcon: Icon(Icons.person_rounded),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _DatePickerTile(
+                icon: Icons.calendar_month_rounded,
+                title: 'Payment date',
+                value: formatDate(date),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: date,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2040),
+                  );
+                  if (picked != null) setState(() => date = picked);
+                },
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: notes,
+                decoration: const InputDecoration(
+                  labelText: 'Payment notes',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                  hintText: 'Transfer ref, cash note, installment detail...',
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> showReminderDialog(
+  BuildContext context, {
+  EventReminder? reminder,
+}) async {
+  final controller = Get.find<DashboardController>();
+  final title = TextEditingController(text: reminder?.title ?? '');
+  var category = reminder?.category ?? reminderCategories.first;
+  var dueDate = reminder?.dueDate ?? DateTime.now();
+  final formKey = GlobalKey<FormState>();
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => _PlannerDialog(
+        icon: Icons.event_available_rounded,
+        title: reminder == null ? 'Add reminder' : 'Edit reminder',
+        subtitle: 'Keep rituals, payments, invites, and vendor dates visible.',
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              await controller.saveReminder(
+                buildReminder(
+                  existing: reminder,
+                  title: title.text,
+                  category: category,
+                  dueDate: dueDate,
+                ),
+              );
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: title,
+                decoration: const InputDecoration(
+                  labelText: 'Reminder title',
+                  prefixIcon: Icon(Icons.title_rounded),
+                ),
+                validator: _required,
+              ),
+              const SizedBox(height: 14),
+              DropdownButtonFormField<String>(
+                initialValue: reminderCategories.contains(category)
+                    ? category
+                    : reminderCategories.first,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category_rounded),
+                ),
+                items: reminderCategories
+                    .map(
+                      (value) =>
+                          DropdownMenuItem(value: value, child: Text(value)),
+                    )
+                    .toList(),
+                onChanged: (value) => category = value ?? category,
+              ),
+              const SizedBox(height: 14),
+              _DatePickerTile(
+                icon: Icons.calendar_month_rounded,
+                title: 'Due date',
+                value: formatDate(dueDate),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: dueDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2040),
+                  );
+                  if (picked != null) setState(() => dueDate = picked);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> showPurchaseDialog(
+  BuildContext context, {
+  PurchaseItem? purchase,
+}) async {
+  final controller = Get.find<DashboardController>();
+  final name = TextEditingController(text: purchase?.name ?? '');
+  final savedCategory = purchase?.category;
+  var category = purchaseCategories.contains(savedCategory)
+      ? savedCategory!
+      : purchaseCategories.first;
+  final note = TextEditingController(text: purchase?.note ?? '');
+  var status = purchase?.status ?? purchaseStatuses.first;
+  final formKey = GlobalKey<FormState>();
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => _PlannerDialog(
+      icon: Icons.shopping_bag_rounded,
+      title: purchase == null ? 'Add purchase' : 'Edit purchase',
+      subtitle: 'Use predefined categories so purchase reports stay clean.',
+      actions: [
+        TextButton(
+          onPressed: Navigator.of(context).pop,
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () async {
+            if (!formKey.currentState!.validate()) return;
+            await controller.savePurchase(
+              buildPurchase(
+                existing: purchase,
+                name: name.text,
+                category: category,
+                status: status,
+                note: note.text,
+              ),
+            );
+            if (context.mounted) Navigator.pop(context);
+          },
+          child: const Text('Save'),
+        ),
+      ],
+      child: Form(
+        key: formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: name,
+              decoration: const InputDecoration(
+                labelText: 'Item name',
+                prefixIcon: Icon(Icons.shopping_basket_rounded),
+              ),
+              validator: _required,
+            ),
+            const SizedBox(height: 14),
+            DropdownButtonFormField<String>(
+              initialValue: category,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                prefixIcon: Icon(Icons.category_rounded),
+              ),
+              items: purchaseCategories
+                  .map(
+                    (value) =>
+                        DropdownMenuItem(value: value, child: Text(value)),
+                  )
+                  .toList(),
+              onChanged: (value) => category = value ?? category,
+            ),
+            const SizedBox(height: 14),
+            DropdownButtonFormField<String>(
+              initialValue: purchaseStatuses.contains(status)
+                  ? status
+                  : purchaseStatuses.first,
+              decoration: const InputDecoration(
+                labelText: 'Status',
+                prefixIcon: Icon(Icons.flag_rounded),
+              ),
+              items: purchaseStatuses
+                  .map(
+                    (value) =>
+                        DropdownMenuItem(value: value, child: Text(value)),
+                  )
+                  .toList(),
+              onChanged: (value) => status = value ?? status,
+            ),
+            const SizedBox(height: 14),
+            TextFormField(
+              controller: note,
+              decoration: const InputDecoration(
+                labelText: 'Note',
+                prefixIcon: Icon(Icons.notes_rounded),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> showConvertPurchaseToExpenseDialog(
+  BuildContext context, {
+  required PurchaseItem purchase,
+}) async {
+  final controller = Get.find<DashboardController>();
+  final total = TextEditingController();
+  final paid = TextEditingController();
+  final paidBy = TextEditingController();
+  final notes = TextEditingController(
+    text: purchase.note.trim().isEmpty
+        ? 'Converted from shopping list'
+        : '${purchase.note.trim()}\nConverted from shopping list',
+  );
+  var category = expenseCategories.contains(purchase.category)
+      ? purchase.category
+      : expenseCategories.first;
+  var dueDate = DateTime.now();
+  final formKey = GlobalKey<FormState>();
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => _PlannerDialog(
+        icon: Icons.receipt_long_rounded,
+        title: 'Convert to expense',
+        subtitle: 'Add the bill amount and move this item into expenses.',
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              await controller.convertPurchaseToExpense(
+                purchase: purchase,
+                expense: buildExpense(
+                  name: purchase.name,
+                  category: category,
+                  total: total.text,
+                  paid: paid.text,
+                  paidBy: paidBy.text,
+                  repayPerson: '',
+                  needsRepayment: false,
+                  repayAmount: '',
+                  dueDate: dueDate,
+                  notes: notes.text,
+                ),
+              );
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text('Convert'),
+          ),
+        ],
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                initialValue: purchase.name,
+                enabled: false,
+                decoration: const InputDecoration(
+                  labelText: 'Item',
+                  prefixIcon: Icon(Icons.shopping_bag_rounded),
+                ),
+              ),
+              const SizedBox(height: 14),
+              DropdownButtonFormField<String>(
+                initialValue: category,
+                decoration: const InputDecoration(
+                  labelText: 'Expense category',
+                  prefixIcon: Icon(Icons.category_rounded),
+                ),
+                items: expenseCategories
+                    .map(
+                      (value) =>
+                          DropdownMenuItem(value: value, child: Text(value)),
+                    )
+                    .toList(),
+                onChanged: (value) => category = value ?? category,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: total,
+                decoration: const InputDecoration(
+                  labelText: 'Bill amount',
+                  prefixIcon: Icon(Icons.currency_rupee_rounded),
+                ),
+                keyboardType: TextInputType.number,
+                validator: _required,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: paid,
+                decoration: const InputDecoration(
+                  labelText: 'Paid amount',
+                  prefixIcon: Icon(Icons.paid_rounded),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: paidBy,
+                decoration: const InputDecoration(
+                  labelText: 'Paid by',
+                  prefixIcon: Icon(Icons.person_rounded),
+                ),
+              ),
+              const SizedBox(height: 14),
+              _DatePickerTile(
+                icon: Icons.event_rounded,
+                title: 'Due date',
+                value: formatDate(dueDate),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: dueDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2040),
+                  );
+                  if (picked != null) setState(() => dueDate = picked);
+                },
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: notes,
+                decoration: const InputDecoration(
+                  labelText: 'Notes',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> showProfileDialog(BuildContext context) async {
+  final controller = Get.find<DashboardController>();
+  final groom = TextEditingController(text: profileGroom(controller.profile));
+  final bride = TextEditingController(text: profileBride(controller.profile));
+  var weddingDate = profileMarriageDate(controller.profile);
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => _PlannerDialog(
+        icon: Icons.favorite_rounded,
+        title: 'Wedding details',
+        subtitle: 'Keep names and the wedding date synced.',
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              await controller.saveProfile(
+                groom: groom.text,
+                bride: bride.text,
+                weddingDate: weddingDate,
+              );
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: groom,
+              decoration: const InputDecoration(
+                labelText: 'Groom',
+                prefixIcon: Icon(Icons.person_rounded),
+              ),
+            ),
+            const SizedBox(height: 14),
+            TextFormField(
+              controller: bride,
+              decoration: const InputDecoration(
+                labelText: 'Bride',
+                prefixIcon: Icon(Icons.person_2_rounded),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _DatePickerTile(
+              icon: Icons.calendar_month_rounded,
+              title: 'Wedding date',
+              value: weddingDate == null ? 'Not set' : formatDate(weddingDate!),
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: weddingDate ?? DateTime.now(),
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2040),
+                );
+                if (picked != null) setState(() => weddingDate = picked);
+              },
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _PlannerDialog extends StatelessWidget {
+  const _PlannerDialog({
+    required this.icon,
+    required this.title,
+    required this.actions,
+    required this.child,
+    this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final List<Widget> actions;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 500),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: ThemeColors.surfaceGradient is LinearGradient
+                ? ThemeColors.surfaceGradient as LinearGradient
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [scheme.surface, ThemeColors.inputBackground],
+                  ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        gradient: ThemeColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Icon(icon, color: Colors.white),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitle!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.outline,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                color: scheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+                  child: child,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    for (var index = 0; index < actions.length; index++) ...[
+                      if (index > 0) const SizedBox(width: 10),
+                      actions[index],
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DatePickerTile extends StatelessWidget {
+  const _DatePickerTile({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(18),
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
+          border: Border.all(
+            color: scheme.outlineVariant.withValues(alpha: 0.7),
+          ),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: scheme.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: scheme.outline),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String? _required(String? value) =>
+    value == null || value.trim().isEmpty ? 'Required' : null;

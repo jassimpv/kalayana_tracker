@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+  
+    {
+      "name": "Flutter Web (Chrome, port 5001)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome",
+      "toolArgs": [
+        "--web-port",
+        "5001"
+      ]
+    }
+  ]
+}
