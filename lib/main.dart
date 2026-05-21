@@ -28,7 +28,7 @@ class KalyanaApp extends StatelessWidget {
       theme: ThemeColors.lightTheme(context),
       // darkTheme: ThemeColors.darkTheme(context),
       themeMode: ThemeMode.system,
-      initialRoute: AppRoutes.auth,
+      initialRoute: AppRoutes.splash,
       getPages: AppPages.pages,
     );
   }

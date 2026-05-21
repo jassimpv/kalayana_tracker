@@ -1,5 +1,574 @@
 part of 'dashboard_view.dart';
 
+class _DashboardLoadingScaffold extends StatelessWidget {
+  const _DashboardLoadingScaffold();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 1000;
+        return Scaffold(
+          extendBody: true,
+          backgroundColor: ThemeColors.scaffoldColor,
+          appBar: _LoadingAppBar(wide: wide),
+          body: DecoratedBox(
+            decoration: BoxDecoration(gradient: ThemeColors.surfaceGradient),
+            child: Row(
+              children: [
+                if (wide) const _LoadingSideRail(),
+                Expanded(child: _DashboardSkeletonFrame(wide: wide)),
+              ],
+            ),
+          ),
+          bottomNavigationBar: wide ? null : const _LoadingBottomNav(),
+        );
+      },
+    );
+  }
+}
+
+class _DashboardSkeletonFrame extends StatelessWidget {
+  const _DashboardSkeletonFrame({required this.wide});
+
+  final bool wide;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 18, wide ? 28 : 16, 104),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1260),
+            child: const _Shimmer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _HeroSkeleton(),
+                  SizedBox(height: 18),
+                  _QuickActionsSkeleton(),
+                  SizedBox(height: 18),
+                  _AnalyticsSkeleton(),
+                  SizedBox(height: 18),
+                  _MetricStripSkeleton(),
+                  SizedBox(height: 18),
+                  _ListSkeleton(),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadingAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _LoadingAppBar({required this.wide});
+
+  final bool wide;
+
+  @override
+  Size get preferredSize =>
+      Size.fromHeight(MediaQuery.paddingOf(Get.context!).top);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            ThemeColors.primary,
+            ThemeColors.primary.withValues(alpha: 0.82),
+          ],
+        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.primary.withValues(alpha: 0.25),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 60, 16, 10),
+        child: _Shimmer(
+          baseColor: Colors.white.withValues(alpha: 0.18),
+          highlightColor: Colors.white.withValues(alpha: 0.38),
+          child: Row(
+            children: [
+              const _SkeletonBox(width: 46, height: 46, radius: 23),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SkeletonBox(width: 190, height: 18, radius: 6),
+                    SizedBox(height: 8),
+                    _SkeletonBox(width: 135, height: 12, radius: 6),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              _SkeletonBox(width: wide ? 46 : 42, height: 46, radius: 23),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadingSideRail extends StatelessWidget {
+  const _LoadingSideRail();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 96,
+      decoration: BoxDecoration(
+        color: ThemeColors.whiteColor.withValues(alpha: 0.92),
+        border: Border(
+          right: BorderSide(
+            color: Theme.of(
+              context,
+            ).colorScheme.primary.withValues(alpha: 0.08),
+          ),
+        ),
+      ),
+      child: const _Shimmer(
+        child: Column(
+          children: [
+            SizedBox(height: 16),
+            _SkeletonBox(width: 48, height: 48, radius: 18),
+            SizedBox(height: 30),
+            _RailSkeletonItem(),
+            _RailSkeletonItem(),
+            _RailSkeletonItem(),
+            _RailSkeletonItem(),
+            _RailSkeletonItem(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RailSkeletonItem extends StatelessWidget {
+  const _RailSkeletonItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(bottom: 24),
+      child: Column(
+        children: [
+          _SkeletonBox(width: 24, height: 24, radius: 12),
+          SizedBox(height: 8),
+          _SkeletonBox(width: 48, height: 9, radius: 5),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingBottomNav extends StatelessWidget {
+  const _LoadingBottomNav();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      child: Container(
+        height: 74,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.90),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: ThemeColors.primary.withValues(alpha: 0.12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: ThemeColors.primary.withValues(alpha: 0.16),
+              blurRadius: 26,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: const _Shimmer(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _SkeletonBox(width: 38, height: 38, radius: 14),
+              _SkeletonBox(width: 38, height: 38, radius: 14),
+              _SkeletonBox(width: 38, height: 38, radius: 14),
+              _SkeletonBox(width: 38, height: 38, radius: 14),
+              _SkeletonBox(width: 38, height: 38, radius: 14),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HeroSkeleton extends StatelessWidget {
+  const _HeroSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return _PremiumSurface(
+      padding: const EdgeInsets.all(22),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF0F8B7D), Color(0xFF155F58), Color(0xFF241D18)],
+      ),
+      borderColor: Colors.white24,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 720;
+          final content = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  _SkeletonBox(width: 58, height: 58, radius: 29),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _SkeletonBox(width: 110, height: 13, radius: 6),
+                        SizedBox(height: 9),
+                        _SkeletonBox(width: 230, height: 24, radius: 8),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              const _SkeletonBox(width: 260, height: 13, radius: 6),
+              const SizedBox(height: 14),
+              _SkeletonBox(
+                width: wide ? 280 : double.infinity,
+                height: 42,
+                radius: 10,
+              ),
+              const SizedBox(height: 10),
+              const _SkeletonBox(width: 220, height: 13, radius: 6),
+            ],
+          );
+          final counter = const _SkeletonBox(
+            width: double.infinity,
+            height: 156,
+            radius: 24,
+          );
+          return wide
+              ? Row(
+                  children: [
+                    Expanded(child: content),
+                    const SizedBox(width: 24),
+                    SizedBox(width: 250, child: counter),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [content, const SizedBox(height: 24), counter],
+                );
+        },
+      ),
+    );
+  }
+}
+
+class _QuickActionsSkeleton extends StatelessWidget {
+  const _QuickActionsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 720 ? 3 : 1;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 3,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: columns == 1 ? 4.4 : 2.7,
+          ),
+          itemBuilder: (context, index) => const _PremiumSurface(
+            padding: EdgeInsets.all(14),
+            child: Row(
+              children: [
+                _SkeletonBox(width: 44, height: 44, radius: 14),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SkeletonBox(width: 120, height: 15, radius: 6),
+                      SizedBox(height: 8),
+                      _SkeletonBox(width: 90, height: 11, radius: 5),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AnalyticsSkeleton extends StatelessWidget {
+  const _AnalyticsSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return _PremiumSurface(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 720;
+          final left = const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SkeletonBox(width: 180, height: 22, radius: 8),
+              SizedBox(height: 10),
+              _SkeletonBox(width: 260, height: 13, radius: 6),
+              SizedBox(height: 20),
+              _SkeletonBox(width: double.infinity, height: 12, radius: 6),
+              SizedBox(height: 16),
+              _SkeletonBox(width: 150, height: 12, radius: 6),
+              SizedBox(height: 10),
+              _SkeletonBox(width: 210, height: 12, radius: 6),
+            ],
+          );
+          final right = const _SkeletonBox(
+            width: double.infinity,
+            height: 178,
+            radius: 24,
+          );
+          return wide
+              ? Row(
+                  children: [
+                    Expanded(child: left),
+                    const SizedBox(width: 24),
+                    SizedBox(width: 280, child: right),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [left, const SizedBox(height: 18), right],
+                );
+        },
+      ),
+    );
+  }
+}
+
+class _MetricStripSkeleton extends StatelessWidget {
+  const _MetricStripSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 680 ? 4 : 2;
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 4,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: columns == 4 ? 1.35 : 1.55,
+          ),
+          itemBuilder: (context, index) => const _PremiumSurface(
+            padding: EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SkeletonBox(width: 22, height: 22, radius: 8),
+                Spacer(),
+                _SkeletonBox(width: 70, height: 16, radius: 6),
+                SizedBox(height: 7),
+                _SkeletonBox(width: 90, height: 11, radius: 5),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ListSkeleton extends StatelessWidget {
+  const _ListSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SkeletonBox(width: 120, height: 19, radius: 7),
+        SizedBox(height: 12),
+        _ListSkeletonCard(),
+        SizedBox(height: 12),
+        _ListSkeletonCard(),
+        SizedBox(height: 12),
+        _ListSkeletonCard(),
+      ],
+    );
+  }
+}
+
+class _ListSkeletonCard extends StatelessWidget {
+  const _ListSkeletonCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _PremiumSurface(
+      padding: EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SkeletonBox(width: 48, height: 48, radius: 16),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SkeletonBox(width: double.infinity, height: 17, radius: 7),
+                SizedBox(height: 10),
+                _SkeletonBox(width: 210, height: 12, radius: 6),
+                SizedBox(height: 14),
+                Row(
+                  children: [
+                    _SkeletonBox(width: 72, height: 27, radius: 8),
+                    SizedBox(width: 8),
+                    _SkeletonBox(width: 88, height: 27, radius: 8),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Shimmer extends StatefulWidget {
+  const _Shimmer({required this.child, this.baseColor, this.highlightColor});
+
+  final Widget child;
+  final Color? baseColor;
+  final Color? highlightColor;
+
+  @override
+  State<_Shimmer> createState() => _ShimmerState();
+}
+
+class _ShimmerState extends State<_Shimmer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1350),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final base =
+        widget.baseColor ??
+        Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
+    final highlight =
+        widget.highlightColor ?? Colors.white.withValues(alpha: 0.70);
+    return AnimatedBuilder(
+      animation: _controller,
+      child: widget.child,
+      builder: (context, child) {
+        return ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (bounds) {
+            final shimmerWidth = bounds.width <= 0 ? 1.0 : bounds.width;
+            final slide = (shimmerWidth * 2) * _controller.value;
+            return LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [base, highlight, base],
+              stops: const [0.25, 0.50, 0.75],
+              transform: _SlidingGradientTransform(slide - shimmerWidth),
+            ).createShader(bounds);
+          },
+          child: child,
+        );
+      },
+    );
+  }
+}
+
+class _SlidingGradientTransform extends GradientTransform {
+  const _SlidingGradientTransform(this.offset);
+
+  final double offset;
+
+  @override
+  Matrix4 transform(Rect bounds, {TextDirection? textDirection}) {
+    return Matrix4.translationValues(offset, 0, 0);
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  const _SkeletonBox({
+    required this.width,
+    required this.height,
+    this.radius = 8,
+  });
+
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+}
+
 class _PremiumSurface extends StatelessWidget {
   const _PremiumSurface({
     required this.child,

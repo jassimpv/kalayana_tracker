@@ -43,7 +43,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDjrO5hXX0ExVIQ9hQEOl3nhzAawCh7eUs',
-    appId: '1:1097547412500:android:2fcd1bf3c30c1787fca301',
+    appId: '1:1097547412500:android:7df739d2649c4ee5fca301',
     messagingSenderId: '1097547412500',
     projectId: 'expense-tracker-20653',
     storageBucket: 'expense-tracker-20653.firebasestorage.app',
@@ -55,8 +55,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1097547412500',
     projectId: 'expense-tracker-20653',
     storageBucket: 'expense-tracker-20653.firebasestorage.app',
-    androidClientId: '1097547412500-dlttq0ck3gks6gklndimu5p09h9eebdt.apps.googleusercontent.com',
-    iosClientId: '1097547412500-5r0mucmb4kb1qr1samnpinqjatghtk36.apps.googleusercontent.com',
+    androidClientId:
+        '1097547412500-dlttq0ck3gks6gklndimu5p09h9eebdt.apps.googleusercontent.com',
+    iosClientId:
+        '1097547412500-5r0mucmb4kb1qr1samnpinqjatghtk36.apps.googleusercontent.com',
     iosBundleId: 'com.fueltech.kalayanaexpresstracker',
   );
 

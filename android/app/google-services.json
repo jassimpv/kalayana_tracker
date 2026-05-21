@@ -37,6 +37,57 @@
             {
               "client_id": "1097547412500-kghp41ghv639fqkujrhc91vgpio1cro5.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "1097547412500-5r0mucmb4kb1qr1samnpinqjatghtk36.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fueltech.kalayanaexpresstracker"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1097547412500:android:7df739d2649c4ee5fca301",
+        "android_client_info": {
+          "package_name": "com.fueltech.kalyana_tracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1097547412500-04qgdrv5g4cs1f9h5riv7lnesggdpndf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fueltech.kalyana_tracker",
+            "certificate_hash": "333fa0668a37c792fe9d98fdd5e57f0779a5c179"
+          }
+        },
+        {
+          "client_id": "1097547412500-kghp41ghv639fqkujrhc91vgpio1cro5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjrO5hXX0ExVIQ9hQEOl3nhzAawCh7eUs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1097547412500-kghp41ghv639fqkujrhc91vgpio1cro5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1097547412500-5r0mucmb4kb1qr1samnpinqjatghtk36.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fueltech.kalayanaexpresstracker"
+              }
             }
           ]
         }

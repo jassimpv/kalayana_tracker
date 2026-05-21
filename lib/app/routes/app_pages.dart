@@ -4,8 +4,10 @@ import 'package:kalayanaexpresstracker/app/modules/auth/auth_view.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/dashboard_view.dart';
 import 'package:kalayanaexpresstracker/app/modules/legal/legal_views.dart';
+import 'package:kalayanaexpresstracker/app/modules/splash/splash_view.dart';
 
 class AppRoutes {
+  static const splash = '/splash';
   static const auth = '/auth';
   static const dashboard = '/dashboard';
   static const privacyPolicy = '/privacy-policy';
@@ -14,6 +16,7 @@ class AppRoutes {
 
 class AppPages {
   static final pages = [
+    GetPage(name: AppRoutes.splash, page: () => const SplashView()),
     GetPage(
       name: AppRoutes.privacyPolicy,
       page: () => const PrivacyPolicyView(),

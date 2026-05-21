@@ -31,11 +31,7 @@ class DashboardView extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.loading.value) {
-        return const _StatusScaffold(
-          icon: Icons.cloud_sync_outlined,
-          title: 'Loading planner',
-          message: 'Pulling your latest wedding dashboard.',
-        );
+        return const _DashboardLoadingScaffold();
       }
       if (controller.error.value != null) {
         return _StatusScaffold(
