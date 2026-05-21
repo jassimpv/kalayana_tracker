@@ -104,33 +104,33 @@ class ProfilePanel extends GetView<DashboardController> {
             ),
           ),
           const SizedBox(height: 18),
-          _CoupleCollaborationCard(
-            coupleName: couple,
-            done: done,
-            open: data.openReminders,
-          ),
-          const SizedBox(height: 18),
+          // _CoupleCollaborationCard(
+          //   coupleName: couple,
+          //   done: done,
+          //   open: data.openReminders,
+          // ),
+          // const SizedBox(height: 18),
           _PremiumSurface(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const _SectionHeader(title: 'Settings', action: 'Personalized'),
                 const SizedBox(height: 14),
-                _SettingsRow(
-                  icon: Icons.family_restroom_rounded,
-                  label: 'Family collaboration',
-                  value: '4 invitees ready',
-                ),
-                _SettingsRow(
-                  icon: Icons.palette_rounded,
-                  label: 'Theme personalization',
-                  value: 'Emerald and gold',
-                ),
-                _SettingsRow(
-                  icon: Icons.workspace_premium_rounded,
-                  label: 'Premium subscription',
-                  value: 'Planner Pro preview',
-                ),
+                // _SettingsRow(
+                //   icon: Icons.family_restroom_rounded,
+                //   label: 'Family collaboration',
+                //   value: '4 invitees ready',
+                // ),
+                // _SettingsRow(
+                //   icon: Icons.palette_rounded,
+                //   label: 'Theme personalization',
+                //   value: 'Emerald and gold',
+                // ),
+                // _SettingsRow(
+                //   icon: Icons.workspace_premium_rounded,
+                //   label: 'Premium subscription',
+                //   value: 'Planner Pro preview',
+                // ),
                 _SettingsRow(
                   icon: Icons.privacy_tip_outlined,
                   label: 'Privacy policy',

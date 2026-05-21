@@ -961,8 +961,9 @@ class _PaymentTimeline extends StatelessWidget {
   }
 }
 
-class _CoupleCollaborationCard extends StatelessWidget {
-  const _CoupleCollaborationCard({
+class CoupleCollaborationCard extends StatelessWidget {
+  const CoupleCollaborationCard({
+    super.key,
     required this.coupleName,
     required this.done,
     required this.open,

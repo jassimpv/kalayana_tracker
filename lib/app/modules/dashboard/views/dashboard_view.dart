@@ -184,7 +184,7 @@ class _DashboardAppBar extends GetView<DashboardController>
 
   @override
   Size get preferredSize =>
-      Size.fromHeight(MediaQuery.paddingOf(Get.context!).top);
+      Size.fromHeight(MediaQuery.paddingOf(Get.context!).top + 20);
 
   @override
   Widget build(BuildContext context) {

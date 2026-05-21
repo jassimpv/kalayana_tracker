@@ -201,6 +201,8 @@ Future<Uint8List> _buildExpensePdf(
   List<ExpenseItem> expenses,
   PdfPageFormat format,
 ) async {
+  final font = await PdfGoogleFonts.notoSansRegular();
+  final boldFont = await PdfGoogleFonts.notoSansBold();
   final total = expenses.fold<double>(0, (sum, item) => sum + item.totalAmount);
   final paid = expenses.fold<double>(
     0,
@@ -214,7 +216,10 @@ Future<Uint8List> _buildExpensePdf(
     0,
     (sum, item) => sum + item.repaymentPending,
   );
-  final doc = pw.Document(title: 'Kalyana Expense Report');
+  final doc = pw.Document(
+    title: 'Kalyana Expense Report',
+    theme: pw.ThemeData.withFont(base: font, bold: boldFont),
+  );
 
   pw.TextStyle labelStyle() => pw.TextStyle(
     color: PdfColors.grey700,
@@ -410,7 +415,7 @@ List<pw.Widget> _paymentHistoryWidgets(ExpenseItem item) {
   ];
 }
 
-String _pdfMoney(double value) => '₹ ${formatMoney(value)}';
+String _pdfMoney(double value) => '\u20B9 ${formatMoney(value)}';
 
 Future<void> _copyExpenseCsv(
   BuildContext context,
