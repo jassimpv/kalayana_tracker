@@ -203,52 +203,79 @@ class _ScreenHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return _PremiumSurface(
+      padding: const EdgeInsets.all(20),
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [Color(0xFFFFFCF8), Color(0xFFF1E3D2)],
       ),
-      child: Row(
-        children: [
-          _SoftIcon(icon: icon, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 720;
+          final titleBlock = Row(
+            children: [
+              _SoftIcon(icon: icon, color: scheme.primary),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      eyebrow,
+                      style: TextStyle(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      title,
+                      maxLines: wide ? 1 : 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w900, height: 1.02),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      subtitle,
+                      maxLines: wide ? 1 : 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: scheme.outline,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+          final action = FilledButton.icon(
+            onPressed: onAction,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(actionLabel),
+          );
+          if (!wide) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  eyebrow,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    height: 1.02,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  subtitle,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                titleBlock,
+                const SizedBox(height: 16),
+                Align(alignment: Alignment.centerLeft, child: action),
               ],
-            ),
-          ),
-        ],
+            );
+          }
+          return Row(
+            children: [
+              Expanded(child: titleBlock),
+              const SizedBox(width: 18),
+              action,
+            ],
+          );
+        },
       ),
     );
   }

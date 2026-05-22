@@ -180,7 +180,11 @@ class _ReminderStatusStrip extends StatelessWidget {
     ];
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 680 ? 4 : 2;
+        final columns = constraints.maxWidth >= 820
+            ? 4
+            : constraints.maxWidth >= 520
+            ? 2
+            : 1;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -189,7 +193,11 @@ class _ReminderStatusStrip extends StatelessWidget {
             crossAxisCount: columns,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: columns == 4 ? 1.35 : 1.55,
+            childAspectRatio: columns == 4
+                ? 2.8
+                : columns == 2
+                ? 2.35
+                : 3.6,
           ),
           itemBuilder: (context, index) => metrics[index],
         );

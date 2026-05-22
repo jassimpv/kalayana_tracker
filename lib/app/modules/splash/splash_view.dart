@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/services/android_in_app_update_service.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
 class SplashView extends StatefulWidget {
@@ -63,26 +64,7 @@ class _SplashViewState extends State<SplashView>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 92,
-                      height: 92,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.18),
-                            blurRadius: 28,
-                            offset: const Offset(0, 14),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.favorite_rounded,
-                        color: Color(0xFF0F8B7D),
-                        size: 48,
-                      ),
-                    ),
+                    const AppLogo(size: 96, padding: 9),
                     const SizedBox(height: 22),
                     Text(
                       'Kalyana',

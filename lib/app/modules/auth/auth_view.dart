@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
 import 'package:kalayanaexpresstracker/app/modules/auth/auth_controller.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
@@ -219,15 +220,7 @@ class _AuthHeader extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Container(
-          width: 54,
-          height: 54,
-          decoration: BoxDecoration(
-            gradient: ThemeColors.appBarGradient,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Icon(Icons.favorite_rounded, color: scheme.onPrimary),
-        ),
+        const AppLogo(size: 56, padding: 5),
         const SizedBox(width: 14),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,

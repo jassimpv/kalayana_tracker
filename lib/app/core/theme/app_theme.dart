@@ -10,33 +10,33 @@ class ThemeColors {
   // ============================================================================
   // LIGHT THEME COLORS (Constants)
   // ============================================================================
-  static const Color _lightPrimary = Color(0xFF186063);
+  static const Color _lightPrimary = Color(0xFF9E4E38);
   static const Color _lightSurface = Color(0xFFFFFFFF);
-  static const Color _lightOnSurface = Color(0xFF0F3F41);
-  static const Color _lightOnSurfaceSecondary = Color(0xFF5E637B);
-  static const Color _lightInputBackground = Color(0xFFF4F7FF);
+  static const Color _lightOnSurface = Color(0xFF3C2018);
+  static const Color _lightOnSurfaceSecondary = Color(0xFF80695D);
+  static const Color _lightInputBackground = Color(0xFFFFF7F1);
   static const Color _lightBorder = Color(
-    0xFF186063,
+    0xFFB86A4C,
   ); // with 0.08 alpha in getter
   static const Color _lightScaffold = Color(0xFFFFFFFF);
-  static const Color _lightScaffoldGradientStart = Color(0xFFe0f7f7);
+  static const Color _lightScaffoldGradientStart = Color(0xFFFFEFE4);
   static const Color _lightScaffoldGradientEnd = Color(0xFFFFFFFF);
 
   // ============================================================================
   // DARK THEME COLORS (Constants)
   // ============================================================================
-  static const Color _darkPrimary = Color(0xFF0FA394);
-  static const Color _darkSurface = Color(0xFF1A2332);
-  static const Color _darkOnSurface = Color(0xFFE5E7EB);
-  static const Color _darkOnSurfaceSecondary = Color(0xFF9CA3AF);
-  static const Color _darkInputBackground = Color(0xFF2D3E50);
+  static const Color _darkPrimary = Color(0xFFE0A058);
+  static const Color _darkSurface = Color(0xFF261914);
+  static const Color _darkOnSurface = Color(0xFFFFF4EA);
+  static const Color _darkOnSurfaceSecondary = Color(0xFFD7BCAE);
+  static const Color _darkInputBackground = Color(0xFF3A2821);
   static const Color _darkBorder = Color(
-    0xFF2D3E50,
+    0xFF6B4536,
   ); // with 0.5 alpha in getter
-  static const Color _darkScaffold = Color(0xFF131A37);
-  static const Color _darkScaffoldGradientStart = Color(0xFF0F1720);
-  static const Color _darkScaffoldGradientEnd = Color(0xFF131A37);
-  static const Color _darkSurfaceOverlay = Color(0xFF1A2332);
+  static const Color _darkScaffold = Color(0xFF17100D);
+  static const Color _darkScaffoldGradientStart = Color(0xFF120C0A);
+  static const Color _darkScaffoldGradientEnd = Color(0xFF2B1A13);
+  static const Color _darkSurfaceOverlay = Color(0xFF261914);
 
   // ============================================================================
   // SEMANTIC COLORS (Universal)
@@ -58,7 +58,11 @@ class ThemeColors {
   // CUSTOM PALETTE COLORS
   // ============================================================================
   static const Color darkGreen = Color(0xff12673F);
-  static const Color secondaryColor = Color(0xffbaad8c);
+  static const Color secondaryColor = Color(0xFFE0A058);
+  static const Color logoCopper = Color(0xFFC46F53);
+  static const Color logoRose = Color(0xFFF2A17D);
+  static const Color logoGold = Color(0xFFE7AD4F);
+  static const Color logoDeep = Color(0xFF3C2018);
 
   // ============================================================================
   // DEPRECATED LEGACY COLORS (Kept for backward compatibility)
@@ -119,7 +123,7 @@ class ThemeColors {
       : primary.withValues(alpha: 0.2);
 
   static Color? get lightScaffoldAuthBg =>
-      ThemeService.isDark() ? null : const Color(0xFF0C8C80);
+      ThemeService.isDark() ? null : const Color(0xFF9E4E38);
   // TEXT
   static Color get textPrimary => onSurface;
   static Color get textSecondary => onSurfaceSecondary;
@@ -145,8 +149,14 @@ class ThemeColors {
     end: Alignment.bottomRight,
     colors: <Color>[
       primary,
-      primary.withValues(alpha: ThemeService.isDark() ? 0.7 : 0.6),
+      ThemeService.isDark() ? const Color(0xFF8E5530) : logoGold,
     ],
+  );
+
+  static LinearGradient get logoBackgroundGradient => const LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: <Color>[Color(0xFFFFF5EA), Color(0xFFFFD2BA), Color(0xFFE7AD4F)],
   );
 
   static LinearGradient get scaffoldGradient => LinearGradient(
@@ -160,14 +170,14 @@ class ThemeColors {
   static LinearGradient get appBarGradient => LinearGradient(
     colors: ThemeService.isDark()
         ? <Color>[
-            const Color(0xFF102739),
-            const Color(0xFF15293C),
-            const Color(0xFF0F1720),
+            const Color(0xFF20120E),
+            const Color(0xFF4A2A1E),
+            const Color(0xFF8E5530),
           ]
         : const <Color>[
-            Color(0xFF06373B),
-            Color(0xFF075B5F),
-            Color(0xFF0EA493),
+            Color(0xFF7A3528),
+            Color(0xFFC46F53),
+            Color(0xFFE7AD4F),
           ],
   );
   // ============================================================================
@@ -201,11 +211,11 @@ class ThemeColors {
       brightness: Brightness.light,
       primary: _lightPrimary,
       onPrimary: whiteColor,
-      primaryContainer: Color(0xFFD0ECEB),
-      onPrimaryContainer: Color(0xFF0D2B2C),
-      secondary: Color(0xFF186063),
+      primaryContainer: Color(0xFFFFD8C4),
+      onPrimaryContainer: Color(0xFF3C2018),
+      secondary: Color(0xFFE7AD4F),
       onSecondary: Color(0xFFFFFFFF),
-      tertiary: Color(0xFF0FA394),
+      tertiary: Color(0xFFC46F53),
       onTertiary: Color(0xFFFFFFFF),
       error: error,
       onError: Color(0xFFFFFFFF),
@@ -267,7 +277,7 @@ class ThemeColors {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
-        borderSide: const BorderSide(color: Color(0xFF0CA394), width: 1.4),
+        borderSide: const BorderSide(color: logoGold, width: 1.4),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(20),
@@ -363,11 +373,11 @@ class ThemeColors {
       brightness: Brightness.dark,
       primary: _darkPrimary,
       onPrimary: whiteColor,
-      primaryContainer: Color(0xFF0B5751),
-      onPrimaryContainer: Color(0xFF7FF7F0),
-      secondary: Color(0xFF80CCBB),
-      onSecondary: Color(0xFF004138),
-      tertiary: Color(0xFF0FA394),
+      primaryContainer: Color(0xFF5D3428),
+      onPrimaryContainer: Color(0xFFFFE4D6),
+      secondary: Color(0xFFC46F53),
+      onSecondary: Color(0xFF26100A),
+      tertiary: Color(0xFFE7AD4F),
       onTertiary: Color(0xFFFFFFFF),
       error: error,
       onError: Color(0xFFFFFFFF),

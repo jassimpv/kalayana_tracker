@@ -485,62 +485,77 @@ class _ExpenseSummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return _PremiumSurface(
-      child: Row(
-        children: [
-          _ProgressRing(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 620;
+          final ring = _ProgressRing(
             progress: progress,
             color: scheme.primary,
-            size: 104,
+            size: compact ? 92 : 104,
             stroke: 10,
             center: Text(
               '${(progress * 100).round()}%',
               style: const TextStyle(fontWeight: FontWeight.w900),
             ),
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '₹${formatMoney(total)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
+          );
+          final details = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '₹${formatMoney(total)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w900,
                 ),
-                Text(
-                  'total bill value',
-                  style: TextStyle(
-                    color: scheme.outline,
-                    fontWeight: FontWeight.w700,
-                  ),
+              ),
+              Text(
+                'total bill value',
+                style: TextStyle(
+                  color: scheme.outline,
+                  fontWeight: FontWeight.w700,
                 ),
-                const SizedBox(height: 14),
-                _LegendRow(
-                  color: const Color(0xFF0F8B7D),
-                  label: 'Paid',
-                  value: '₹${formatMoney(paid)}',
-                ),
+              ),
+              const SizedBox(height: 14),
+              _LegendRow(
+                color: const Color(0xFF0F8B7D),
+                label: 'Paid',
+                value: '₹${formatMoney(paid)}',
+              ),
+              const SizedBox(height: 8),
+              _LegendRow(
+                color: const Color(0xFFD4A373),
+                label: 'Pending',
+                value: '₹${formatMoney(pending)}',
+              ),
+              if (repayment > 0) ...[
                 const SizedBox(height: 8),
                 _LegendRow(
-                  color: const Color(0xFFD4A373),
-                  label: 'Pending',
-                  value: '₹${formatMoney(pending)}',
+                  color: const Color(0xFFB85D75),
+                  label: 'Need to repay',
+                  value: '₹${formatMoney(repayment)}',
                 ),
-                if (repayment > 0) ...[
-                  const SizedBox(height: 8),
-                  _LegendRow(
-                    color: const Color(0xFFB85D75),
-                    label: 'Need to repay',
-                    value: '₹${formatMoney(repayment)}',
-                  ),
-                ],
               ],
-            ),
-          ),
-        ],
+            ],
+          );
+          if (compact) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(child: ring),
+                const SizedBox(height: 16),
+                details,
+              ],
+            );
+          }
+          return Row(
+            children: [
+              ring,
+              const SizedBox(width: 18),
+              Expanded(child: details),
+            ],
+          );
+        },
       ),
     );
   }
@@ -589,7 +604,11 @@ class _ExpenseStatusStrip extends StatelessWidget {
     ];
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 680 ? 4 : 2;
+        final columns = constraints.maxWidth >= 820
+            ? 4
+            : constraints.maxWidth >= 520
+            ? 2
+            : 1;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -598,7 +617,11 @@ class _ExpenseStatusStrip extends StatelessWidget {
             crossAxisCount: columns,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: columns == 4 ? 1.35 : 1.55,
+            childAspectRatio: columns == 4
+                ? 2.8
+                : columns == 2
+                ? 2.35
+                : 3.6,
           ),
           itemBuilder: (context, index) => metrics[index],
         );
@@ -729,31 +752,38 @@ class _MiniExpenseMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _PremiumSurface(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [color.withValues(alpha: 0.12), Colors.white],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w900),
-          ),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.outline,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+          _SoftIcon(icon: icon, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

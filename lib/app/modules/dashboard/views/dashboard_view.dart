@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
@@ -47,7 +48,7 @@ class DashboardView extends GetView<DashboardController> {
             extendBody: true,
             backgroundColor: ThemeColors.scaffoldColor,
             drawer: wide ? null : _MobileDrawer(controller: controller),
-            appBar: _DashboardAppBar(wide: wide),
+            appBar: wide ? null : _DashboardAppBar(wide: wide),
             body: DecoratedBox(
               decoration: BoxDecoration(gradient: ThemeColors.surfaceGradient),
               child: Row(
@@ -121,7 +122,7 @@ class _DashboardFrame extends GetView<DashboardController> {
               ),
               child: Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1260),
+                  constraints: const BoxConstraints(maxWidth: 1180),
                   child: Obx(
                     () => AnimatedSwitcher(
                       duration: const Duration(milliseconds: 260),
@@ -214,19 +215,7 @@ class _DashboardAppBar extends GetView<DashboardController>
         padding: const EdgeInsets.fromLTRB(16, 60, 16, 10),
         child: Row(
           children: [
-            Container(
-              height: 46,
-              width: 46,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.16),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.favorite_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
+            const AppLogo(size: 48, padding: 5),
 
             const SizedBox(width: 14),
 
@@ -348,15 +337,7 @@ class _SideRail extends StatelessWidget {
           backgroundColor: Colors.transparent,
           leading: Padding(
             padding: const EdgeInsets.only(top: 16, bottom: 26),
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: ThemeColors.primaryGradient,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Icon(Icons.favorite_rounded, color: Colors.white),
-            ),
+            child: const AppLogo(size: 52, padding: 5),
           ),
           destinations: navDestinations
               .map(

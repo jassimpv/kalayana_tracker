@@ -11,7 +11,7 @@ class _DashboardLoadingScaffold extends StatelessWidget {
         return Scaffold(
           extendBody: true,
           backgroundColor: ThemeColors.scaffoldColor,
-          appBar: _LoadingAppBar(wide: wide),
+          appBar: wide ? null : _LoadingAppBar(wide: wide),
           body: DecoratedBox(
             decoration: BoxDecoration(gradient: ThemeColors.surfaceGradient),
             child: Row(
@@ -41,7 +41,7 @@ class _DashboardSkeletonFrame extends StatelessWidget {
         padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 18, wide ? 28 : 16, 104),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1260),
+            constraints: const BoxConstraints(maxWidth: 1180),
             child: const _Shimmer(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,7 +387,11 @@ class _MetricStripSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 680 ? 4 : 2;
+        final columns = constraints.maxWidth >= 820
+            ? 4
+            : constraints.maxWidth >= 520
+            ? 2
+            : 1;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -396,18 +400,29 @@ class _MetricStripSkeleton extends StatelessWidget {
             crossAxisCount: columns,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: columns == 4 ? 1.35 : 1.55,
+            childAspectRatio: columns == 4
+                ? 2.8
+                : columns == 2
+                ? 2.35
+                : 3.6,
           ),
           itemBuilder: (context, index) => const _PremiumSurface(
-            padding: EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.all(14),
+            child: Row(
               children: [
-                _SkeletonBox(width: 22, height: 22, radius: 8),
-                Spacer(),
-                _SkeletonBox(width: 70, height: 16, radius: 6),
-                SizedBox(height: 7),
-                _SkeletonBox(width: 90, height: 11, radius: 5),
+                _SkeletonBox(width: 42, height: 42, radius: 16),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SkeletonBox(width: 70, height: 16, radius: 6),
+                      SizedBox(height: 7),
+                      _SkeletonBox(width: 90, height: 11, radius: 5),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -725,11 +740,7 @@ class _CoupleAvatar extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFD4A373)),
             ),
-            child: const Icon(
-              Icons.favorite_rounded,
-              size: 13,
-              color: Color(0xFFB85D75),
-            ),
+            child: const AppLogo(size: 18, padding: 1, showBackground: false),
           ),
         ),
       ],
