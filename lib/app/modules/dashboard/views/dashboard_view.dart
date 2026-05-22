@@ -61,17 +61,31 @@ class DashboardView extends GetView<DashboardController> {
             bottomNavigationBar: wide
                 ? null
                 : _BottomNav(controller: controller),
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
             floatingActionButton: Obx(
               () => controller.selectedIndex.value == 4
                   ? const SizedBox.shrink()
-                  : FloatingActionButton.extended(
-                      onPressed: () => _handlePrimaryAction(
-                        context,
-                        controller.selectedIndex.value,
-                      ),
-                      icon: const Icon(Icons.add_rounded),
-                      label: Text(
-                        _primaryActionLabel(controller.selectedIndex.value),
+                  : Padding(
+                      padding: EdgeInsets.only(bottom: wide ? 0 : 86),
+                      child: FloatingActionButton.extended(
+                        onPressed: () => _handlePrimaryAction(
+                          context,
+                          controller.selectedIndex.value,
+                        ),
+                        backgroundColor: ThemeColors.terracotta,
+                        foregroundColor: Colors.white,
+                        elevation: 12,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        icon: const Icon(Icons.add_rounded, size: 26),
+                        label: Text(
+                          _primaryActionLabel(controller.selectedIndex.value),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0,
+                          ),
+                        ),
                       ),
                     ),
             ),
@@ -116,9 +130,9 @@ class _DashboardFrame extends GetView<DashboardController> {
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(
                 wide ? 28 : 16,
-                18,
+                wide ? 18 : 16,
                 wide ? 28 : 16,
-                104,
+                wide ? 104 : 168,
               ),
               child: Center(
                 child: ConstrainedBox(
@@ -362,25 +376,30 @@ class _BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(30),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            height: 74,
-            padding: const EdgeInsets.all(6),
+            height: 66,
+            padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.90),
-              borderRadius: BorderRadius.circular(28),
+              color: Colors.white.withValues(alpha: 0.84),
+              borderRadius: BorderRadius.circular(30),
               border: Border.all(
-                color: ThemeColors.primary.withValues(alpha: 0.12),
+                color: ThemeColors.terracotta.withValues(alpha: 0.14),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: ThemeColors.primary.withValues(alpha: 0.16),
-                  blurRadius: 26,
-                  offset: const Offset(0, 12),
+                  color: ThemeColors.logoDeep.withValues(alpha: 0.12),
+                  blurRadius: 30,
+                  offset: const Offset(0, 14),
+                ),
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  blurRadius: 12,
+                  offset: const Offset(0, -4),
                 ),
               ],
             ),
@@ -403,31 +422,31 @@ class _BottomNav extends StatelessWidget {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    Color(0xFF1A8E88),
-                                    Color(0xFF256B72),
+                                    Color(0xFF0F8B7D),
+                                    Color(0xFF064743),
                                   ],
                                 )
                               : null,
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(25),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               selected ? item.selectedIcon : item.icon,
-                              size: 22,
+                              size: 21,
                               color: selected
                                   ? Colors.white
-                                  : Theme.of(context).colorScheme.outline,
+                                  : ThemeColors.terracotta,
                             ),
-                            const SizedBox(height: 3),
+                            const SizedBox(height: 2),
                             AnimatedDefaultTextStyle(
                               duration: const Duration(milliseconds: 220),
                               style: TextStyle(
                                 color: selected
                                     ? Colors.white
-                                    : Theme.of(context).colorScheme.outline,
-                                fontSize: 11,
+                                    : ThemeColors.terracotta,
+                                fontSize: 10.5,
                                 fontWeight: selected
                                     ? FontWeight.w900
                                     : FontWeight.w700,

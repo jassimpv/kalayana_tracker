@@ -38,7 +38,12 @@ class _DashboardSkeletonFrame extends StatelessWidget {
     return SafeArea(
       top: false,
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(wide ? 28 : 16, 18, wide ? 28 : 16, 104),
+        padding: EdgeInsets.fromLTRB(
+          wide ? 28 : 16,
+          wide ? 18 : 16,
+          wide ? 28 : 16,
+          wide ? 104 : 168,
+        ),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1180),
@@ -185,9 +190,9 @@ class _LoadingBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+      minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
       child: Container(
-        height: 74,
+        height: 66,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.90),
@@ -600,38 +605,44 @@ class _PremiumSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        gradient:
-            gradient ??
-            LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: 0.94),
-                ThemeColors.inputBackground.withValues(alpha: 0.84),
-              ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          width: double.infinity,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            gradient:
+                gradient ??
+                LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withValues(alpha: 0.88),
+                    ThemeColors.inputBackground.withValues(alpha: 0.74),
+                  ],
+                ),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: borderColor ?? scheme.primary.withValues(alpha: 0.10),
             ),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(
-          color: borderColor ?? scheme.primary.withValues(alpha: 0.10),
+            boxShadow: [
+              BoxShadow(
+                color: ThemeColors.logoDeep.withValues(alpha: 0.08),
+                blurRadius: 30,
+                offset: const Offset(0, 16),
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.72),
+                blurRadius: 14,
+                offset: const Offset(-8, -8),
+              ),
+            ],
+          ),
+          child: Padding(padding: padding, child: child),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColors.primary.withValues(alpha: 0.10),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
-          ),
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.90),
-            blurRadius: 16,
-            offset: const Offset(-8, -8),
-          ),
-        ],
       ),
-      child: Padding(padding: padding, child: child),
     );
   }
 }
@@ -831,91 +842,6 @@ class _RingPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _RingPainter oldDelegate) {
     return oldDelegate.progress != progress || oldDelegate.color != color;
-  }
-}
-
-class _HeroCountdownCard extends StatelessWidget {
-  const _HeroCountdownCard({required this.weddingDate, required this.progress});
-
-  final DateTime? weddingDate;
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    final days = daysUntilDate(weddingDate);
-    final displayDays = days == null
-        ? '--'
-        : days <= 0
-        ? '0'
-        : days.toString();
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-      ),
-      child: Row(
-        children: [
-          _ProgressRing(
-            progress: progress,
-            color: const Color(0xFFD4A373),
-            center: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${(progress * 100).round()}%',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                Text(
-                  'paid',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.66),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  displayDays,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    height: 0.95,
-                  ),
-                ),
-                Text(
-                  weddingDate == null ? 'days' : 'days left',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.72),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Countdown and budget pulse',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.58),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

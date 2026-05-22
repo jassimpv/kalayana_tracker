@@ -86,128 +86,305 @@ class _OverviewHero extends StatelessWidget {
         : (data.paid / data.totalBudget).clamp(0.0, 1.0);
     final daysLeft = daysUntilDate(weddingDate);
     return _AnimatedReveal(
-      child: _PremiumSurface(
-        padding: EdgeInsets.zero,
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0F8B7D), Color(0xFF155F58), Color(0xFF241D18)],
-        ),
-        borderColor: Colors.white24,
-        child: Stack(
-          children: [
-            const Positioned(
-              right: -48,
-              top: -42,
-              child: _BlurCircle(color: Color(0xFFD4A373), size: 170),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 760;
+          final greeting = _OverviewGreetingCard(
+            coupleName: coupleName,
+            weddingDate: weddingDate,
+            daysLeft: daysLeft,
+          );
+          final budget = _OverviewBudgetCard(total: data.totalBudget);
+          final pulse = _OverviewPulseCard(
+            weddingDate: weddingDate,
+            progress: budgetProgress,
+          );
+          if (wide) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(flex: 5, child: greeting),
+                const SizedBox(width: 16),
+                Expanded(flex: 5, child: budget),
+                const SizedBox(width: 16),
+                Expanded(flex: 4, child: pulse),
+              ],
+            );
+          }
+          return Column(
+            children: [
+              greeting,
+              const SizedBox(height: 12),
+              budget,
+              const SizedBox(height: 12),
+              pulse,
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _OverviewGreetingCard extends StatelessWidget {
+  const _OverviewGreetingCard({
+    required this.coupleName,
+    required this.weddingDate,
+    required this.daysLeft,
+  });
+
+  final String? coupleName;
+  final DateTime? weddingDate;
+  final int? daysLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = coupleName ?? 'Kalyana command suite';
+    final countdownText = daysLeft == null
+        ? 'Date locked'
+        : daysLeft! <= 0
+        ? 'Today is the day'
+        : '$daysLeft days to forever';
+    final dateText = weddingDate == null
+        ? 'Set the wedding date for your countdown'
+        : '${formatDate(weddingDate!)}  |  $countdownText';
+    return _PremiumSurface(
+      padding: const EdgeInsets.all(18),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFFFFFFF), Color(0xFFFFF3E9)],
+      ),
+      child: Stack(
+        children: [
+          const Positioned(
+            right: -56,
+            top: -58,
+            child: _BlurCircle(
+              color: Color(0xFFE7AD4F),
+              size: 150,
+              alpha: 0.12,
             ),
-            const Positioned(
-              left: -70,
-              bottom: -80,
-              child: _BlurCircle(color: Colors.white, size: 190, alpha: 0.10),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(22),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final wide = constraints.maxWidth >= 720;
-                  final left = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          _CoupleAvatar(name: coupleName),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Good evening',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.72),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                Text(
-                                  coupleName ?? 'Kalyana command suite',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w900,
-                                        height: 1.02,
-                                      ),
-                                ),
-                              ],
-                            ),
+          ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _CoupleAvatar(name: coupleName),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Good evening',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.w900,
+                            height: 1.02,
+                            letterSpacing: 0,
                           ),
-                        ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      dateText,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ThemeColors.terracotta,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 28),
-                      Text(
-                        weddingDate == null
-                            ? 'Set the wedding date to unlock your emotional countdown.'
-                            : '${formatDate(weddingDate!)}  |  ${daysLeft == null
-                                  ? 'Date locked'
-                                  : daysLeft <= 0
-                                  ? 'Today is the day'
-                                  : '$daysLeft days to forever'}',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.78),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0, end: data.totalBudget),
-                        duration: const Duration(milliseconds: 820),
-                        curve: Curves.easeOutCubic,
-                        builder: (context, value, _) => Text(
-                          '₹${formatMoney(value)}',
-                          style: Theme.of(context).textTheme.displaySmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0,
-                                height: 1,
-                              ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Total wedding budget under orchestration',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.68),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  );
-                  final right = _HeroCountdownCard(
-                    weddingDate: weddingDate,
-                    progress: budgetProgress,
-                  );
-                  return wide
-                      ? Row(
-                          children: [
-                            Expanded(child: left),
-                            const SizedBox(width: 24),
-                            SizedBox(width: 250, child: right),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [left, const SizedBox(height: 24), right],
-                        );
-                },
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OverviewBudgetCard extends StatelessWidget {
+  const _OverviewBudgetCard({required this.total});
+
+  final double total;
+
+  @override
+  Widget build(BuildContext context) {
+    return _PremiumSurface(
+      padding: const EdgeInsets.all(20),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF0F8B7D), Color(0xFF064743)],
+      ),
+      borderColor: Colors.white24,
+      child: Stack(
+        children: [
+          const Positioned(
+            right: -38,
+            bottom: -62,
+            child: _BlurCircle(
+              color: Color(0xFFE7AD4F),
+              size: 170,
+              alpha: 0.18,
             ),
-          ],
-        ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Wedding budget',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.76),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: total),
+                duration: const Duration(milliseconds: 820),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) => FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '₹${formatMoney(value)}',
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      height: 0.95,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Total allocation across expenses, dates, and shopping.',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.68),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OverviewPulseCard extends StatelessWidget {
+  const _OverviewPulseCard({required this.weddingDate, required this.progress});
+
+  final DateTime? weddingDate;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final days = daysUntilDate(weddingDate);
+    final displayDays = days == null
+        ? '--'
+        : days <= 0
+        ? '0'
+        : days.toString();
+    return _PremiumSurface(
+      padding: const EdgeInsets.all(18),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFFFFCF8), Color(0xFFFFE5C7)],
+      ),
+      child: Row(
+        children: [
+          _ProgressRing(
+            progress: progress,
+            color: ThemeColors.terracotta,
+            size: 82,
+            stroke: 9,
+            center: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${(progress * 100).round()}%',
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+                Text(
+                  'paid',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      displayDays,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w900, height: 0.95),
+                    ),
+                    const SizedBox(width: 5),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 3),
+                      child: Text(
+                        weddingDate == null ? 'days' : 'days left',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Payment pulse',
+                  style: TextStyle(
+                    color: ThemeColors.deepTeal,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(
+                  'Countdown and budget analytics',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -229,7 +406,15 @@ class _PremiumQuickActions extends StatelessWidget {
     return _AnimatedReveal(
       delay: const Duration(milliseconds: 80),
       child: _PremiumSurface(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: 0.88),
+            const Color(0xFFFFF7F1).withValues(alpha: 0.72),
+          ],
+        ),
         child: Row(
           children: [
             Expanded(
@@ -292,15 +477,22 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
         child: Column(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: scheme.primary.withValues(alpha: 0.10),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    ThemeColors.terracotta.withValues(alpha: 0.12),
+                    scheme.primary.withValues(alpha: 0.10),
+                  ],
+                ),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(widget.icon, color: scheme.primary),
+              child: Icon(widget.icon, color: ThemeColors.terracotta),
             ),
-            const SizedBox(height: 7),
+            const SizedBox(height: 6),
             Text(
               widget.label,
               maxLines: 1,
