@@ -12,219 +12,146 @@ class RemindersPanel extends GetView<DashboardController> {
         if (a.isDone != b.isDone) return a.isDone ? 1 : -1;
         return a.dueDate.compareTo(b.dueDate);
       });
-    final pendingItems = sorted.where((item) => !item.isDone).toList();
-    final next = pendingItems.isEmpty ? null : pendingItems.first;
-    final completed = sorted.where((item) => item.isDone).length;
-    final upcoming = sorted.length - completed;
-    final overdue = sorted
-        .where((item) => item.isOverdue(DateTime.now()))
-        .length;
-    final progress = sorted.isEmpty ? 0.0 : completed / sorted.length;
+    final paymentReminders = sorted
+        .where((item) => item.category == 'Payment')
+        .toList();
+    final taskReminders = sorted
+        .where((item) => item.category != 'Payment')
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _ScreenHero(
-          eyebrow: 'Reminder timeline',
-          title: next == null ? 'Wedding roadmap' : next.title,
-          subtitle: next == null
-              ? 'Build your ceremony schedule and vendor milestone calendar.'
-              : '${formatDate(next.dueDate)} | ${next.category}',
-          icon: Icons.event_note_rounded,
-          actionLabel: 'Add date',
-          onAction: () => showReminderDialog(context),
+        _SectionHeader(
+          title: 'Upcoming Due Payments',
+          action: 'Add',
+          onTap: () => showReminderDialog(context),
         ),
-        const SizedBox(height: 18),
-        _ReminderSummaryCard(
-          total: sorted.length,
-          completed: completed,
-          upcoming: upcoming,
-          progress: progress,
+        const SizedBox(height: 12),
+        if (paymentReminders.isEmpty)
+          const PremiumEmptyState(
+            icon: Icons.payments_rounded,
+            title: 'No due payments yet',
+            subtitle: 'Create a payment reminder to track upcoming bills.',
+          )
+        else
+          ...paymentReminders.map((item) => _PaymentReminderCard(item: item)),
+        const SizedBox(height: 22),
+        _SectionHeader(
+          title: 'Wedding Tasks',
+          action: 'Add',
+          onTap: () => showReminderDialog(context),
         ),
-        const SizedBox(height: 18),
-        _ReminderStatusStrip(
-          total: sorted.length,
-          upcoming: upcoming,
-          completed: completed,
-          overdue: overdue,
-        ),
-        const SizedBox(height: 18),
-
-        sorted.isEmpty
-            ? const PremiumEmptyState(
-                icon: Icons.event_available_rounded,
-                title: 'No timeline moments yet',
-                subtitle:
-                    'Add rituals, bookings, and reminder dates to build a roadmap.',
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _SectionHeader(title: 'Dates', action: 'Review'),
-                  const SizedBox(height: 12),
-                  ...sorted.map((item) => _DateMomentCard(item: item)),
-                ],
-              ),
+        const SizedBox(height: 12),
+        if (taskReminders.isEmpty)
+          const PremiumEmptyState(
+            icon: Icons.task_alt_rounded,
+            title: 'No wedding tasks yet',
+            subtitle:
+                'Add reminders for tasks, invites, and vendor follow-ups.',
+          )
+        else
+          ...taskReminders.map((item) => _WeddingTaskCard(item: item)),
       ],
     );
   }
 }
 
-class _ReminderSummaryCard extends StatelessWidget {
-  const _ReminderSummaryCard({
-    required this.total,
-    required this.completed,
-    required this.upcoming,
-    required this.progress,
-  });
-
-  final int total;
-  final int completed;
-  final int upcoming;
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PremiumSurface(
-      child: Row(
-        children: [
-          _ProgressRing(
-            progress: progress,
-            color: ThemeColors.weddingTeal,
-            size: 104,
-            stroke: 10,
-            center: Text(
-              '${(progress * 100).round()}%',
-              style: const TextStyle(fontWeight: FontWeight.w900),
-            ),
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$total dates',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                Text(
-                  'wedding roadmap',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _LegendRow(
-                  color: ThemeColors.weddingTeal,
-                  label: 'Upcoming',
-                  value: '$upcoming',
-                ),
-                const SizedBox(height: 8),
-                _LegendRow(
-                  color: ThemeColors.logoGold,
-                  label: 'Completed',
-                  value: '$completed',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReminderStatusStrip extends StatelessWidget {
-  const _ReminderStatusStrip({
-    required this.total,
-    required this.upcoming,
-    required this.completed,
-    required this.overdue,
-  });
-
-  final int total;
-  final int upcoming;
-  final int completed;
-  final int overdue;
-
-  @override
-  Widget build(BuildContext context) {
-    final metrics = [
-      _MiniExpenseMetric(
-        icon: Icons.event_note_rounded,
-        label: 'Dates',
-        value: '$total',
-        color: ThemeColors.weddingTeal,
-      ),
-      _MiniExpenseMetric(
-        icon: Icons.schedule_rounded,
-        label: 'Upcoming',
-        value: '$upcoming',
-        color: ThemeColors.logoGold,
-      ),
-      _MiniExpenseMetric(
-        icon: Icons.task_alt_rounded,
-        label: 'Done',
-        value: '$completed',
-        color: const Color(0xFF3A8F63),
-      ),
-      _MiniExpenseMetric(
-        icon: Icons.warning_rounded,
-        label: 'Overdue',
-        value: '$overdue',
-        color: const Color(0xFFE45D52),
-      ),
-    ];
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 820
-            ? 4
-            : constraints.maxWidth >= 520
-            ? 2
-            : 1;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: metrics.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: columns == 4
-                ? 2.8
-                : columns == 2
-                ? 2.35
-                : 3.6,
-          ),
-          itemBuilder: (context, index) => metrics[index],
-        );
-      },
-    );
-  }
-}
-
-class _DateMomentCard extends GetView<DashboardController> {
-  const _DateMomentCard({required this.item});
+class _PaymentReminderCard extends GetView<DashboardController> {
+  const _PaymentReminderCard({required this.item});
 
   final EventReminder item;
 
   @override
   Widget build(BuildContext context) {
-    final color = item.isDone
-        ? Theme.of(context).colorScheme.outline
-        : _premiumStatusColor(item.category);
-    final days = daysUntilDate(item.dueDate);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: _PremiumSurface(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         child: Row(
           children: [
-            SoftIcon(icon: _eventIcon(item.category), color: color),
-            const SizedBox(width: 12),
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: ThemeColors.logoGold.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.currency_rupee_rounded,
+                color: ThemeColors.logoGold,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title.isEmpty ? 'Untitled payment' : item.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Due on ${formatDate(item.dueDate)}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeddingTaskCard extends GetView<DashboardController> {
+  const _WeddingTaskCard({required this.item});
+
+  final EventReminder item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: _PremiumSurface(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        child: Row(
+          children: [
+            InkWell(
+              onTap: () => controller.toggleReminder(item),
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: item.isDone
+                        ? ThemeColors.primary
+                        : Theme.of(context).colorScheme.outline,
+                    width: 2,
+                  ),
+                  color: item.isDone ? ThemeColors.primary : Colors.transparent,
+                ),
+                child: item.isDone
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      )
+                    : null,
+              ),
+            ),
+            const SizedBox(width: 14),
             Expanded(
               child: InkWell(
                 onTap: () => showReminderDialog(context, reminder: item),
@@ -232,52 +159,30 @@ class _DateMomentCard extends GetView<DashboardController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title.isEmpty ? 'Untitled date' : item.title,
+                      item.title.isEmpty ? 'Untitled task' : item.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 17,
                         fontWeight: FontWeight.w900,
-                        height: 1.08,
                         decoration: item.isDone
                             ? TextDecoration.lineThrough
                             : null,
+                        color: item.isDone
+                            ? Theme.of(context).colorScheme.outline
+                            : ThemeColors.logoDeep,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        StatusPill(
-                          label: item.isDone ? 'Done' : _dateStatus(days),
-                        ),
-                        LabelPill(label: item.category),
-                        LabelPill(label: formatDate(item.dueDate)),
-                      ],
+                    Text(
+                      '${item.category} • ${_dateStatus(daysUntilDate(item.dueDate))}',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Checkbox(
-              value: item.isDone,
-              onChanged: (_) => controller.toggleReminder(item),
-            ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_horiz_rounded),
-              onSelected: (value) {
-                if (value == 'edit') {
-                  showReminderDialog(context, reminder: item);
-                } else if (value == 'delete') {
-                  controller.deleteReminder(item);
-                }
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Edit date')),
-                PopupMenuItem(value: 'delete', child: Text('Delete date')),
-              ],
             ),
           ],
         ),

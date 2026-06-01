@@ -1,13 +1,51 @@
 part of 'dashboard_view.dart';
 
-class PurchasesPanel extends GetView<DashboardController> {
+class PurchasesPanel extends StatefulWidget {
   const PurchasesPanel({super.key, required this.purchases});
 
   final List<PurchaseItem> purchases;
 
   @override
+  State<PurchasesPanel> createState() => _PurchasesPanelState();
+}
+
+class _PurchasesPanelState extends State<PurchasesPanel> {
+  final _searchController = TextEditingController();
+  String _selectedFilter = 'All';
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<PurchaseItem> get _filteredPurchases {
+    final query = _searchQuery.trim().toLowerCase();
+    return widget.purchases.where((item) {
+      if (_selectedFilter == 'Pending' && item.status != 'Pending') {
+        return false;
+      }
+      if (_selectedFilter == 'Purchased' && item.status != 'Purchased') {
+        return false;
+      }
+      if (query.isEmpty) return true;
+      final searchable = '${item.name} ${item.category} ${item.note}'
+          .toLowerCase();
+      return searchable.contains(query);
+    }).toList();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final sorted = [...purchases]
+    final sorted = [...widget.purchases]
+      ..sort((a, b) {
+        final aDone = a.status == 'Purchased';
+        final bDone = b.status == 'Purchased';
+        if (aDone != bDone) return aDone ? 1 : -1;
+        return a.name.compareTo(b.name);
+      });
+    final visible = _filteredPurchases
       ..sort((a, b) {
         final aDone = a.status == 'Purchased';
         final bDone = b.status == 'Purchased';
@@ -19,6 +57,7 @@ class PurchasesPanel extends GetView<DashboardController> {
     final planned = sorted.where((item) => item.status == 'Planned').length;
     final open = sorted.length - done;
     final progress = sorted.isEmpty ? 0.0 : done / sorted.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -45,12 +84,39 @@ class PurchasesPanel extends GetView<DashboardController> {
           purchased: done,
         ),
         const SizedBox(height: 18),
-        sorted.isEmpty
-            ? const PremiumEmptyState(
-                icon: Icons.shopping_bag_rounded,
-                title: 'No wishlist items yet',
-                subtitle:
-                    'Add outfits, gifts, jewelry, decor, and booking purchases.',
+        _PurchaseSearchField(
+          controller: _searchController,
+          onChanged: (value) => setState(() {
+            _searchQuery = value;
+          }),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: ['All', 'Pending', 'Purchased']
+              .map(
+                (filter) => Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: _PurchaseFilterChip(
+                    label: filter,
+                    selected: _selectedFilter == filter,
+                    onTap: () => setState(() {
+                      _selectedFilter = filter;
+                    }),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+        const SizedBox(height: 18),
+        visible.isEmpty
+            ? PremiumEmptyState(
+                icon: Icons.filter_alt_off_rounded,
+                title: _selectedFilter == 'All'
+                    ? 'No wishlist items yet'
+                    : 'No $_selectedFilter items',
+                subtitle: _selectedFilter == 'All'
+                    ? 'Add outfits, gifts, jewelry, decor, and booking purchases.'
+                    : 'Try another filter or search term to find more items.',
               )
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,10 +126,99 @@ class PurchasesPanel extends GetView<DashboardController> {
                     action: 'Review',
                   ),
                   const SizedBox(height: 12),
-                  ...sorted.map((item) => _PurchaseListCard(item: item)),
+                  ...visible.map((item) => _PurchaseListCard(item: item)),
                 ],
               ),
       ],
+    );
+  }
+}
+
+class _PurchaseSearchField extends StatelessWidget {
+  const _PurchaseSearchField({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        hintText: 'Search items...',
+        prefixIcon: const Icon(Icons.search_rounded),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.74),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: ThemeColors.logoGold.withValues(alpha: 0.22),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: ThemeColors.logoGold.withValues(alpha: 0.22),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PurchaseFilterChip extends StatelessWidget {
+  const _PurchaseFilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? ThemeColors.primary : const Color(0xFFFFEED7),
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: ThemeColors.primary.withValues(alpha: 0.20),
+                      blurRadius: 14,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? Colors.white : ThemeColors.logoDeep,
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -213,79 +368,75 @@ class _PurchaseListCard extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final color = _premiumStatusColor(item.status);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: _PremiumSurface(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SoftIcon(icon: Icons.shopping_bag_rounded, color: color),
-            const SizedBox(width: 12),
-            Expanded(
-              child: InkWell(
-                onTap: () => showPurchaseDialog(context, purchase: item),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.name.isEmpty ? 'Untitled item' : item.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        height: 1.08,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        StatusPill(label: item.status),
-                        LabelPill(label: item.category),
-                      ],
-                    ),
-                    if (item.note.trim().isNotEmpty) ...[
-                      const SizedBox(height: 10),
+      child: Material(
+        borderRadius: BorderRadius.circular(22),
+        color: Colors.white,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: () => showPurchaseDialog(context, purchase: item),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFE8E2D8)),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color.fromRGBO(0, 0, 0, 0.03),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: ThemeColors.logoGold.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(
+                    Icons.shopping_bag_rounded,
+                    color: ThemeColors.logoGold,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        item.note,
-                        maxLines: 2,
+                        item.name.isEmpty ? 'Untitled item' : item.name,
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '₹${formatMoney(item.amount)}',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.outline,
-                          fontWeight: FontWeight.w600,
-                          height: 1.25,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_horiz_rounded),
-              onSelected: (value) {
-                if (value == 'edit') {
-                  showPurchaseDialog(context, purchase: item);
-                } else if (value == 'convert') {
-                  showConvertPurchaseToExpenseDialog(context, purchase: item);
-                } else if (value == 'delete') {
-                  controller.deletePurchase(item);
-                }
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(value: 'edit', child: Text('Edit item')),
-                PopupMenuItem(
-                  value: 'convert',
-                  child: Text('Convert to expense'),
-                ),
-                PopupMenuItem(value: 'delete', child: Text('Delete item')),
+                const SizedBox(width: 12),
+                StatusPill(label: item.status),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -11,7 +11,7 @@ import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_d
 const navDestinations = [
   NavItem('Overview', Icons.dashboard_outlined, Icons.dashboard_rounded),
   NavItem('Expenses', Icons.payments_outlined, Icons.payments_rounded),
-  NavItem('Dates', Icons.event_note_outlined, Icons.event_note_rounded),
+  NavItem('Reminders', Icons.event_note_outlined, Icons.event_note_rounded),
   NavItem('Shopping', Icons.shopping_bag_outlined, Icons.shopping_bag_rounded),
   NavItem('Profile', Icons.person_outline, Icons.person_rounded),
 ];

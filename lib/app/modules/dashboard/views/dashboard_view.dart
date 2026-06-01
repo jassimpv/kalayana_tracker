@@ -25,7 +25,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 part 'dashboard_overview.dart';
-part 'dashboard_shared.dart';
+part '../widgets/dashboard_shared.dart';
 part 'dashboard_expenses.dart';
 part 'dashboard_reminders.dart';
 part 'dashboard_purchases.dart';
@@ -185,7 +185,10 @@ class _DashboardViewState extends State<DashboardView> {
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: Obx(
-            () => !_showDashboardChrome || controller.selectedIndex.value == 4
+            () =>
+                !_showDashboardChrome ||
+                    controller.selectedIndex.value == 2 ||
+                    controller.selectedIndex.value == 4
                 ? const SizedBox.shrink()
                 : Padding(
                     padding: const EdgeInsets.only(bottom: 84),
@@ -483,7 +486,7 @@ extension on _DashboardDestination {
   String get title => switch (this) {
     _DashboardDestination.overview => 'Dashboard',
     _DashboardDestination.expenses => 'Expenses',
-    _DashboardDestination.dates => 'Dates',
+    _DashboardDestination.dates => 'Reminders',
     _DashboardDestination.shopping => 'Shopping',
     _DashboardDestination.profile => 'Profile',
   };
