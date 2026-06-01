@@ -12,9 +12,14 @@ import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_details.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_history.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/app_bar.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_dialogs.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_widgets.dart';
-import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/navigation_bar.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/expense_widgets.dart';
+import 'package:kalayanaexpresstracker/app/routes/app_routes.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -25,8 +30,72 @@ part 'dashboard_reminders.dart';
 part 'dashboard_purchases.dart';
 part 'dashboard_profile.dart';
 
-class DashboardView extends GetView<DashboardController> {
+class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
+
+  @override
+  State<DashboardView> createState() => _DashboardViewState();
+}
+
+class _DashboardViewState extends State<DashboardView> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'dashboardNestedNavigator',
+  );
+  late final DashboardController controller = Get.find<DashboardController>();
+  bool _showDashboardChrome = true;
+  String _currentNestedRoute = AppRoutes.dashboardOverview;
+
+  bool get _showDashboardGreeting {
+    return !_isStandaloneDashboardRoute(_currentNestedRoute) &&
+        controller.selectedIndex.value == 0;
+  }
+
+  String get _appBarTitle {
+    if (_currentNestedRoute == AppRoutes.dashboardExpenseDetail) {
+      return 'Expense Detail';
+    }
+    if (_currentNestedRoute == AppRoutes.dashboardExpensePaymentHistory) {
+      return 'Payment History';
+    }
+    return _DashboardDestination.fromRoute(_currentNestedRoute).title;
+  }
+
+  bool _handleBackNavigation() {
+    final navigatorState = _navigatorKey.currentState;
+    if (navigatorState != null && navigatorState.canPop()) {
+      navigatorState.pop();
+      return false;
+    }
+    if (controller.selectedIndex.value != 0) {
+      _handleNavigation(0);
+      return false;
+    }
+    return true;
+  }
+
+  void _handleNavigation(int index) {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null || controller.selectedIndex.value == index) return;
+
+    final previousIndex = controller.selectedIndex.value;
+    navigator.pushReplacement(
+      _buildDashboardTabRoute(index, previousIndex, index),
+    );
+    controller.selectedIndex.value = index;
+  }
+
+  void _handleNestedRouteChanged(String? routeName) {
+    final nextRoute = routeName ?? AppRoutes.dashboardOverview;
+    final shouldShowChrome = !_isStandaloneDashboardRoute(nextRoute);
+    if (_showDashboardChrome == shouldShowChrome &&
+        _currentNestedRoute == nextRoute) {
+      return;
+    }
+    setState(() {
+      _showDashboardChrome = shouldShowChrome;
+      _currentNestedRoute = nextRoute;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,56 +110,104 @@ class DashboardView extends GetView<DashboardController> {
           message: controller.error.value!,
         );
       }
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth >= 1000;
-          return Scaffold(
-            extendBody: true,
-            backgroundColor: ThemeColors.scaffoldColor,
-            drawer: wide ? null : _MobileDrawer(controller: controller),
-            appBar: wide ? null : _DashboardAppBar(wide: wide),
-            body: DecoratedBox(
-              decoration: BoxDecoration(gradient: ThemeColors.surfaceGradient),
-              child: Row(
-                children: [
-                  if (wide) _SideRail(controller: controller),
-                  Expanded(child: _DashboardFrame(wide: wide)),
-                ],
-              ),
-            ),
-            bottomNavigationBar: wide
-                ? null
-                : _BottomNav(controller: controller),
-            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-            floatingActionButton: Obx(
-              () => controller.selectedIndex.value == 4
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: EdgeInsets.only(bottom: wide ? 0 : 86),
-                      child: FloatingActionButton.extended(
-                        onPressed: () => _handlePrimaryAction(
-                          context,
-                          controller.selectedIndex.value,
-                        ),
-                        backgroundColor: ThemeColors.terracotta,
-                        foregroundColor: Colors.white,
-                        elevation: 12,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        icon: const Icon(Icons.add_rounded, size: 26),
-                        label: Text(
-                          _primaryActionLabel(controller.selectedIndex.value),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0,
-                          ),
+      return PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          if (_handleBackNavigation()) {
+            Navigator.of(context).pop();
+          }
+        },
+        child: Scaffold(
+          extendBody: true,
+          backgroundColor: ThemeColors.primary,
+          body: Stack(
+            children: [
+              Positioned.fill(
+                child: NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverOverlapAbsorber(
+                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        context,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: CustomAppBar(
+                          title: _appBarTitle,
+                          showGreeting: _showDashboardGreeting,
+                          onBack:
+                              _isStandaloneDashboardRoute(_currentNestedRoute)
+                              ? () => Navigator.of(context).maybePop()
+                              : null,
                         ),
                       ),
                     ),
-            ),
-          );
-        },
+                  ],
+                  body: Navigator(
+                    key: _navigatorKey,
+                    initialRoute: _DashboardDestination.overview.route,
+                    onGenerateRoute: _DashboardDestination.onGenerateRoute,
+                    observers: [
+                      DashboardTabNavigatorObserver(
+                        onRouteChanged: _handleNestedRouteChanged,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: IgnorePointer(
+                  ignoring: !_showDashboardChrome,
+                  child: AnimatedSlide(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    offset: _showDashboardChrome
+                        ? Offset.zero
+                        : const Offset(0, 1.25),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 180),
+                      opacity: _showDashboardChrome ? 1 : 0,
+                      child: BottomNav(
+                        controller: controller,
+                        onItemClick: _handleNavigation,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+          floatingActionButton: Obx(
+            () => !_showDashboardChrome || controller.selectedIndex.value == 4
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsets.only(bottom: 84),
+                    child: FloatingActionButton.extended(
+                      onPressed: () => _handlePrimaryAction(
+                        context,
+                        controller.selectedIndex.value,
+                      ),
+                      backgroundColor: ThemeColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      icon: const Icon(Icons.add_rounded, size: 26),
+                      label: Text(
+                        _primaryActionLabel(controller.selectedIndex.value),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+        ),
       );
     });
   }
@@ -99,8 +216,10 @@ class DashboardView extends GetView<DashboardController> {
     switch (index) {
       case 2:
         showReminderDialog(context);
+        return;
       case 3:
         showPurchaseDialog(context);
+        return;
       default:
         showExpenseDialog(context);
     }
@@ -115,57 +234,199 @@ class DashboardView extends GetView<DashboardController> {
   }
 }
 
-class _DashboardFrame extends GetView<DashboardController> {
-  const _DashboardFrame({required this.wide});
+enum _DashboardDestination {
+  overview(AppRoutes.dashboardOverview, 0),
+  expenses(AppRoutes.dashboardExpenses, 1),
+  dates(AppRoutes.dashboardDates, 2),
+  shopping(AppRoutes.dashboardShopping, 3),
+  profile(AppRoutes.dashboardProfile, 4);
 
-  final bool wide;
+  const _DashboardDestination(this.route, this.tabIndex);
+
+  final String route;
+  final int tabIndex;
+
+  Widget get widget => _DashboardTabPage(index: tabIndex);
+
+  static _DashboardDestination fromIndex(int index) =>
+      _DashboardDestination.values.firstWhere(
+        (destination) => destination.tabIndex == index,
+        orElse: () => _DashboardDestination.overview,
+      );
+
+  static _DashboardDestination fromRoute(String? route) =>
+      _DashboardDestination.values.firstWhere(
+        (destination) => destination.route == route,
+        orElse: () => _DashboardDestination.overview,
+      );
+
+  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    final routeName = settings.name;
+    if (routeName == AppRoutes.dashboardExpenseDetail) {
+      final expenseId = settings.arguments as String?;
+      return buildNestedDashboardRoute(
+        settings: settings,
+        child: ExpenseDetailPage(expenseId: expenseId),
+      );
+    }
+    if (routeName == AppRoutes.dashboardExpensePaymentHistory) {
+      final expenseId = settings.arguments as String?;
+      return buildNestedDashboardRoute(
+        settings: settings,
+        child: ExpensePaymentHistoryPage(expenseId: expenseId),
+      );
+    }
+
+    final destination = _DashboardDestination.fromRoute(routeName);
+    return buildNestedDashboardRoute(
+      settings: RouteSettings(name: destination.route),
+      child: destination.widget,
+    );
+  }
+}
+
+Route<dynamic> buildNestedDashboardRoute({
+  required RouteSettings settings,
+  required Widget child,
+  Duration transitionDuration = Duration.zero,
+  Offset startOffset = Offset.zero,
+}) {
+  return PageRouteBuilder(
+    settings: settings,
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        SizedBox.expand(child: child),
+    transitionDuration: transitionDuration,
+    reverseTransitionDuration: const Duration(milliseconds: 240),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      if (transitionDuration == Duration.zero) return child;
+      final curve = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return FadeTransition(
+        opacity: Tween<double>(begin: 0, end: 1).animate(curve),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: startOffset,
+            end: Offset.zero,
+          ).animate(curve),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
+Route<dynamic> _buildDashboardTabRoute(int index, int fromIndex, int toIndex) {
+  final destination = _DashboardDestination.fromIndex(index);
+  final slideFromRight = toIndex > fromIndex;
+  final startOffset = Offset(slideFromRight ? 0.12 : -0.12, 0);
+  return buildNestedDashboardRoute(
+    settings: RouteSettings(name: destination.route),
+    child: destination.widget,
+    transitionDuration: const Duration(milliseconds: 360),
+    startOffset: startOffset,
+  );
+}
+
+class DashboardTabNavigatorObserver extends NavigatorObserver {
+  DashboardTabNavigatorObserver({required this.onRouteChanged});
+
+  final ValueChanged<String?> onRouteChanged;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    onRouteChanged(route.settings.name);
+    _syncSelectedIndex(route.settings.name);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    onRouteChanged(newRoute?.settings.name);
+    _syncSelectedIndex(newRoute?.settings.name);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    onRouteChanged(previousRoute?.settings.name);
+    _syncSelectedIndex(previousRoute?.settings.name);
+  }
+
+  void _syncSelectedIndex(String? routeName) {
+    final routeIndex = _matchedDashboardRouteNameToIndex(routeName);
+    if (routeIndex == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!Get.isRegistered<DashboardController>()) return;
+      final controller = Get.find<DashboardController>();
+      if (controller.selectedIndex.value != routeIndex) {
+        controller.selectedIndex.value = routeIndex;
+      }
+    });
+  }
+}
+
+bool _isStandaloneDashboardRoute(String? routeName) {
+  return routeName == AppRoutes.dashboardExpenseDetail ||
+      routeName == AppRoutes.dashboardExpensePaymentHistory;
+}
+
+int? _matchedDashboardRouteNameToIndex(String? routeName) {
+  if (routeName == null) return null;
+  final routeIndex = _DashboardDestination.values.indexWhere(
+    (destination) => destination.route == routeName,
+  );
+  return routeIndex >= 0 ? routeIndex : null;
+}
+
+class _DashboardTabPage extends GetView<DashboardController> {
+  const _DashboardTabPage({required this.index});
+
+  final int index;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                wide ? 28 : 16,
-                wide ? 18 : 16,
-                wide ? 28 : 16,
-                wide ? 104 : 168,
-              ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1180),
-                  child: Obx(
-                    () => AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 260),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, animation) {
-                        final offset = Tween<Offset>(
-                          begin: const Offset(0, 0.03),
-                          end: Offset.zero,
-                        ).animate(animation);
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: offset,
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: _page(
-                        controller.selectedIndex.value,
-                        controller.data.value,
+    return Obx(
+      () => SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: ThemeColors.scaffoldColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                ),
+                child: CustomScrollView(
+                  primary: true,
+                  slivers: [
+                    SliverOverlapInjector(
+                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                        context,
                       ),
                     ),
-                  ),
+                    SliverPadding(
+                      padding: EdgeInsets.only(
+                        top: 8.0,
+                        bottom: MediaQuery.paddingOf(context).bottom + 60,
+                        left: 16,
+                        right: 16,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: _page(index, controller.data.value),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -190,352 +451,14 @@ class _DashboardFrame extends GetView<DashboardController> {
   }
 }
 
-class _DashboardAppBar extends GetView<DashboardController>
-    implements PreferredSizeWidget {
-  _DashboardAppBar({required this.wide});
-
-  final bool wide;
-  bool imageError = false;
-
-  @override
-  Size get preferredSize =>
-      Size.fromHeight(MediaQuery.paddingOf(Get.context!).top + 20);
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            ThemeColors.primary,
-            ThemeColors.primary.withValues(alpha: 0.82),
-          ],
-        ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColors.primary.withValues(alpha: 0.25),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 60, 16, 10),
-        child: Row(
-          children: [
-            const AppLogo(size: 48, padding: 5),
-
-            const SizedBox(width: 14),
-
-            Expanded(
-              child: Obx(() {
-                final profile = controller.profile;
-                final couple = _coupleName(profile);
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      couple ?? 'Kalyana Planner',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.4,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          size: 13,
-                          color: Colors.white.withValues(alpha: 0.78),
-                        ),
-                        const SizedBox(width: 5),
-                        Text(
-                          'Today, ${formatDate(DateTime.now())}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.78),
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              }),
-            ),
-
-            const SizedBox(width: 12),
-
-            CircleAvatar(
-              radius: 23,
-              backgroundColor: Colors.white.withValues(alpha: 0.20),
-
-              backgroundImage:
-                  (user?.photoURL != null &&
-                      user!.photoURL!.isNotEmpty &&
-                      !imageError)
-                  ? NetworkImage(user.photoURL!)
-                  : null,
-
-              onBackgroundImageError:
-                  user?.photoURL == null || user!.photoURL!.isEmpty
-                  ? null
-                  : (_, _) {
-                      imageError = true;
-                    },
-
-              child:
-                  (user?.photoURL == null ||
-                      user!.photoURL!.isEmpty ||
-                      imageError)
-                  ? Text(
-                      "${user?.displayName?[0] ?? ''}${user?.displayName?.split(' ').last[0] ?? ''}"
-                          .toUpperCase(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    )
-                  : null,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SideRail extends StatelessWidget {
-  const _SideRail({required this.controller});
-
-  final DashboardController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 96,
-      decoration: BoxDecoration(
-        color: ThemeColors.whiteColor.withValues(alpha: 0.92),
-        border: Border(
-          right: BorderSide(color: scheme.primary.withValues(alpha: 0.08)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: ThemeColors.primary.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(10, 0),
-          ),
-        ],
-      ),
-      child: Obx(
-        () => NavigationRail(
-          minWidth: 96,
-          selectedIndex: controller.selectedIndex.value,
-          onDestinationSelected: (index) =>
-              controller.selectedIndex.value = index,
-          labelType: NavigationRailLabelType.all,
-          backgroundColor: Colors.transparent,
-          leading: Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 26),
-            child: const AppLogo(size: 52, padding: 5),
-          ),
-          destinations: navDestinations
-              .map(
-                (item) => NavigationRailDestination(
-                  icon: Icon(item.icon),
-                  selectedIcon: Icon(item.selectedIcon),
-                  label: Text(item.label),
-                ),
-              )
-              .toList(),
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomNav extends StatelessWidget {
-  const _BottomNav({required this.controller});
-
-  final DashboardController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(18, 0, 18, 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            height: 66,
-            padding: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.84),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: ThemeColors.terracotta.withValues(alpha: 0.14),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: ThemeColors.logoDeep.withValues(alpha: 0.12),
-                  blurRadius: 30,
-                  offset: const Offset(0, 14),
-                ),
-                BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.85),
-                  blurRadius: 12,
-                  offset: const Offset(0, -4),
-                ),
-              ],
-            ),
-            child: Obx(
-              () => Row(
-                children: navDestinations.asMap().entries.map((entry) {
-                  final selected = controller.selectedIndex.value == entry.key;
-                  final item = entry.value;
-                  return Expanded(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(24),
-                      onTap: () => controller.selectedIndex.value = entry.key,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 260),
-                        curve: Curves.easeOutCubic,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          gradient: selected
-                              ? const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFF0F8B7D),
-                                    Color(0xFF064743),
-                                  ],
-                                )
-                              : null,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              selected ? item.selectedIcon : item.icon,
-                              size: 21,
-                              color: selected
-                                  ? Colors.white
-                                  : ThemeColors.terracotta,
-                            ),
-                            const SizedBox(height: 2),
-                            AnimatedDefaultTextStyle(
-                              duration: const Duration(milliseconds: 220),
-                              style: TextStyle(
-                                color: selected
-                                    ? Colors.white
-                                    : ThemeColors.terracotta,
-                                fontSize: 10.5,
-                                fontWeight: selected
-                                    ? FontWeight.w900
-                                    : FontWeight.w700,
-                              ),
-                              child: Text(
-                                item.label,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MobileDrawer extends StatelessWidget {
-  const _MobileDrawer({required this.controller});
-
-  final DashboardController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    return Drawer(
-      child: SafeArea(
-        child: Column(
-          children: [
-            DrawerHeader(
-              margin: EdgeInsets.zero,
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
-                    backgroundImage: user?.photoURL == null
-                        ? null
-                        : NetworkImage(user!.photoURL!),
-                    child: user?.photoURL == null
-                        ? const Icon(Icons.person_outline)
-                        : null,
-                  ),
-                  title: Text(
-                    user?.displayName ?? 'Wedding planner',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    user?.email ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ),
-            ),
-            ...navDestinations.asMap().entries.map(
-              (entry) => Obx(
-                () => ListTile(
-                  leading: Icon(entry.value.icon),
-                  title: Text(entry.value.label),
-                  selected: controller.selectedIndex.value == entry.key,
-                  onTap: () {
-                    controller.selectedIndex.value = entry.key;
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
-            ),
-            const Spacer(),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.logout_rounded),
-              title: const Text('Logout'),
-              onTap: controller.logout,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+extension on _DashboardDestination {
+  String get title => switch (this) {
+    _DashboardDestination.overview => 'Dashboard',
+    _DashboardDestination.expenses => 'Expenses',
+    _DashboardDestination.dates => 'Dates',
+    _DashboardDestination.shopping => 'Shopping',
+    _DashboardDestination.profile => 'Profile',
+  };
 }
 
 class _StatusScaffold extends StatelessWidget {

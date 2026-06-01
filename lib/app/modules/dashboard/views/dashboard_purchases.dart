@@ -46,7 +46,7 @@ class PurchasesPanel extends GetView<DashboardController> {
         ),
         const SizedBox(height: 18),
         sorted.isEmpty
-            ? const _PremiumEmptyState(
+            ? const PremiumEmptyState(
                 icon: Icons.shopping_bag_rounded,
                 title: 'No wishlist items yet',
                 subtitle:
@@ -88,7 +88,7 @@ class _PurchaseSummaryCard extends StatelessWidget {
         children: [
           _ProgressRing(
             progress: progress,
-            color: const Color(0xFF0F8B7D),
+            color: ThemeColors.weddingTeal,
             size: 104,
             stroke: 10,
             center: Text(
@@ -118,13 +118,13 @@ class _PurchaseSummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 _LegendRow(
-                  color: const Color(0xFF0F8B7D),
+                  color: ThemeColors.weddingTeal,
                   label: 'Purchased',
                   value: '$purchased',
                 ),
                 const SizedBox(height: 8),
                 _LegendRow(
-                  color: const Color(0xFFD4A373),
+                  color: ThemeColors.logoGold,
                   label: 'Still open',
                   value: '$open of $itemCount',
                 ),
@@ -157,13 +157,13 @@ class _PurchaseStatusStrip extends StatelessWidget {
         icon: Icons.shopping_bag_rounded,
         label: 'Items',
         value: '$itemCount',
-        color: const Color(0xFF0F8B7D),
+        color: ThemeColors.weddingTeal,
       ),
       _MiniExpenseMetric(
         icon: Icons.pending_actions_rounded,
         label: 'Planned',
         value: '$planned',
-        color: const Color(0xFFD4A373),
+        color: ThemeColors.logoGold,
       ),
       _MiniExpenseMetric(
         icon: Icons.local_shipping_rounded,
@@ -221,7 +221,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SoftIcon(icon: Icons.shopping_bag_rounded, color: color),
+            SoftIcon(icon: Icons.shopping_bag_rounded, color: color),
             const SizedBox(width: 12),
             Expanded(
               child: InkWell(

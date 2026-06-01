@@ -115,6 +115,30 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> resetPassword() async {
+    final emailValue = email.text.trim();
+    if (emailValue.isEmpty) {
+      _showError('Enter your email address first.');
+      return;
+    }
+    loading.value = true;
+    try {
+      await _auth.sendPasswordResetEmail(email: emailValue);
+      Get.snackbar(
+        'Password reset',
+        'A reset link has been sent to $emailValue.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    } on FirebaseAuthException catch (error) {
+      _showError(error.message ?? error.code);
+    } catch (error) {
+      _showError(error.toString());
+    } finally {
+      loading.value = false;
+    }
+  }
+
   Future<void> pickWeddingDate() async {
     final context = Get.context;
     if (context == null) return;

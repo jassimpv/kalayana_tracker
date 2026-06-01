@@ -5,14 +5,9 @@ import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboa
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/dashboard_view.dart';
 import 'package:kalayanaexpresstracker/app/modules/legal/legal_views.dart';
 import 'package:kalayanaexpresstracker/app/modules/splash/splash_view.dart';
+import 'app_routes.dart';
 
-class AppRoutes {
-  static const splash = '/splash';
-  static const auth = '/auth';
-  static const dashboard = '/dashboard';
-  static const privacyPolicy = '/privacy-policy';
-  static const deleteAccount = '/delete-account';
-}
+export 'app_routes.dart';
 
 class AppPages {
   static final pages = [

@@ -235,7 +235,7 @@ class _HeroSkeleton extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF0F8B7D), Color(0xFF155F58), Color(0xFF241D18)],
+        colors: [Color(0xFF7A1230), Color(0xFF9D1740), Color(0xFF3A1117)],
       ),
       borderColor: Colors.white24,
       child: LayoutBuilder(
@@ -606,7 +606,7 @@ class _PremiumSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
         child: Container(
@@ -623,20 +623,20 @@ class _PremiumSurface extends StatelessWidget {
                     ThemeColors.inputBackground.withValues(alpha: 0.74),
                   ],
                 ),
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: borderColor ?? scheme.primary.withValues(alpha: 0.10),
             ),
             boxShadow: [
               BoxShadow(
-                color: ThemeColors.logoDeep.withValues(alpha: 0.08),
-                blurRadius: 30,
-                offset: const Offset(0, 16),
+                color: ThemeColors.logoDeep.withValues(alpha: 0.07),
+                blurRadius: 24,
+                offset: const Offset(0, 14),
               ),
               BoxShadow(
-                color: Colors.white.withValues(alpha: 0.72),
-                blurRadius: 14,
-                offset: const Offset(-8, -8),
+                color: Colors.white.withValues(alpha: 0.62),
+                blurRadius: 10,
+                offset: const Offset(-6, -6),
               ),
             ],
           ),
@@ -713,32 +713,10 @@ class _CoupleAvatar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Container(
-          width: 58,
-          height: 58,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [Color(0xFFFFF7EA), Color(0xFFD4A373)],
-            ),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
-            image: user?.photoURL == null
-                ? null
-                : DecorationImage(
-                    image: NetworkImage(user!.photoURL!),
-                    fit: BoxFit.cover,
-                  ),
-          ),
-          alignment: Alignment.center,
-          child: user?.photoURL == null
-              ? Text(
-                  _initials(name ?? 'KW'),
-                  style: const TextStyle(
-                    color: Color(0xFF155F58),
-                    fontWeight: FontWeight.w900,
-                  ),
-                )
-              : null,
+        _ResilientAvatar(
+          imageUrl: user?.photoURL,
+          initials: _initials(name ?? user?.displayName ?? 'KW'),
+          size: 58,
         ),
         Positioned(
           right: -2,
@@ -749,12 +727,91 @@ class _CoupleAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFD4A373)),
+              border: Border.all(color: ThemeColors.logoGold),
             ),
             child: const AppLogo(size: 18, padding: 1, showBackground: false),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ResilientAvatar extends StatefulWidget {
+  const _ResilientAvatar({
+    required this.initials,
+    required this.size,
+    this.imageUrl,
+  });
+
+  final String initials;
+  final double size;
+  final String? imageUrl;
+
+  @override
+  State<_ResilientAvatar> createState() => _ResilientAvatarState();
+}
+
+class _ResilientAvatarState extends State<_ResilientAvatar> {
+  bool _imageFailed = false;
+
+  @override
+  void didUpdateWidget(covariant _ResilientAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _imageFailed = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = widget.imageUrl;
+    final showImage = imageUrl != null && imageUrl.isNotEmpty && !_imageFailed;
+    return Container(
+      width: widget.size,
+      height: widget.size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFF3DC), Color(0xFFE8B75C)],
+        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.55)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      alignment: Alignment.center,
+      child: showImage
+          ? Image.network(
+              imageUrl,
+              width: widget.size,
+              height: widget.size,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                if (!_imageFailed) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) setState(() => _imageFailed = true);
+                  });
+                }
+                return _AvatarInitials(initials: widget.initials);
+              },
+            )
+          : _AvatarInitials(initials: widget.initials),
+    );
+  }
+}
+
+class _AvatarInitials extends StatelessWidget {
+  const _AvatarInitials({required this.initials});
+
+  final String initials;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      initials,
+      style: const TextStyle(
+        color: ThemeColors.logoDeep,
+        fontWeight: FontWeight.w900,
+      ),
     );
   }
 }
@@ -827,7 +884,7 @@ class _RingPainter extends CustomPainter {
       ..shader = SweepGradient(
         startAngle: -math.pi / 2,
         endAngle: math.pi * 1.5,
-        colors: [color, const Color(0xFFD4A373), color],
+        colors: [color, ThemeColors.logoGold, color],
       ).createShader(rect);
     canvas.drawArc(rect.deflate(stroke / 2), 0, math.pi * 2, false, base);
     canvas.drawArc(
@@ -917,81 +974,6 @@ class _LegendRow extends StatelessWidget {
         ),
         Text(value, style: const TextStyle(fontWeight: FontWeight.w900)),
       ],
-    );
-  }
-}
-
-class _SoftIcon extends StatelessWidget {
-  const _SoftIcon({required this.icon, required this.color});
-
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Icon(icon, color: color, size: 21),
-    );
-  }
-}
-
-class _PremiumEmptyState extends StatelessWidget {
-  const _PremiumEmptyState({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.66),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Theme.of(
-            context,
-          ).colorScheme.outlineVariant.withValues(alpha: 0.55),
-        ),
-      ),
-      child: Row(
-        children: [
-          _SoftIcon(icon: icon, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

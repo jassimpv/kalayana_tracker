@@ -335,59 +335,112 @@ class _ExpenseCard extends GetView<DashboardController> {
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                    item.name,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          LabelPill(label: item.category),
+                          StatusPill(label: item.status),
+                          if (item.paidBy.isNotEmpty)
+                            LabelPill(label: 'Paid by ${item.paidBy}'),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => showExpenseDialog(context, item: item),
-                  icon: const Icon(Icons.edit_outlined),
-                ),
-                IconButton(
-                  onPressed: () => controller.deleteExpense(item),
-                  icon: const Icon(Icons.delete_outline),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      moneyOrDash(item.totalAmount),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Due ${moneyOrDash(item.displayPending)}',
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                LabelPill(label: 'Total ${moneyOrDash(item.totalAmount)}'),
-                LabelPill(label: 'Paid ${moneyOrDash(item.paidAmount)}'),
-                LabelPill(label: 'Pending ${moneyOrDash(item.displayPending)}'),
-                LabelPill(label: item.category),
-                StatusPill(label: item.status),
-              ],
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Row(
               children: [
-                TextButton.icon(
-                  onPressed: item.pendingForSummary == 0
-                      ? null
-                      : () => showAddExpensePaymentDialog(context, item: item),
-                  icon: const Icon(Icons.add_card_outlined),
-                  label: const Text('Add payment'),
-                ),
-                if (item.repaymentPending > 0)
-                  TextButton.icon(
-                    onPressed: () => controller.markRepaymentCompleted(item),
-                    icon: const Icon(Icons.task_alt_rounded),
-                    label: const Text('Repayment done'),
+                Expanded(
+                  child: _ExpenseMetric(
+                    label: 'Paid',
+                    value: moneyOrDash(item.paidAmount),
                   ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _ExpenseMetric(
+                    label: 'Pending',
+                    value: moneyOrDash(item.displayPending),
+                  ),
+                ),
               ],
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ExpenseMetric extends StatelessWidget {
+  const _ExpenseMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(
+                context,
+              ).textTheme.bodySmall?.color?.withAlpha((0.7 * 255).round()),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+        ],
       ),
     );
   }

@@ -24,7 +24,7 @@ class ProfilePanel extends GetView<DashboardController> {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF0F8B7D), Color(0xFFF1E3D2)],
+              colors: [ThemeColors.weddingTeal, Color(0xFFF1E3D2)],
             ),
             child: Stack(
               children: [
@@ -77,7 +77,7 @@ class ProfilePanel extends GetView<DashboardController> {
                             icon: const Icon(Icons.edit_rounded),
                             style: IconButton.styleFrom(
                               backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF0F8B7D),
+                              foregroundColor: ThemeColors.weddingTeal,
                             ),
                           ),
                         ],
@@ -152,7 +152,7 @@ class ProfilePanel extends GetView<DashboardController> {
               children: [
                 _ProgressRing(
                   progress: progress.clamp(0.0, 1.0),
-                  color: const Color(0xFFD4A373),
+                  color: ThemeColors.logoGold,
                   size: 86,
                   center: Text(
                     '${(progress * 100).round()}%',
@@ -216,7 +216,7 @@ class _ScreenHero extends StatelessWidget {
           final wide = constraints.maxWidth >= 720;
           final titleBlock = Row(
             children: [
-              _SoftIcon(icon: icon, color: scheme.primary),
+              SoftIcon(icon: icon, color: scheme.primary),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -303,7 +303,7 @@ class _SettingsRow extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 14),
         child: Row(
           children: [
-            _SoftIcon(icon: icon, color: Theme.of(context).colorScheme.primary),
+            SoftIcon(icon: icon, color: Theme.of(context).colorScheme.primary),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -327,7 +327,7 @@ class _SettingsRow extends StatelessWidget {
               onTap == null
                   ? Icons.chevron_right_rounded
                   : Icons.open_in_new_rounded,
-              color: const Color(0xFF0F8B7D),
+              color: ThemeColors.weddingTeal,
               size: 20,
             ),
           ],

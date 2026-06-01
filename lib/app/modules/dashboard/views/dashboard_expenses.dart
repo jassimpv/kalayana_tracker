@@ -7,36 +7,6 @@ class ExpensesPanel extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final total = expenses.fold<double>(
-      0,
-      (sum, item) => sum + item.knownTotal,
-    );
-    final paid = expenses.fold<double>(
-      0,
-      (sum, item) => sum + item.paidForSummary,
-    );
-    final pending = expenses.fold<double>(
-      0,
-      (sum, item) => sum + item.pendingForSummary,
-    );
-    final progress = total == 0 ? 0.0 : (paid / total).clamp(0.0, 1.0);
-    final overdue = expenses
-        .where((item) => item.status == expenseStatusOverdue)
-        .length;
-    final repaymentTotal = expenses.fold<double>(
-      0,
-      (sum, item) => sum + item.repaymentPending,
-    );
-    final splitPaymentCount = expenses
-        .where((item) => item.hasSplitPayments || item.hasPartialPayment)
-        .length;
-    final duePayments =
-        expenses.where((item) => item.pendingForSummary > 0).toList()
-          ..sort((a, b) {
-            final aDate = a.dueDate ?? DateTime(9999);
-            final bDate = b.dueDate ?? DateTime(9999);
-            return aDate.compareTo(bDate);
-          });
     final sorted = [...expenses]
       ..sort((a, b) {
         if (a.repaymentPending > 0 && b.repaymentPending == 0) return -1;
@@ -46,60 +16,363 @@ class ExpensesPanel extends GetView<DashboardController> {
         }
         return b.updatedDate.compareTo(a.updatedDate);
       });
+    return _ExpenseListMockup(
+      expenses: sorted,
+      onAdd: () => showExpenseDialog(context),
+    );
+  }
+}
+
+class _ExpenseListMockup extends StatefulWidget {
+  const _ExpenseListMockup({required this.expenses, required this.onAdd});
+
+  final List<ExpenseItem> expenses;
+  final VoidCallback onAdd;
+
+  @override
+  State<_ExpenseListMockup> createState() => _ExpenseListMockupState();
+}
+
+class _ExpenseListMockupState extends State<_ExpenseListMockup> {
+  String _selectedFilter = 'All';
+
+  @override
+  Widget build(BuildContext context) {
+    final filters = [
+      const _ExpenseFilter('All'),
+      const _ExpenseFilter('Paid'),
+      const _ExpenseFilter('Pending'),
+      const _ExpenseFilter('Partial'),
+    ];
+    final filteredExpenses = widget.expenses
+        .where(
+          (item) => _selectedFilter == 'All'
+              ? true
+              : expenseShortStatus(item) == _selectedFilter,
+        )
+        .toList();
+
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _ScreenHero(
-          eyebrow: 'Bills & repayments',
-          title: 'Expense tracker',
-          subtitle:
-              '${expenses.length} bills | ₹${formatMoney(pending)} pending | ₹${formatMoney(repaymentTotal)} to repay',
-          icon: Icons.payments_rounded,
-          actionLabel: 'Add expense',
-          onAction: () => showExpenseDialog(context),
+        const _ExpenseSearchField(),
+        const SizedBox(height: 14),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 8,
+            children: filters
+                .map(
+                  (filter) => _ExpenseFilterChip(
+                    filter: filter,
+                    selected: filter.label == _selectedFilter,
+                    onTap: () => setState(() {
+                      _selectedFilter = filter.label;
+                    }),
+                  ),
+                )
+                .toList(),
+          ),
         ),
         const SizedBox(height: 18),
-        _ExpenseSummaryCard(
-          total: total,
-          paid: paid,
-          pending: pending,
-          repayment: repaymentTotal,
-          progress: progress,
-        ),
-        const SizedBox(height: 18),
-        _ExpenseStatusStrip(
-          billCount: expenses.length,
-          overdueCount: overdue,
-          pending: pending,
-          splitPaymentCount: splitPaymentCount,
-        ),
-        const SizedBox(height: 18),
-        if (duePayments.isNotEmpty) ...[
-          _PendingPaymentReminderCard(expenses: duePayments),
-          const SizedBox(height: 18),
-        ],
-        _ExpenseExportCard(expenses: sorted),
-        const SizedBox(height: 18),
-        expenses.isEmpty
-            ? const _PremiumEmptyState(
-                icon: Icons.payments_rounded,
-                title: 'No expenses added yet',
-                subtitle:
-                    'Create a vendor card and your payment command center appears here.',
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _SectionHeader(title: 'Bills', action: 'Review'),
-                  const SizedBox(height: 12),
-                  ...sorted.map((item) => _ExpenseBillCard(item: item)),
-                ],
-              ),
+        if (widget.expenses.isEmpty)
+          const PremiumEmptyState(
+            icon: Icons.payments_rounded,
+            title: 'No expenses added yet',
+            subtitle: 'Create your first wedding expense to start tracking.',
+          )
+        else if (filteredExpenses.isEmpty)
+          PremiumEmptyState(
+            icon: Icons.filter_alt_off_rounded,
+            title: 'No $_selectedFilter expenses',
+            subtitle: 'Try another status filter to view more expenses.',
+          )
+        else
+          ...filteredExpenses.map((item) => _ExpenseListTileCard(item: item)),
       ],
     );
   }
 }
 
+class _ExpenseSearchField extends StatelessWidget {
+  const _ExpenseSearchField();
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      enabled: false,
+      decoration: InputDecoration(
+        hintText: 'Search expenses...',
+        prefixIcon: const Icon(Icons.search_rounded),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.74),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: ThemeColors.logoGold.withValues(alpha: 0.22),
+          ),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: ThemeColors.logoGold.withValues(alpha: 0.22),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpenseFilter {
+  const _ExpenseFilter(this.label);
+
+  final String label;
+}
+
+class _ExpenseFilterChip extends StatelessWidget {
+  const _ExpenseFilterChip({
+    required this.filter,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _ExpenseFilter filter;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 56),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? ThemeColors.primary : const Color(0xFFFFEED7),
+            borderRadius: BorderRadius.circular(999),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: ThemeColors.primary.withValues(alpha: 0.20),
+                      blurRadius: 14,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Text(
+            filter.label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: selected ? Colors.white : ThemeColors.logoDeep,
+              fontWeight: FontWeight.w900,
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpenseListTileCard extends GetView<DashboardController> {
+  const _ExpenseListTileCard({required this.item});
+
+  final ExpenseItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final status = expenseShortStatus(item);
+    final statusColor = expenseStatusColor(item);
+    final payer = item.paidBy.trim().isEmpty ? 'Self' : item.paidBy.trim();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Material(
+        color: Colors.white.withValues(alpha: 224),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => Navigator.of(context).push(
+            buildNestedDashboardRoute(
+              settings: RouteSettings(
+                name: AppRoutes.dashboardExpenseDetail,
+                arguments: item.id,
+              ),
+              child: ExpenseDetailPage(expenseId: item.id),
+              transitionDuration: const Duration(milliseconds: 320),
+              startOffset: const Offset(0.08, 0),
+            ),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 250),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: ThemeColors.logoGold.withValues(alpha: 46),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.name.isEmpty ? 'Untitled expense' : item.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: ThemeColors.logoDeep,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              _ExpenseTag(label: status, color: statusColor),
+                              _ExpenseTag(label: item.category),
+                              _ExpenseTag(label: payer),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          moneyOrDash(item.totalAmount),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          item.dueDate == null
+                              ? 'No due date'
+                              : formatDate(item.dueDate!),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.outline,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _ExpenseListAmount(
+                        label: 'Paid',
+                        value: moneyOrDash(item.paidForSummary),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _ExpenseListAmount(
+                        label: 'Pending',
+                        value: moneyOrDash(item.pendingForSummary),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpenseTag extends StatelessWidget {
+  const _ExpenseTag({required this.label, this.color});
+
+  final String label;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: (color ?? ThemeColors.logoDeep.withValues(alpha: 20)).withValues(
+          alpha: 242,
+        ),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpenseListAmount extends StatelessWidget {
+  const _ExpenseListAmount({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.outline,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 5),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: ThemeColors.logoDeep,
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ignore: unused_element
 class _ExpenseExportCard extends StatelessWidget {
   const _ExpenseExportCard({required this.expenses});
 
@@ -114,7 +387,7 @@ class _ExpenseExportCard extends StatelessWidget {
           final compact = constraints.maxWidth < 560;
           final details = Row(
             children: [
-              _SoftIcon(
+              SoftIcon(
                 icon: Icons.ios_share_rounded,
                 color: Theme.of(context).colorScheme.primary,
               ),
@@ -466,6 +739,7 @@ String _csvCell(String value) {
   return '"$escaped"';
 }
 
+// ignore: unused_element
 class _ExpenseSummaryCard extends StatelessWidget {
   const _ExpenseSummaryCard({
     required this.total,
@@ -518,13 +792,13 @@ class _ExpenseSummaryCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               _LegendRow(
-                color: const Color(0xFF0F8B7D),
+                color: ThemeColors.weddingTeal,
                 label: 'Paid',
                 value: '₹${formatMoney(paid)}',
               ),
               const SizedBox(height: 8),
               _LegendRow(
-                color: const Color(0xFFD4A373),
+                color: ThemeColors.logoGold,
                 label: 'Pending',
                 value: '₹${formatMoney(pending)}',
               ),
@@ -561,6 +835,7 @@ class _ExpenseSummaryCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _ExpenseStatusStrip extends StatelessWidget {
   const _ExpenseStatusStrip({
     required this.billCount,
@@ -581,13 +856,13 @@ class _ExpenseStatusStrip extends StatelessWidget {
         icon: Icons.receipt_long_rounded,
         label: 'Bills',
         value: '$billCount',
-        color: const Color(0xFF0F8B7D),
+        color: ThemeColors.weddingTeal,
       ),
       _MiniExpenseMetric(
         icon: Icons.schedule_rounded,
         label: 'Pending',
         value: '₹${formatMoney(pending)}',
-        color: const Color(0xFFD4A373),
+        color: ThemeColors.logoGold,
       ),
       _MiniExpenseMetric(
         icon: Icons.call_split_rounded,
@@ -630,6 +905,7 @@ class _ExpenseStatusStrip extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _PendingPaymentReminderCard extends StatelessWidget {
   const _PendingPaymentReminderCard({required this.expenses});
 
@@ -645,9 +921,9 @@ class _PendingPaymentReminderCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              _SoftIcon(
+              SoftIcon(
                 icon: Icons.notification_important_rounded,
-                color: const Color(0xFFD4A373),
+                color: ThemeColors.logoGold,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -697,7 +973,7 @@ class _PendingPaymentRow extends StatelessWidget {
         : 'Due in $days days';
     final color = days != null && days < 0
         ? const Color(0xFFE45D52)
-        : const Color(0xFFD4A373);
+        : ThemeColors.logoGold;
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -760,7 +1036,7 @@ class _MiniExpenseMetric extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _SoftIcon(icon: icon, color: color),
+          SoftIcon(icon: icon, color: color),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -792,6 +1068,7 @@ class _MiniExpenseMetric extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _ExpenseBillCard extends GetView<DashboardController> {
   const _ExpenseBillCard({required this.item});
 
@@ -813,7 +1090,7 @@ class _ExpenseBillCard extends GetView<DashboardController> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _SoftIcon(icon: Icons.storefront_rounded, color: color),
+                SoftIcon(icon: Icons.storefront_rounded, color: color),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1074,7 +1351,7 @@ class _PaymentActivityDialog extends StatelessWidget {
                       _PaymentProgressBar(item: item),
                       const SizedBox(height: 14),
                       if (item.paymentSplit.isEmpty)
-                        const _PremiumEmptyState(
+                        const PremiumEmptyState(
                           icon: Icons.history_rounded,
                           title: 'No payment activity yet',
                           subtitle:
@@ -1112,8 +1389,8 @@ class _PaymentProgressBar extends StatelessWidget {
           child: LinearProgressIndicator(
             minHeight: 8,
             value: progress,
-            backgroundColor: const Color(0xFFD4A373).withValues(alpha: 0.16),
-            color: const Color(0xFF0F8B7D),
+            backgroundColor: ThemeColors.logoGold.withValues(alpha: 0.16),
+            color: ThemeColors.weddingTeal,
           ),
         ),
         const SizedBox(height: 8),
@@ -1224,7 +1501,7 @@ class _PaymentTimelineRow extends StatelessWidget {
             height: 9,
             margin: const EdgeInsets.only(top: 7),
             decoration: const BoxDecoration(
-              color: Color(0xFF0F8B7D),
+              color: ThemeColors.weddingTeal,
               shape: BoxShape.circle,
             ),
           ),
@@ -1284,7 +1561,7 @@ class _ExpenseAmountBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = emphasize
-        ? const Color(0xFFD4A373)
+        ? ThemeColors.logoGold
         : Theme.of(context).colorScheme.primary;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

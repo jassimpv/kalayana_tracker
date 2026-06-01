@@ -29,42 +29,136 @@ class OverviewPanel extends GetView<DashboardController> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _DashboardWelcomeHeader(
+            coupleName: _coupleName(profile),
+            weddingDate: date,
+          ),
+          const SizedBox(height: 20),
           _OverviewHero(
             data: data,
             weddingDate: date,
             coupleName: _coupleName(profile),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           _PremiumQuickActions(
             onExpense: () => showExpenseDialog(context),
             onReminder: () => showReminderDialog(context),
             onPurchase: () => showPurchaseDialog(context),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           _BudgetAnalyticsCard(
             total: data.totalBudget,
             paid: data.paid,
             pending: data.pending,
             progress: paymentProgress,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           _TodayFocusCard(
             pendingExpenses: pendingExpenses,
             reminders: upcoming,
             repayment: data.repaymentPending,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           _UpcomingEventsCarousel(
             reminders: upcoming.take(5).toList(),
             onAdd: () => showReminderDialog(context),
             onEdit: (item) => showReminderDialog(context, reminder: item),
             onToggle: controller.toggleReminder,
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           _PaymentTimeline(expenses: pendingExpenses.take(4).toList()),
         ],
       );
     });
+  }
+}
+
+class _DashboardWelcomeHeader extends StatelessWidget {
+  const _DashboardWelcomeHeader({
+    required this.coupleName,
+    required this.weddingDate,
+  });
+
+  final String? coupleName;
+  final DateTime? weddingDate;
+
+  @override
+  Widget build(BuildContext context) {
+    final days = daysUntilDate(weddingDate);
+    final dateText = weddingDate == null
+        ? 'Add your wedding date to unlock the countdown.'
+        : '${formatDate(weddingDate!)}${days == null ? '' : ' • ${_momentDayLabel(days)} ${_momentDaySuffix(days)}'}';
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 640;
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Wedding Budget Dashboard',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: ThemeColors.logoDeep,
+                      fontSize: compact ? 30 : 40,
+                      fontWeight: FontWeight.w900,
+                      height: 1.02,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    coupleName == null ? dateText : '$coupleName • $dateText',
+                    maxLines: compact ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: ThemeColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!compact) ...[
+              const SizedBox(width: 18),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.72),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: ThemeColors.logoGold.withValues(alpha: 0.32),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.favorite_rounded,
+                      color: ThemeColors.primary,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Premium planner',
+                      style: TextStyle(
+                        color: ThemeColors.primary,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -88,7 +182,6 @@ class _OverviewHero extends StatelessWidget {
     return _AnimatedReveal(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final wide = constraints.maxWidth >= 760;
           final greeting = _OverviewGreetingCard(
             coupleName: coupleName,
             weddingDate: weddingDate,
@@ -99,29 +192,46 @@ class _OverviewHero extends StatelessWidget {
             weddingDate: weddingDate,
             progress: budgetProgress,
           );
-          if (wide) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(flex: 5, child: greeting),
-                const SizedBox(width: 16),
-                Expanded(flex: 5, child: budget),
-                const SizedBox(width: 16),
-                Expanded(flex: 4, child: pulse),
-              ],
-            );
-          }
-          return Column(
-            children: [
-              greeting,
-              const SizedBox(height: 12),
-              budget,
-              const SizedBox(height: 12),
-              pulse,
-            ],
+          return _ResponsiveCardGrid(
+            spacing: 16,
+            children: [greeting, budget, pulse],
           );
         },
       ),
+    );
+  }
+}
+
+class _ResponsiveCardGrid extends StatelessWidget {
+  const _ResponsiveCardGrid({required this.children, this.spacing = 16});
+
+  final List<Widget> children;
+  final double spacing;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 960
+            ? 3
+            : width >= 640
+            ? 2
+            : 1;
+        final itemWidth = (width - spacing * (columns - 1)) / columns;
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: children
+              .map(
+                (child) => SizedBox(
+                  width: itemWidth.isFinite ? itemWidth : width,
+                  child: child,
+                ),
+              )
+              .toList(),
+        );
+      },
     );
   }
 }
@@ -153,7 +263,7 @@ class _OverviewGreetingCard extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFFFFFFFF), Color(0xFFFFF3E9)],
+        colors: [Color(0xFFFFFCF6), Color(0xFFFFF0D8)],
       ),
       child: Stack(
         children: [
@@ -201,7 +311,7 @@ class _OverviewGreetingCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: ThemeColors.terracotta,
+                        color: ThemeColors.primary,
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                       ),
@@ -229,7 +339,7 @@ class _OverviewBudgetCard extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFF0F8B7D), Color(0xFF064743)],
+        colors: [Color(0xFF7A1230), Color(0xFF9D1740)],
       ),
       borderColor: Colors.white24,
       child: Stack(
@@ -238,7 +348,7 @@ class _OverviewBudgetCard extends StatelessWidget {
             right: -38,
             bottom: -62,
             child: _BlurCircle(
-              color: Color(0xFFE7AD4F),
+              color: Color(0xFFE8B75C),
               size: 170,
               alpha: 0.18,
             ),
@@ -310,13 +420,13 @@ class _OverviewPulseCard extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [Color(0xFFFFFCF8), Color(0xFFFFE5C7)],
+        colors: [Color(0xFFFFFBF4), Color(0xFFFFE4B8)],
       ),
       child: Row(
         children: [
           _ProgressRing(
             progress: progress,
-            color: ThemeColors.terracotta,
+            color: ThemeColors.primary,
             size: 82,
             stroke: 9,
             center: Column(
@@ -367,7 +477,7 @@ class _OverviewPulseCard extends StatelessWidget {
                 Text(
                   'Payment pulse',
                   style: TextStyle(
-                    color: ThemeColors.deepTeal,
+                    color: ThemeColors.logoDeep,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -406,13 +516,14 @@ class _PremiumQuickActions extends StatelessWidget {
     return _AnimatedReveal(
       delay: const Duration(milliseconds: 80),
       child: _PremiumSurface(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             Colors.white.withValues(alpha: 0.88),
             const Color(0xFFFFF7F1).withValues(alpha: 0.72),
+            const Color(0xFFFFEFD8).withValues(alpha: 0.72),
           ],
         ),
         child: Row(
@@ -465,7 +576,6 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
       onTapCancel: () => setState(() => _pressed = false),
@@ -474,32 +584,40 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
       child: AnimatedScale(
         scale: _pressed ? 0.94 : 1,
         duration: const Duration(milliseconds: 130),
-        child: Column(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    ThemeColors.terracotta.withValues(alpha: 0.12),
-                    scheme.primary.withValues(alpha: 0.10),
-                  ],
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 72),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      ThemeColors.primary.withValues(alpha: 0.10),
+                      ThemeColors.logoGold.withValues(alpha: 0.14),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(18),
                 ),
-                borderRadius: BorderRadius.circular(18),
+                child: Icon(widget.icon, color: ThemeColors.primary),
               ),
-              child: Icon(widget.icon, color: ThemeColors.terracotta),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              widget.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-            ),
-          ],
+              const SizedBox(height: 7),
+              Text(
+                widget.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -523,20 +641,35 @@ class _BudgetAnalyticsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return _PremiumSurface(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionHeader(
-            title: 'Budget analytics',
-            action: '${(progress * 100).round()}% paid',
-          ),
-          const SizedBox(height: 18),
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 680;
+          final statCards = [
+            _AnalyticsStatCard(
+              label: 'Paid amount',
+              value: '₹${formatMoney(paid)}',
+              icon: Icons.verified_rounded,
+              color: ThemeColors.primary,
+            ),
+            _AnalyticsStatCard(
+              label: 'Pending',
+              value: '₹${formatMoney(pending)}',
+              icon: Icons.hourglass_top_rounded,
+              color: ThemeColors.logoGold,
+            ),
+            _AnalyticsStatCard(
+              label: 'Remaining share',
+              value: '${(100 - (progress * 100).round()).clamp(0, 100)}%',
+              icon: Icons.pie_chart_rounded,
+              color: ThemeColors.terracotta,
+            ),
+          ];
+          final summary = Row(
             children: [
               _ProgressRing(
                 progress: progress,
                 color: scheme.primary,
-                size: 108,
+                size: compact ? 100 : 116,
                 stroke: 10,
                 center: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -548,7 +681,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'complete',
+                      'paid',
                       style: TextStyle(
                         color: scheme.outline,
                         fontSize: 11,
@@ -568,31 +701,125 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w900),
+                          ?.copyWith(
+                            color: ThemeColors.logoDeep,
+                            fontWeight: FontWeight.w900,
+                          ),
                     ),
+                    const SizedBox(height: 4),
                     Text(
-                      'wedding allocation',
+                      'Wedding allocation across vendors, dates, and shopping.',
+                      maxLines: compact ? 3 : 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: scheme.outline,
                         fontWeight: FontWeight.w700,
+                        height: 1.25,
                       ),
-                    ),
-                    const SizedBox(height: 14),
-                    _LegendRow(
-                      color: scheme.primary,
-                      label: 'Paid',
-                      value: '₹${formatMoney(paid)}',
-                    ),
-                    const SizedBox(height: 8),
-                    _LegendRow(
-                      color: const Color(0xFFD4A373),
-                      label: 'Pending',
-                      value: '₹${formatMoney(pending)}',
                     ),
                   ],
                 ),
               ),
             ],
+          );
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SectionHeader(
+                title: 'Budget analytics',
+                action: '${(progress * 100).round()}% paid',
+              ),
+              const SizedBox(height: 18),
+              if (compact)
+                Column(
+                  children: [
+                    summary,
+                    const SizedBox(height: 16),
+                    ...statCards.map(
+                      (card) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: card,
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 5, child: summary),
+                    const SizedBox(width: 18),
+                    Expanded(
+                      flex: 6,
+                      child: _ResponsiveCardGrid(
+                        spacing: 10,
+                        children: statCards,
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AnalyticsStatCard extends StatelessWidget {
+  const _AnalyticsStatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 92),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        children: [
+          SoftIcon(icon: icon, color: color),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: ThemeColors.logoDeep,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -623,7 +850,7 @@ class _TodayFocusCard extends StatelessWidget {
           const SizedBox(height: 14),
           _FocusRow(
             icon: Icons.receipt_long_rounded,
-            color: const Color(0xFFD4A373),
+            color: ThemeColors.logoGold,
             title: nextBill?.name ?? 'No bill due next',
             subtitle: nextBill == null
                 ? 'Pending bills will appear here.'
@@ -632,7 +859,7 @@ class _TodayFocusCard extends StatelessWidget {
           const SizedBox(height: 10),
           _FocusRow(
             icon: Icons.event_available_rounded,
-            color: const Color(0xFF0F8B7D),
+            color: ThemeColors.primary,
             title: nextReminder?.title ?? 'No upcoming date',
             subtitle: nextReminder == null
                 ? 'Add reminders to track next actions.'
@@ -677,7 +904,7 @@ class _FocusRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _SoftIcon(icon: icon, color: color),
+          SoftIcon(icon: icon, color: color),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -757,7 +984,7 @@ class _UpcomingEventsCarousel extends StatelessWidget {
           if (next == null)
             Column(
               children: [
-                const _PremiumEmptyState(
+                const PremiumEmptyState(
                   icon: Icons.event_note_rounded,
                   title: 'No dates on the horizon',
                   subtitle: 'Add rituals, fittings, and payment deadlines.',
@@ -824,7 +1051,7 @@ class _NextMomentCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              _SoftIcon(icon: _eventIcon(item.category), color: doneColor),
+              SoftIcon(icon: _eventIcon(item.category), color: doneColor),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -1076,7 +1303,7 @@ class _PaymentTimeline extends StatelessWidget {
           const _SectionHeader(title: 'Payment timeline', action: 'Due next'),
           const SizedBox(height: 14),
           if (items.isEmpty)
-            const _PremiumEmptyState(
+            const PremiumEmptyState(
               icon: Icons.payments_rounded,
               title: 'All payments feel clear',
               subtitle: 'Pending balances will appear here.',
@@ -1085,8 +1312,8 @@ class _PaymentTimeline extends StatelessWidget {
             ...items.asMap().entries.map((entry) {
               final item = entry.value;
               final color = entry.key.isEven
-                  ? const Color(0xFF0F8B7D)
-                  : const Color(0xFFD4A373);
+                  ? ThemeColors.primary
+                  : ThemeColors.logoGold;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Row(
@@ -1208,10 +1435,10 @@ class CoupleCollaborationCard extends StatelessWidget {
                 value: value,
                 minHeight: 10,
                 backgroundColor: const Color(
-                  0xFFD4A373,
+                  0xFFE8B75C,
                 ).withValues(alpha: 0.16),
                 valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFF0F8B7D),
+                  Color(0xFF9D1740),
                 ),
               ),
             ),
@@ -1241,15 +1468,15 @@ IconData _eventIcon(String category) {
 Color _premiumStatusColor(String status) {
   final normalized = status.toLowerCase();
   if (normalized.contains('completed') || normalized == 'purchased') {
-    return const Color(0xFF0F8B7D);
+    return const Color(0xFF2E9B67);
   }
   if (normalized.contains('advance') || normalized == 'ordered') {
-    return const Color(0xFF4E7DD1);
+    return const Color(0xFFC06A2A);
   }
   if (normalized.contains('pending') ||
       normalized.contains('planning') ||
       normalized == 'planned') {
-    return const Color(0xFFD4A373);
+    return ThemeColors.logoGold;
   }
   if (normalized.contains('cancelled')) return const Color(0xFFB85D75);
   return const Color(0xFF6D6A75);

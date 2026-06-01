@@ -51,7 +51,7 @@ class RemindersPanel extends GetView<DashboardController> {
         const SizedBox(height: 18),
 
         sorted.isEmpty
-            ? const _PremiumEmptyState(
+            ? const PremiumEmptyState(
                 icon: Icons.event_available_rounded,
                 title: 'No timeline moments yet',
                 subtitle:
@@ -90,7 +90,7 @@ class _ReminderSummaryCard extends StatelessWidget {
         children: [
           _ProgressRing(
             progress: progress,
-            color: const Color(0xFF0F8B7D),
+            color: ThemeColors.weddingTeal,
             size: 104,
             stroke: 10,
             center: Text(
@@ -118,13 +118,13 @@ class _ReminderSummaryCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 _LegendRow(
-                  color: const Color(0xFF0F8B7D),
+                  color: ThemeColors.weddingTeal,
                   label: 'Upcoming',
                   value: '$upcoming',
                 ),
                 const SizedBox(height: 8),
                 _LegendRow(
-                  color: const Color(0xFFD4A373),
+                  color: ThemeColors.logoGold,
                   label: 'Completed',
                   value: '$completed',
                 ),
@@ -157,13 +157,13 @@ class _ReminderStatusStrip extends StatelessWidget {
         icon: Icons.event_note_rounded,
         label: 'Dates',
         value: '$total',
-        color: const Color(0xFF0F8B7D),
+        color: ThemeColors.weddingTeal,
       ),
       _MiniExpenseMetric(
         icon: Icons.schedule_rounded,
         label: 'Upcoming',
         value: '$upcoming',
-        color: const Color(0xFFD4A373),
+        color: ThemeColors.logoGold,
       ),
       _MiniExpenseMetric(
         icon: Icons.task_alt_rounded,
@@ -223,7 +223,7 @@ class _DateMomentCard extends GetView<DashboardController> {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            _SoftIcon(icon: _eventIcon(item.category), color: color),
+            SoftIcon(icon: _eventIcon(item.category), color: color),
             const SizedBox(width: 12),
             Expanded(
               child: InkWell(

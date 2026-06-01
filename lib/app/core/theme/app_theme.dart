@@ -10,17 +10,17 @@ class ThemeColors {
   // ============================================================================
   // LIGHT THEME COLORS (Constants)
   // ============================================================================
-  static const Color _lightPrimary = Color(0xFF0F766E);
-  static const Color _lightSurface = Color(0xFFFFFFFF);
-  static const Color _lightOnSurface = Color(0xFF173B37);
-  static const Color _lightOnSurfaceSecondary = Color(0xFF7D6A60);
-  static const Color _lightInputBackground = Color(0xFFFFF7F1);
+  static const Color _lightPrimary = Color(0xFF8F1438);
+  static const Color _lightSurface = Color(0xFFFFFCF6);
+  static const Color _lightOnSurface = Color(0xFF331316);
+  static const Color _lightOnSurfaceSecondary = Color(0xFF7A6255);
+  static const Color _lightInputBackground = Color(0xFFFFF4E6);
   static const Color _lightBorder = Color(
-    0xFF0F766E,
+    0xFFB7803B,
   ); // with 0.08 alpha in getter
-  static const Color _lightScaffold = Color(0xFFFFFFFF);
-  static const Color _lightScaffoldGradientStart = Color(0xFFFFEFE4);
-  static const Color _lightScaffoldGradientEnd = Color(0xFFFFFFFF);
+  static const Color _lightScaffold = Color(0xFFFFF8ED);
+  static const Color _lightScaffoldGradientStart = Color(0xFFFFF5E8);
+  static const Color _lightScaffoldGradientEnd = Color(0xFFFFFBF4);
 
   // ============================================================================
   // DARK THEME COLORS (Constants)
@@ -58,15 +58,15 @@ class ThemeColors {
   // CUSTOM PALETTE COLORS
   // ============================================================================
   static const Color darkGreen = Color(0xff12673F);
-  static const Color secondaryColor = Color(0xFFE0A058);
+  static const Color secondaryColor = Color(0xFFD99A3F);
   static const Color logoCopper = Color(0xFFC46F53);
   static const Color logoRose = Color(0xFFF2A17D);
-  static const Color logoGold = Color(0xFFE7AD4F);
-  static const Color logoDeep = Color(0xFF3C2018);
-  static const Color weddingTeal = Color(0xFF0F8B7D);
-  static const Color deepTeal = Color(0xFF064743);
-  static const Color terracotta = Color(0xFFA9533B);
-  static const Color champagne = Color(0xFFFFE5C7);
+  static const Color logoGold = Color(0xFFE8B75C);
+  static const Color logoDeep = Color(0xFF3A1117);
+  static const Color weddingTeal = Color(0xFF9D1740);
+  static const Color deepTeal = Color(0xFF4A101A);
+  static const Color terracotta = Color(0xFFB04B2F);
+  static const Color champagne = Color(0xFFFFE4B8);
 
   // ============================================================================
   // DEPRECATED LEGACY COLORS (Kept for backward compatibility)
@@ -127,7 +127,7 @@ class ThemeColors {
       : primary.withValues(alpha: 0.2);
 
   static Color? get lightScaffoldAuthBg =>
-      ThemeService.isDark() ? null : const Color(0xFF0F766E);
+      ThemeService.isDark() ? null : const Color(0xFF8F1438);
   // TEXT
   static Color get textPrimary => onSurface;
   static Color get textSecondary => onSurfaceSecondary;
@@ -143,9 +143,13 @@ class ThemeColors {
           colors: <Color>[_darkSurface, _darkScaffold],
         )
       : const LinearGradient(
-          begin: Alignment.topLeft,
+          begin: Alignment.topCenter,
           end: Alignment.bottomRight,
-          colors: <Color>[_lightSurface, _lightInputBackground],
+          colors: <Color>[
+            _lightScaffoldGradientStart,
+            _lightSurface,
+            _lightScaffoldGradientEnd,
+          ],
         );
 
   static LinearGradient get primaryGradient => LinearGradient(
@@ -153,7 +157,7 @@ class ThemeColors {
     end: Alignment.bottomRight,
     colors: <Color>[
       primary,
-      ThemeService.isDark() ? const Color(0xFF0F8B7D) : weddingTeal,
+      ThemeService.isDark() ? const Color(0xFF8F1438) : weddingTeal,
     ],
   );
 
@@ -179,9 +183,9 @@ class ThemeColors {
             const Color(0xFF6C3A2D),
           ]
         : const <Color>[
-            Color(0xFF064743),
-            Color(0xFF0F8B7D),
-            Color(0xFFA9533B),
+            Color(0xFF7A1230),
+            Color(0xFF9D1740),
+            Color(0xFFB04B2F),
           ],
   );
   // ============================================================================
@@ -198,8 +202,11 @@ class ThemeColors {
   // ============================================================================
 
   static bool get _isArabic => Get.locale?.languageCode == 'ar';
-  static String get _fontFamily => _isArabic ? 'NotoSansArabic' : 'Outfit';
+  static String get _fontFamily =>
+      _isArabic ? 'NotoSansArabic' : 'PlusJakartaSans';
   static const List<String> _fontFamilyFallback = <String>[
+    'Inter',
+    'Outfit',
     'Poppins',
     'SF UI Display',
   ];
@@ -215,11 +222,11 @@ class ThemeColors {
       brightness: Brightness.light,
       primary: _lightPrimary,
       onPrimary: whiteColor,
-      primaryContainer: Color(0xFFD8F1ED),
-      onPrimaryContainer: Color(0xFF073D38),
-      secondary: Color(0xFFA9533B),
+      primaryContainer: Color(0xFFFFD8E2),
+      onPrimaryContainer: Color(0xFF4A101A),
+      secondary: Color(0xFFD99A3F),
       onSecondary: Color(0xFFFFFFFF),
-      tertiary: Color(0xFFC46F53),
+      tertiary: Color(0xFFB04B2F),
       onTertiary: Color(0xFFFFFFFF),
       error: error,
       onError: Color(0xFFFFFFFF),
@@ -241,7 +248,7 @@ class ThemeColors {
       elevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
-        fontFamily: 'Outfit',
+        fontFamily: 'PlusJakartaSans',
         fontSize: 24,
         fontWeight: FontWeight.w700,
         color: whiteColor,
