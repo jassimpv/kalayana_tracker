@@ -22,12 +22,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onNotification;
 
   @override
-  Size get preferredSize => Size.fromHeight(showGreeting ? 202 : 128);
+  Size get preferredSize => Size.fromHeight(128);
 
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
-    final height = topInset + (showGreeting ? 178 : 104);
+    final height = topInset + (showGreeting ? 60 : 48);
 
     return SizedBox(
       height: height,
@@ -51,7 +51,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ClipPath(
             clipper: _LuxuryAppBarClipper(),
             child: Container(
-              height: height - 8,
+              height: height,
               decoration: BoxDecoration(color: ThemeColors.primary),
               child: Stack(
                 children: [
@@ -79,52 +79,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ),
                     ),
                   ),
+
                   Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      18,
-                      topInset + 12,
-                      18,
-                      showGreeting ? 34 : 24,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Column(
                       children: [
-                        SizedBox(
-                          height: 48,
-                          child: Row(
-                            children: [
-                              _HeaderIconButton(
-                                icon: Icons.arrow_back_rounded,
-                                tooltip: 'Overview',
-                                onPressed: onBack,
-                              ),
-                              Expanded(
-                                child: Text(
-                                  title,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-                              _HeaderIconButton(
-                                icon: onSearch == null
-                                    ? Icons.notifications_none_rounded
-                                    : Icons.search_rounded,
-                                tooltip: onSearch == null
-                                    ? 'Notifications'
-                                    : 'Search',
-                                onPressed: onSearch ?? onNotification ?? () {},
-                                showContainer: true,
-                              ),
-                            ],
-                          ),
-                        ),
+                        SizedBox(height: topInset),
                         if (showGreeting) ...[
-                          const SizedBox(height: 16),
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Column(
@@ -155,6 +116,45 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                               ],
                             ),
                           ),
+                        ] else ...[
+                          if (!showGreeting)
+                            SizedBox(
+                              height: 48,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Positioned.fill(
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: onBack == null ? 0 : 56,
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          title,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  if (onBack != null)
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: _HeaderIconButton(
+                                        icon: Icons.arrow_back_rounded,
+                                        tooltip: 'Overview',
+                                        onPressed: onBack,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
                         ],
                       ],
                     ),
@@ -174,36 +174,20 @@ class _HeaderIconButton extends StatelessWidget {
     required this.icon,
     required this.tooltip,
     this.onPressed,
-    this.showContainer = false,
   });
 
   final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
-  final bool showContainer;
 
   @override
   Widget build(BuildContext context) {
-    if (onPressed == null && !showContainer) {
+    if (onPressed == null) {
       return const SizedBox(width: 48, height: 48);
     }
-    return Container(
+    return SizedBox(
       width: 48,
       height: 48,
-      decoration: showContainer
-          ? BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            )
-          : null,
       child: IconButton(
         constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         onPressed: onPressed,

@@ -29,15 +29,13 @@ class OverviewPanel extends GetView<DashboardController> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _DashboardWelcomeHeader(
-            coupleName: _coupleName(profile),
-            weddingDate: date,
-          ),
-          const SizedBox(height: 20),
           _OverviewHero(
             data: data,
             weddingDate: date,
-            coupleName: _coupleName(profile),
+            coupleName: _profileDisplayName(
+              FirebaseAuth.instance.currentUser,
+              profile,
+            ),
           ),
           const SizedBox(height: 20),
           _PremiumQuickActions(
@@ -79,95 +77,6 @@ class OverviewPanel extends GetView<DashboardController> {
         ],
       );
     });
-  }
-}
-
-class _DashboardWelcomeHeader extends StatelessWidget {
-  const _DashboardWelcomeHeader({
-    required this.coupleName,
-    required this.weddingDate,
-  });
-
-  final String? coupleName;
-  final DateTime? weddingDate;
-
-  @override
-  Widget build(BuildContext context) {
-    final days = daysUntilDate(weddingDate);
-    final dateText = weddingDate == null
-        ? 'Add your wedding date to unlock the countdown.'
-        : '${formatDate(weddingDate!)}${days == null ? '' : ' • ${_momentDayLabel(days)} ${_momentDaySuffix(days)}'}';
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 640;
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Wedding Budget Dashboard',
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      color: ThemeColors.logoDeep,
-                      fontSize: compact ? 30 : 40,
-                      fontWeight: FontWeight.w900,
-                      height: 1.02,
-                      letterSpacing: 0,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    coupleName == null ? dateText : '$coupleName • $dateText',
-                    maxLines: compact ? 2 : 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: ThemeColors.primary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (!compact) ...[
-              const SizedBox(width: 18),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.72),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: ThemeColors.logoGold.withValues(alpha: 0.32),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.favorite_rounded,
-                      color: ThemeColors.primary,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Premium planner',
-                      style: TextStyle(
-                        color: ThemeColors.primary,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        );
-      },
-    );
   }
 }
 

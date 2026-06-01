@@ -24,12 +24,12 @@ import 'package:kalayanaexpresstracker/app/routes/app_routes.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+part 'dashboard_profile.dart';
 part 'dashboard_overview.dart';
 part '../widgets/dashboard_shared.dart';
 part 'dashboard_expenses.dart';
 part 'dashboard_reminders.dart';
 part 'dashboard_purchases.dart';
-part 'dashboard_profile.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -49,6 +49,10 @@ class _DashboardViewState extends State<DashboardView> {
   bool get _showDashboardGreeting {
     return !_isStandaloneDashboardRoute(_currentNestedRoute) &&
         controller.selectedIndex.value == 0;
+  }
+
+  bool get _showDashboardAppBar {
+    return _currentNestedRoute != AppRoutes.dashboardProfile;
   }
 
   String get _appBarTitle {
@@ -141,14 +145,18 @@ class _DashboardViewState extends State<DashboardView> {
                         context,
                       ),
                       sliver: SliverToBoxAdapter(
-                        child: CustomAppBar(
-                          title: _appBarTitle,
-                          showGreeting: _showDashboardGreeting,
-                          onBack:
-                              _isStandaloneDashboardRoute(_currentNestedRoute)
-                              ? () => Navigator.of(context).maybePop()
-                              : null,
-                        ),
+                        child: _showDashboardAppBar
+                            ? CustomAppBar(
+                                title: _appBarTitle,
+                                showGreeting: _showDashboardGreeting,
+                                onBack:
+                                    _isStandaloneDashboardRoute(
+                                      _currentNestedRoute,
+                                    )
+                                    ? () => Navigator.of(context).maybePop()
+                                    : null,
+                              )
+                            : const SizedBox.shrink(),
                       ),
                     ),
                   ],

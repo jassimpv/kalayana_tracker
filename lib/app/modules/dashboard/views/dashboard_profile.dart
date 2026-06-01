@@ -865,7 +865,7 @@ String _profileDisplayName(User? user, Map<String, dynamic> profile) {
   if (bride.isNotEmpty) return bride;
   final email = user?.email;
   if (email != null && email.contains('@')) return email.split('@').first;
-  return 'Jassim';
+  return '-';
 }
 
 String _joinKeyFor(User? user) {
@@ -883,15 +883,6 @@ String _profileInitials(String name) {
       .toList();
   if (parts.isEmpty) return 'K';
   return parts.take(2).map((part) => part[0].toUpperCase()).join();
-}
-
-String? _coupleName(Map<String, dynamic> profile) {
-  final groom = profileGroom(profile);
-  final bride = profileBride(profile);
-  if (groom.isNotEmpty && bride.isNotEmpty) return '$groom & $bride';
-  if (groom.isNotEmpty) return groom;
-  if (bride.isNotEmpty) return bride;
-  return null;
 }
 
 void _copyJoinKey(String key) {
