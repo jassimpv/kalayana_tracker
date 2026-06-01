@@ -23,10 +23,11 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
   List<PurchaseItem> get _filteredPurchases {
     final query = _searchQuery.trim().toLowerCase();
     return widget.purchases.where((item) {
-      if (_selectedFilter == 'Pending' && item.status != 'Pending') {
+      final purchased = item.status == 'Purchased';
+      if (_selectedFilter == 'Pending' && purchased) {
         return false;
       }
-      if (_selectedFilter == 'Purchased' && item.status != 'Purchased') {
+      if (_selectedFilter == 'Purchased' && !purchased) {
         return false;
       }
       if (query.isEmpty) return true;
@@ -38,13 +39,6 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final sorted = [...widget.purchases]
-      ..sort((a, b) {
-        final aDone = a.status == 'Purchased';
-        final bDone = b.status == 'Purchased';
-        if (aDone != bDone) return aDone ? 1 : -1;
-        return a.name.compareTo(b.name);
-      });
     final visible = _filteredPurchases
       ..sort((a, b) {
         final aDone = a.status == 'Purchased';
@@ -52,38 +46,10 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
         if (aDone != bDone) return aDone ? 1 : -1;
         return a.name.compareTo(b.name);
       });
-    final done = sorted.where((item) => item.status == 'Purchased').length;
-    final ordered = sorted.where((item) => item.status == 'Ordered').length;
-    final planned = sorted.where((item) => item.status == 'Planned').length;
-    final open = sorted.length - done;
-    final progress = sorted.isEmpty ? 0.0 : done / sorted.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _ScreenHero(
-          eyebrow: 'Shopping atelier',
-          title: 'Wedding wishlist',
-          subtitle: '${sorted.length} curated items | $open still open',
-          icon: Icons.shopping_bag_rounded,
-          actionLabel: 'Add item',
-          onAction: () => showPurchaseDialog(context),
-        ),
-        const SizedBox(height: 18),
-        _PurchaseSummaryCard(
-          itemCount: sorted.length,
-          purchased: done,
-          open: open,
-          progress: progress,
-        ),
-        const SizedBox(height: 18),
-        _PurchaseStatusStrip(
-          itemCount: sorted.length,
-          planned: planned,
-          ordered: ordered,
-          purchased: done,
-        ),
-        const SizedBox(height: 18),
         _PurchaseSearchField(
           controller: _searchController,
           onChanged: (value) => setState(() {
@@ -119,15 +85,9 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
                     : 'Try another filter or search term to find more items.',
               )
             : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const _SectionHeader(
-                    title: 'Shopping list',
-                    action: 'Review',
-                  ),
-                  const SizedBox(height: 12),
-                  ...visible.map((item) => _PurchaseListCard(item: item)),
-                ],
+                children: visible
+                    .map((item) => _PurchaseListCard(item: item))
+                    .toList(),
               ),
       ],
     );
@@ -148,25 +108,39 @@ class _PurchaseSearchField extends StatelessWidget {
     return TextField(
       controller: controller,
       onChanged: onChanged,
+      cursorColor: ThemeColors.primary,
       decoration: InputDecoration(
         hintText: 'Search items...',
-        prefixIcon: const Icon(Icons.search_rounded),
+        hintStyle: TextStyle(
+          color: ThemeColors.logoDeep.withValues(alpha: 0.38),
+          fontWeight: FontWeight.w700,
+        ),
+        prefixIcon: Icon(
+          Icons.search_rounded,
+          color: ThemeColors.logoDeep.withValues(alpha: 0.45),
+        ),
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.74),
+        fillColor: Colors.white.withValues(alpha: 0.66),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
-          vertical: 14,
+          vertical: 15,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-            color: ThemeColors.logoGold.withValues(alpha: 0.22),
+            color: ThemeColors.logoGold.withValues(alpha: 0.18),
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-            color: ThemeColors.logoGold.withValues(alpha: 0.22),
+            color: ThemeColors.logoGold.withValues(alpha: 0.18),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(
+            color: ThemeColors.primary.withValues(alpha: 0.32),
           ),
         ),
       ),
@@ -195,16 +169,22 @@ class _PurchaseFilterChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          constraints: const BoxConstraints(minWidth: 66),
+          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
           decoration: BoxDecoration(
-            color: selected ? ThemeColors.primary : const Color(0xFFFFEED7),
+            color: selected ? ThemeColors.primary : const Color(0xFFFFF0DB),
             borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? ThemeColors.primary
+                  : ThemeColors.logoGold.withValues(alpha: 0.08),
+            ),
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: ThemeColors.primary.withValues(alpha: 0.20),
-                      blurRadius: 14,
-                      offset: const Offset(0, 8),
+                      color: ThemeColors.primary.withValues(alpha: 0.22),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
                     ),
                   ]
                 : null,
@@ -214,149 +194,11 @@ class _PurchaseFilterChip extends StatelessWidget {
             style: TextStyle(
               color: selected ? Colors.white : ThemeColors.logoDeep,
               fontWeight: FontWeight.w900,
-              fontSize: 12,
+              fontSize: 13,
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _PurchaseSummaryCard extends StatelessWidget {
-  const _PurchaseSummaryCard({
-    required this.itemCount,
-    required this.purchased,
-    required this.open,
-    required this.progress,
-  });
-
-  final int itemCount;
-  final int purchased;
-  final int open;
-  final double progress;
-
-  @override
-  Widget build(BuildContext context) {
-    return _PremiumSurface(
-      child: Row(
-        children: [
-          _ProgressRing(
-            progress: progress,
-            color: ThemeColors.weddingTeal,
-            size: 104,
-            stroke: 10,
-            center: Text(
-              '${(progress * 100).round()}%',
-              style: const TextStyle(fontWeight: FontWeight.w900),
-            ),
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$itemCount items',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                Text(
-                  'shopping checklist',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _LegendRow(
-                  color: ThemeColors.weddingTeal,
-                  label: 'Purchased',
-                  value: '$purchased',
-                ),
-                const SizedBox(height: 8),
-                _LegendRow(
-                  color: ThemeColors.logoGold,
-                  label: 'Still open',
-                  value: '$open of $itemCount',
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PurchaseStatusStrip extends StatelessWidget {
-  const _PurchaseStatusStrip({
-    required this.itemCount,
-    required this.planned,
-    required this.ordered,
-    required this.purchased,
-  });
-
-  final int itemCount;
-  final int planned;
-  final int ordered;
-  final int purchased;
-
-  @override
-  Widget build(BuildContext context) {
-    final metrics = [
-      _MiniExpenseMetric(
-        icon: Icons.shopping_bag_rounded,
-        label: 'Items',
-        value: '$itemCount',
-        color: ThemeColors.weddingTeal,
-      ),
-      _MiniExpenseMetric(
-        icon: Icons.pending_actions_rounded,
-        label: 'Planned',
-        value: '$planned',
-        color: ThemeColors.logoGold,
-      ),
-      _MiniExpenseMetric(
-        icon: Icons.local_shipping_rounded,
-        label: 'Ordered',
-        value: '$ordered',
-        color: const Color(0xFF1C7C8C),
-      ),
-      _MiniExpenseMetric(
-        icon: Icons.task_alt_rounded,
-        label: 'Bought',
-        value: '$purchased',
-        color: const Color(0xFF3A8F63),
-      ),
-    ];
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 820
-            ? 4
-            : constraints.maxWidth >= 520
-            ? 2
-            : 1;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: metrics.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: columns == 4
-                ? 2.8
-                : columns == 2
-                ? 2.35
-                : 3.6,
-          ),
-          itemBuilder: (context, index) => metrics[index],
-        );
-      },
     );
   }
 }
@@ -368,25 +210,27 @@ class _PurchaseListCard extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
+    final purchased = item.status == 'Purchased';
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Material(
-        borderRadius: BorderRadius.circular(22),
-        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.white.withValues(alpha: 0.74),
         child: InkWell(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(12),
           onTap: () => showPurchaseDialog(context, purchase: item),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            constraints: const BoxConstraints(minHeight: 102),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFE8E2D8)),
+              color: Colors.white.withValues(alpha: 0.74),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFEDE5D9)),
               boxShadow: [
                 BoxShadow(
-                  color: const Color.fromRGBO(0, 0, 0, 0.03),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
+                  color: ThemeColors.logoDeep.withValues(alpha: 0.035),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
@@ -394,19 +238,16 @@ class _PurchaseListCard extends GetView<DashboardController> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: ThemeColors.logoGold.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  width: 54,
+                  height: 54,
+                  alignment: Alignment.center,
                   child: Icon(
-                    Icons.shopping_bag_rounded,
-                    color: ThemeColors.logoGold,
-                    size: 28,
+                    Icons.shopping_bag_outlined,
+                    color: ThemeColors.logoDeep.withValues(alpha: 0.86),
+                    size: 38,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,27 +257,62 @@ class _PurchaseListCard extends GetView<DashboardController> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w900,
-                          height: 1.1,
+                          height: 1.15,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 9),
                       Text(
                         '₹${formatMoney(item.amount)}',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
-                          fontWeight: FontWeight.w700,
+                          color: ThemeColors.logoDeep.withValues(alpha: 0.82),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 12),
-                StatusPill(label: item.status),
+                _ShoppingStatusPill(
+                  label: purchased ? 'Purchased' : 'Pending',
+                  purchased: purchased,
+                ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShoppingStatusPill extends StatelessWidget {
+  const _ShoppingStatusPill({required this.label, required this.purchased});
+
+  final String label;
+  final bool purchased;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = purchased ? const Color(0xFF258F48) : const Color(0xFFE95C24);
+    final background = purchased
+        ? const Color(0xFFDDF2D5)
+        : const Color(0xFFFFF0D0);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          height: 1,
         ),
       ),
     );

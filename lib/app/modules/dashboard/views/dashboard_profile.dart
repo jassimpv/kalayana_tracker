@@ -6,335 +6,883 @@ class ProfilePanel extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final profile = controller.profile;
+    final name = _profileDisplayName(user, profile);
+    final email = user?.email ?? 'Shared planning space';
+    return Column(
+      children: [
+        _ProfileHeader(name: name, email: email, photoUrl: user?.photoURL),
+        Transform.translate(
+          offset: const Offset(0, -8),
+          child: _ProfileMenuCard(
+            children: [
+              _ProfileMenuRow(
+                icon: Icons.account_box_outlined,
+                label: 'Profile Details',
+                onTap: () => showProfileDialog(context),
+              ),
+              _ProfileMenuRow(
+                icon: Icons.currency_rupee_rounded,
+                label: 'Currency',
+                value: 'INR (₹)',
+                onTap: () => _showProfileSnack('Currency is set to INR.'),
+              ),
+              ValueListenableBuilder<ThemeMode>(
+                valueListenable: ThemeService.themeModeNotifier,
+                builder: (context, mode, child) {
+                  final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
+                  return _ProfileMenuRow(
+                    icon: Icons.light_mode_outlined,
+                    label: 'Theme',
+                    value: label,
+                    trailingIcon: Icons.keyboard_arrow_down_rounded,
+                    onTap: () => ThemeService.toggleTheme(),
+                  );
+                },
+              ),
+              _ProfileMenuRow(
+                icon: Icons.notifications_none_rounded,
+                label: 'Notification Settings',
+                onTap: () => _showProfileSnack('Notification settings soon.'),
+              ),
+              _ProfileMenuRow(
+                icon: Icons.bar_chart_rounded,
+                label: 'Reports',
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.dashboardReports),
+              ),
+              _ProfileMenuRow(
+                icon: Icons.group_add_outlined,
+                label: 'Collaborators',
+                onTap: () => Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.dashboardCollaborators),
+              ),
+              _ProfileMenuRow(
+                icon: Icons.backup_outlined,
+                label: 'Backup & Export',
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.dashboardReports),
+              ),
+              _ProfileMenuRow(
+                icon: Icons.help_outline_rounded,
+                label: 'Help & Support',
+                onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+              ),
+              _ProfileMenuRow(
+                icon: Icons.logout_rounded,
+                label: 'Logout',
+                destructive: true,
+                showDivider: false,
+                onTap: controller.logout,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileStandalonePage extends StatelessWidget {
+  const _ProfileStandalonePage({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: ThemeColors.scaffoldColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          18,
+          16,
+          MediaQuery.paddingOf(context).bottom + 120,
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
+class ReportsPanel extends GetView<DashboardController> {
+  const ReportsPanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return Obx(() {
-      final profile = controller.profile;
-      final date = profileMarriageDate(profile);
-      final couple = _coupleName(profile);
-      final days = daysUntilDate(date);
       final data = controller.data.value;
-      final done = data.completedExpenses + data.purchasedItems;
-      final progress = done + data.openReminders == 0
-          ? 0.0
-          : done / (done + data.openReminders);
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _PremiumSurface(
-            padding: EdgeInsets.zero,
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [ThemeColors.weddingTeal, Color(0xFFF1E3D2)],
-            ),
-            child: Stack(
+      final total = data.totalBudget;
+      final paid = data.paid;
+      final paidRatio = total <= 0 ? 0.0 : (paid / total).clamp(0.0, 1.0);
+      final categoryEntries = _topCategoryEntries(data.categoryTotals);
+      return _ProfileStandalonePage(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
               children: [
-                const Positioned(
-                  right: -40,
-                  top: -42,
-                  child: _BlurCircle(
-                    color: Colors.white,
-                    size: 160,
-                    alpha: 0.18,
+                Expanded(
+                  child: _ReportMetricCard(
+                    icon: Icons.account_balance_wallet_outlined,
+                    iconColor: ThemeColors.logoGold,
+                    label: 'Total Expense',
+                    value: '₹${formatMoney(total)}',
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(22),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          _CoupleAvatar(name: couple),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  couple ?? 'Couple profile',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
-                                      ?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                ),
-                                Text(
-                                  user?.email ?? 'Shared planning space',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.76),
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _ReportMetricCard(
+                    icon: Icons.task_alt_rounded,
+                    iconColor: const Color(0xFF209B4B),
+                    label: 'Total Paid',
+                    value: '₹${formatMoney(paid)}',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _ReportSurface(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _ReportTitle('Expense by Category'),
+                  const SizedBox(height: 20),
+                  if (categoryEntries.isEmpty)
+                    const PremiumEmptyState(
+                      icon: Icons.pie_chart_outline_rounded,
+                      title: 'No expenses yet',
+                      subtitle: 'Add expenses to see category insights.',
+                    )
+                  else
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 148,
+                          height: 148,
+                          child: CustomPaint(
+                            painter: _CategoryDonutPainter(categoryEntries),
                           ),
-                          IconButton.filled(
-                            onPressed: () => showProfileDialog(context),
-                            icon: const Icon(Icons.edit_rounded),
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: ThemeColors.weddingTeal,
+                        ),
+                        const SizedBox(width: 18),
+                        Expanded(
+                          child: _CategoryLegend(entries: categoryEntries),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _ReportSurface(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _ReportTitle('Paid vs Pending'),
+                  const SizedBox(height: 26),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      height: 40,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: (paidRatio * 1000).round().clamp(1, 999),
+                            child: Container(color: const Color(0xFF2DA052)),
+                          ),
+                          Expanded(
+                            flex: ((1 - paidRatio) * 1000).round().clamp(
+                              1,
+                              999,
                             ),
+                            child: Container(color: const Color(0xFFFF6824)),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      Text(
-                        date == null
-                            ? 'Wedding date not set'
-                            : '${formatDate(date)} | ${days == null
-                                  ? 'Countdown ready'
-                                  : days <= 0
-                                  ? 'Today'
-                                  : '$days days left'}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _ReportPercentLabel(
+                        label: 'Paid',
+                        value: '${(paidRatio * 100).round()}%',
+                      ),
+                      _ReportPercentLabel(
+                        label: 'Pending',
+                        value: '${((1 - paidRatio) * 100).round()}%',
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          // _CoupleCollaborationCard(
-          //   coupleName: couple,
-          //   done: done,
-          //   open: data.openReminders,
-          // ),
-          // const SizedBox(height: 18),
-          _PremiumSurface(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const _SectionHeader(title: 'Settings', action: 'Personalized'),
-                const SizedBox(height: 14),
-                // _SettingsRow(
-                //   icon: Icons.family_restroom_rounded,
-                //   label: 'Family collaboration',
-                //   value: '4 invitees ready',
-                // ),
-                // _SettingsRow(
-                //   icon: Icons.palette_rounded,
-                //   label: 'Theme personalization',
-                //   value: 'Emerald and gold',
-                // ),
-                // _SettingsRow(
-                //   icon: Icons.workspace_premium_rounded,
-                //   label: 'Premium subscription',
-                //   value: 'Planner Pro preview',
-                // ),
-                _SettingsRow(
-                  icon: Icons.privacy_tip_outlined,
-                  label: 'Privacy policy',
-                  value: 'Open legal page',
-                  onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+            const SizedBox(height: 22),
+            FilledButton(
+              onPressed: () => _printExpensePdf(context, data.expenses),
+              style: FilledButton.styleFrom(
+                backgroundColor: ThemeColors.primary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size.fromHeight(54),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                _SettingsRow(
-                  icon: Icons.delete_forever_rounded,
-                  label: 'Delete account',
-                  value: 'Verification required',
-                  onTap: () => Get.toNamed(AppRoutes.deleteAccount),
-                ),
-              ],
+              ),
+              child: const Text(
+                'View Detailed Report',
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+              ),
             ),
-          ),
-          const SizedBox(height: 18),
-          _PremiumSurface(
-            child: Row(
-              children: [
-                _ProgressRing(
-                  progress: progress.clamp(0.0, 1.0),
-                  color: ThemeColors.logoGold,
-                  size: 86,
-                  center: Text(
-                    '${(progress * 100).round()}%',
-                    style: const TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    'Your shared planning workspace is calm, synced, and ready for the next family decision.',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      height: 1.15,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          OutlinedButton.icon(
-            onPressed: controller.logout,
-            icon: const Icon(Icons.logout_rounded),
-            label: const Text('Logout'),
-          ),
-        ],
+          ],
+        ),
       );
     });
   }
 }
 
-class _ScreenHero extends StatelessWidget {
-  const _ScreenHero({
-    required this.eyebrow,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.actionLabel,
-    required this.onAction,
-  });
-
-  final String eyebrow;
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final String actionLabel;
-  final VoidCallback onAction;
+class CollaboratorsPanel extends GetView<DashboardController> {
+  const CollaboratorsPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return _PremiumSurface(
-      padding: const EdgeInsets.all(20),
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFFFFCF8), Color(0xFFF1E3D2)],
-      ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth >= 720;
-          final titleBlock = Row(
-            children: [
-              SoftIcon(icon: icon, color: scheme.primary),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      eyebrow,
-                      style: TextStyle(
-                        color: scheme.primary,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      title,
-                      maxLines: wide ? 1 : 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w900, height: 1.02),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      subtitle,
-                      maxLines: wide ? 1 : 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: scheme.outline,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-          final action = FilledButton.icon(
-            onPressed: onAction,
-            icon: const Icon(Icons.add_rounded),
-            label: Text(actionLabel),
-          );
-          if (!wide) {
-            return Column(
+    final user = FirebaseAuth.instance.currentUser;
+    final joinKey = _joinKeyFor(user);
+    final names = [
+      _profileDisplayName(user, controller.profile),
+      'Jassim',
+      'Rahman',
+      'Fathima',
+    ];
+    return _ProfileStandalonePage(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _ReportSurface(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                titleBlock,
+                const _ReportTitle('Your Join Key'),
                 const SizedBox(height: 16),
-                Align(alignment: Alignment.centerLeft, child: action),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.66),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFEDE2D5)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          joinKey,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _copyJoinKey(joinKey),
+                        icon: const Icon(Icons.copy_rounded),
+                        color: ThemeColors.logoDeep,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Share this key with your family or friends',
+                  style: TextStyle(
+                    color: ThemeColors.logoDeep.withValues(alpha: 0.72),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 22),
+                Center(
+                  child: SizedBox(
+                    width: 150,
+                    child: FilledButton(
+                      onPressed: () => _copyJoinKey(joinKey),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: ThemeColors.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(44),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Share',
+                        style: TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ),
+                ),
               ],
-            );
-          }
-          return Row(
-            children: [
-              Expanded(child: titleBlock),
-              const SizedBox(width: 18),
-              action,
+            ),
+          ),
+          const SizedBox(height: 28),
+          const _ReportTitle('Collaborators'),
+          const SizedBox(height: 12),
+          _CollaboratorList(
+            collaborators: [
+              _CollaboratorData(names[0], 'Admin', user?.photoURL),
+              _CollaboratorData(names[1], 'Member', null),
+              _CollaboratorData(names[2], 'Member', null),
+              _CollaboratorData(names[3], 'Viewer', null),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 40),
+          FilledButton(
+            onPressed: () => _showProfileSnack('Activity logs coming soon.'),
+            style: FilledButton.styleFrom(
+              backgroundColor: ThemeColors.primary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(54),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text(
+              'View Activity Logs',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _SettingsRow extends StatelessWidget {
-  const _SettingsRow({
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader({
+    required this.name,
+    required this.email,
+    required this.photoUrl,
+  });
+
+  final String name;
+  final String email;
+  final String? photoUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
+      decoration: BoxDecoration(
+        color: ThemeColors.primary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      child: Column(
+        children: [
+          _ProfileAvatar(name: name, photoUrl: photoUrl, radius: 44),
+          const SizedBox(height: 12),
+          Text(
+            name,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            email,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.82),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileMenuCard extends StatelessWidget {
+  const _ProfileMenuCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.86),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.12)),
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+class _ProfileMenuRow extends StatelessWidget {
+  const _ProfileMenuRow({
     required this.icon,
     required this.label,
-    required this.value,
+    this.value,
+    this.trailingIcon = Icons.chevron_right_rounded,
+    this.destructive = false,
+    this.showDivider = true,
     this.onTap,
   });
 
   final IconData icon;
   final String label;
-  final String value;
+  final String? value;
+  final IconData trailingIcon;
+  final bool destructive;
+  final bool showDivider;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final color = destructive ? const Color(0xFFC94F3D) : ThemeColors.logoGold;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
           children: [
-            SoftIcon(icon: icon, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            SizedBox(
+              height: 64,
+              child: Row(
                 children: [
-                  Text(
-                    label,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.outline,
-                      fontWeight: FontWeight.w700,
+                  Icon(icon, color: color, size: 24),
+                  const SizedBox(width: 18),
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ThemeColors.logoDeep,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
+                  ),
+                  if (value != null) ...[
+                    Text(
+                      value!,
+                      style: TextStyle(
+                        color: ThemeColors.logoDeep.withValues(alpha: 0.68),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  Icon(
+                    trailingIcon,
+                    color: ThemeColors.logoDeep.withValues(alpha: 0.58),
+                    size: 22,
                   ),
                 ],
               ),
             ),
-            Icon(
-              onTap == null
-                  ? Icons.chevron_right_rounded
-                  : Icons.open_in_new_rounded,
-              color: ThemeColors.weddingTeal,
-              size: 20,
-            ),
+            if (showDivider)
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: ThemeColors.logoGold.withValues(alpha: 0.12),
+              ),
           ],
         ),
       ),
     );
   }
+}
+
+class _ReportSurface extends StatelessWidget {
+  const _ReportSurface({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.13)),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.logoDeep.withValues(alpha: 0.035),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}
+
+class _ReportMetricCard extends StatelessWidget {
+  const _ReportMetricCard({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ReportSurface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: iconColor, size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ThemeColors.logoDeep.withValues(alpha: 0.76),
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReportTitle extends StatelessWidget {
+  const _ReportTitle(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+    );
+  }
+}
+
+class _ReportPercentLabel extends StatelessWidget {
+  const _ReportPercentLabel({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(
+          color: ThemeColors.logoDeep.withValues(alpha: 0.76),
+          fontWeight: FontWeight.w800,
+          fontFamily: DefaultTextStyle.of(context).style.fontFamily,
+        ),
+        children: [
+          TextSpan(text: label),
+          const TextSpan(text: '   '),
+          TextSpan(
+            text: value,
+            style: const TextStyle(
+              color: ThemeColors.logoDeep,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryLegend extends StatelessWidget {
+  const _CategoryLegend({required this.entries});
+
+  final List<_CategoryReportEntry> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    final total = entries.fold<double>(0, (sum, entry) => sum + entry.amount);
+    return Column(
+      children: entries.map((entry) {
+        final percent = total <= 0 ? 0 : (entry.amount / total * 100).round();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 14,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: entry.color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  entry.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+              Text(
+                '$percent%',
+                style: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _CategoryDonutPainter extends CustomPainter {
+  const _CategoryDonutPainter(this.entries);
+
+  final List<_CategoryReportEntry> entries;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final total = entries.fold<double>(0, (sum, entry) => sum + entry.amount);
+    final rect = Offset.zero & size;
+    final stroke = size.shortestSide * 0.32;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.butt;
+
+    var start = -math.pi / 2;
+    for (final entry in entries) {
+      final sweep = total <= 0 ? 0.0 : (entry.amount / total) * math.pi * 2;
+      paint.color = entry.color;
+      canvas.drawArc(rect.deflate(stroke / 2), start, sweep, false, paint);
+      start += sweep;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _CategoryDonutPainter oldDelegate) {
+    return oldDelegate.entries != entries;
+  }
+}
+
+class _CollaboratorList extends StatelessWidget {
+  const _CollaboratorList({required this.collaborators});
+
+  final List<_CollaboratorData> collaborators;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.82),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.13)),
+      ),
+      child: Column(
+        children: collaborators.asMap().entries.map((entry) {
+          final collaborator = entry.value;
+          final isLast = entry.key == collaborators.length - 1;
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    _ProfileAvatar(
+                      name: collaborator.name,
+                      photoUrl: collaborator.photoUrl,
+                      radius: 20,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        entry.key == 0
+                            ? '${collaborator.name} (You)'
+                            : collaborator.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      collaborator.role,
+                      style: TextStyle(
+                        color: ThemeColors.logoDeep.withValues(alpha: 0.72),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!isLast)
+                Divider(
+                  height: 1,
+                  color: ThemeColors.logoGold.withValues(alpha: 0.12),
+                ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({
+    required this.name,
+    required this.photoUrl,
+    required this.radius,
+  });
+
+  final String name;
+  final String? photoUrl;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = photoUrl?.trim();
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: ThemeColors.logoGold.withValues(alpha: 0.28),
+      backgroundImage: imageUrl == null || imageUrl.isEmpty
+          ? null
+          : NetworkImage(imageUrl),
+      child: imageUrl == null || imageUrl.isEmpty
+          ? Text(
+              _profileInitials(name),
+              style: TextStyle(
+                color: ThemeColors.primary,
+                fontSize: radius * 0.58,
+                fontWeight: FontWeight.w900,
+              ),
+            )
+          : null,
+    );
+  }
+}
+
+class _CategoryReportEntry {
+  const _CategoryReportEntry(this.label, this.amount, this.color);
+
+  final String label;
+  final double amount;
+  final Color color;
+}
+
+class _CollaboratorData {
+  const _CollaboratorData(this.name, this.role, this.photoUrl);
+
+  final String name;
+  final String role;
+  final String? photoUrl;
+}
+
+List<_CategoryReportEntry> _topCategoryEntries(Map<String, double> totals) {
+  const colors = [
+    Color(0xFF2E79A8),
+    Color(0xFF2E964B),
+    Color(0xFFFF8D1E),
+    Color(0xFFFFB12A),
+    Color(0xFFFF4F35),
+    Color(0xFFB04BC4),
+  ];
+  final sorted = totals.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+  if (sorted.length <= 6) {
+    return [
+      for (var index = 0; index < sorted.length; index++)
+        _CategoryReportEntry(
+          sorted[index].key,
+          sorted[index].value,
+          colors[index],
+        ),
+    ];
+  }
+  final top = sorted.take(5).toList();
+  final others = sorted
+      .skip(5)
+      .fold<double>(0, (sum, item) => sum + item.value);
+  return [
+    for (var index = 0; index < top.length; index++)
+      _CategoryReportEntry(top[index].key, top[index].value, colors[index]),
+    _CategoryReportEntry('Others', others, colors.last),
+  ];
+}
+
+String _profileDisplayName(User? user, Map<String, dynamic> profile) {
+  final displayName = user?.displayName?.trim();
+  if (displayName != null && displayName.isNotEmpty) return displayName;
+  final groom = profileGroom(profile);
+  if (groom.isNotEmpty) return groom;
+  final bride = profileBride(profile);
+  if (bride.isNotEmpty) return bride;
+  final email = user?.email;
+  if (email != null && email.contains('@')) return email.split('@').first;
+  return 'Jassim';
+}
+
+String _joinKeyFor(User? user) {
+  final source = (user?.uid ?? user?.email ?? 'KALYANA').toUpperCase();
+  final compact = source.replaceAll(RegExp('[^A-Z0-9]'), '');
+  final padded = '$compact${'7X9Q2Z8L'}'.padRight(12, 'K');
+  return 'KALY-${padded.substring(0, 4)}-${padded.substring(4, 8)}';
+}
+
+String _profileInitials(String name) {
+  final parts = name
+      .trim()
+      .split(RegExp(r'\s+'))
+      .where((part) => part.isNotEmpty)
+      .toList();
+  if (parts.isEmpty) return 'K';
+  return parts.take(2).map((part) => part[0].toUpperCase()).join();
 }
 
 String? _coupleName(Map<String, dynamic> profile) {
@@ -344,4 +892,18 @@ String? _coupleName(Map<String, dynamic> profile) {
   if (groom.isNotEmpty) return groom;
   if (bride.isNotEmpty) return bride;
   return null;
+}
+
+void _copyJoinKey(String key) {
+  Clipboard.setData(ClipboardData(text: key));
+  _showProfileSnack('Join key copied.');
+}
+
+void _showProfileSnack(String message) {
+  Get.snackbar(
+    'Profile',
+    message,
+    snackPosition: SnackPosition.BOTTOM,
+    margin: const EdgeInsets.all(16),
+  );
 }

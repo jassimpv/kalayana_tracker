@@ -61,6 +61,12 @@ class _DashboardViewState extends State<DashboardView> {
     if (_currentNestedRoute == AppRoutes.dashboardExpensePaymentHistory) {
       return 'Payment History';
     }
+    if (_currentNestedRoute == AppRoutes.dashboardReports) {
+      return 'Reports';
+    }
+    if (_currentNestedRoute == AppRoutes.dashboardCollaborators) {
+      return 'Collaborators';
+    }
     return _DashboardDestination.fromRoute(_currentNestedRoute).title;
   }
 
@@ -192,26 +198,40 @@ class _DashboardViewState extends State<DashboardView> {
                 ? const SizedBox.shrink()
                 : Padding(
                     padding: const EdgeInsets.only(bottom: 84),
-                    child: FloatingActionButton.extended(
-                      onPressed: () => _handlePrimaryAction(
-                        context,
-                        controller.selectedIndex.value,
-                      ),
-                      backgroundColor: ThemeColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 12,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      icon: const Icon(Icons.add_rounded, size: 26),
-                      label: Text(
-                        _primaryActionLabel(controller.selectedIndex.value),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                    ),
+                    child: controller.selectedIndex.value == 3
+                        ? FloatingActionButton(
+                            onPressed: () => _handlePrimaryAction(
+                              context,
+                              controller.selectedIndex.value,
+                            ),
+                            backgroundColor: ThemeColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 12,
+                            shape: const CircleBorder(),
+                            child: const Icon(Icons.add_rounded, size: 34),
+                          )
+                        : FloatingActionButton.extended(
+                            onPressed: () => _handlePrimaryAction(
+                              context,
+                              controller.selectedIndex.value,
+                            ),
+                            backgroundColor: ThemeColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 12,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            icon: const Icon(Icons.add_rounded, size: 26),
+                            label: Text(
+                              _primaryActionLabel(
+                                controller.selectedIndex.value,
+                              ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0,
+                              ),
+                            ),
+                          ),
                   ),
           ),
         ),
@@ -298,6 +318,18 @@ enum _DashboardDestination {
       return buildNestedDashboardRoute(
         settings: settings,
         child: ExpensePaymentHistoryPage(expenseId: expenseId),
+      );
+    }
+    if (routeName == AppRoutes.dashboardReports) {
+      return buildNestedDashboardRoute(
+        settings: settings,
+        child: const ReportsPanel(),
+      );
+    }
+    if (routeName == AppRoutes.dashboardCollaborators) {
+      return buildNestedDashboardRoute(
+        settings: settings,
+        child: const CollaboratorsPanel(),
       );
     }
 
@@ -400,7 +432,9 @@ class DashboardTabNavigatorObserver extends NavigatorObserver {
 bool _isStandaloneDashboardRoute(String? routeName) {
   return routeName == AppRoutes.dashboardExpenseAdd ||
       routeName == AppRoutes.dashboardExpenseDetail ||
-      routeName == AppRoutes.dashboardExpensePaymentHistory;
+      routeName == AppRoutes.dashboardExpensePaymentHistory ||
+      routeName == AppRoutes.dashboardReports ||
+      routeName == AppRoutes.dashboardCollaborators;
 }
 
 int? _matchedDashboardRouteNameToIndex(String? routeName) {
