@@ -19,8 +19,16 @@ class ExpenseDetailPage extends GetView<DashboardController> {
         (entry) => entry.id == expenseId,
       );
 
-      return Scaffold(
-        body: DefaultTabController(
+      return Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: ThemeColors.scaffoldColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+        ),
+        child: DefaultTabController(
           length: 2,
           child: Column(
             children: [
@@ -44,6 +52,8 @@ class ExpenseDetailPage extends GetView<DashboardController> {
                     horizontal: 4,
                     vertical: 4,
                   ),
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  overlayColor: WidgetStateProperty.all(Colors.transparent),
                   indicator: BoxDecoration(
                     borderRadius: BorderRadius.circular(14),
                     color: ThemeColors.primary,

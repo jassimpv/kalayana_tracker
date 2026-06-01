@@ -12,6 +12,7 @@ import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_details.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_history.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/app_bar.dart';
@@ -51,6 +52,9 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   String get _appBarTitle {
+    if (_currentNestedRoute == AppRoutes.dashboardExpenseAdd) {
+      return 'Add Expense';
+    }
     if (_currentNestedRoute == AppRoutes.dashboardExpenseDetail) {
       return 'Expense Detail';
     }
@@ -221,8 +225,19 @@ class _DashboardViewState extends State<DashboardView> {
         showPurchaseDialog(context);
         return;
       default:
-        showExpenseDialog(context);
+        _pushExpenseAddPage();
     }
+  }
+
+  void _pushExpenseAddPage() {
+    _navigatorKey.currentState?.push(
+      buildNestedDashboardRoute(
+        settings: const RouteSettings(name: AppRoutes.dashboardExpenseAdd),
+        child: const ExpenseAddPage(),
+        transitionDuration: const Duration(milliseconds: 280),
+        startOffset: const Offset(0.12, 0),
+      ),
+    );
   }
 
   String _primaryActionLabel(int index) {
@@ -262,6 +277,12 @@ enum _DashboardDestination {
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final routeName = settings.name;
+    if (routeName == AppRoutes.dashboardExpenseAdd) {
+      return buildNestedDashboardRoute(
+        settings: settings,
+        child: const ExpenseAddPage(),
+      );
+    }
     if (routeName == AppRoutes.dashboardExpenseDetail) {
       final expenseId = settings.arguments as String?;
       return buildNestedDashboardRoute(
@@ -337,20 +358,26 @@ class DashboardTabNavigatorObserver extends NavigatorObserver {
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    onRouteChanged(route.settings.name);
-    _syncSelectedIndex(route.settings.name);
+    final routeName = route.settings.name;
+    if (routeName == null) return;
+    onRouteChanged(routeName);
+    _syncSelectedIndex(routeName);
   }
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    onRouteChanged(newRoute?.settings.name);
-    _syncSelectedIndex(newRoute?.settings.name);
+    final routeName = newRoute?.settings.name;
+    if (routeName == null) return;
+    onRouteChanged(routeName);
+    _syncSelectedIndex(routeName);
   }
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    onRouteChanged(previousRoute?.settings.name);
-    _syncSelectedIndex(previousRoute?.settings.name);
+    final routeName = previousRoute?.settings.name;
+    if (routeName == null) return;
+    onRouteChanged(routeName);
+    _syncSelectedIndex(routeName);
   }
 
   void _syncSelectedIndex(String? routeName) {
@@ -368,7 +395,8 @@ class DashboardTabNavigatorObserver extends NavigatorObserver {
 }
 
 bool _isStandaloneDashboardRoute(String? routeName) {
-  return routeName == AppRoutes.dashboardExpenseDetail ||
+  return routeName == AppRoutes.dashboardExpenseAdd ||
+      routeName == AppRoutes.dashboardExpenseDetail ||
       routeName == AppRoutes.dashboardExpensePaymentHistory;
 }
 

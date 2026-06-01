@@ -18,7 +18,14 @@ class ExpensesPanel extends GetView<DashboardController> {
       });
     return _ExpenseListMockup(
       expenses: sorted,
-      onAdd: () => showExpenseDialog(context),
+      onAdd: () => Navigator.of(context).push(
+        buildNestedDashboardRoute(
+          settings: const RouteSettings(name: AppRoutes.dashboardExpenseAdd),
+          child: const ExpenseAddPage(),
+          transitionDuration: const Duration(milliseconds: 280),
+          startOffset: const Offset(0.12, 0),
+        ),
+      ),
     );
   }
 }

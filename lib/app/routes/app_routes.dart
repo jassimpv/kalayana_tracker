@@ -10,6 +10,7 @@ class AppRoutes {
   static const dashboardDates = '/dashboard/dates';
   static const dashboardShopping = '/dashboard/shopping';
   static const dashboardProfile = '/dashboard/profile';
+  static const dashboardExpenseAdd = '/dashboard/expenses/add';
   static const dashboardExpenseDetail = '/dashboard/expenses/detail';
   static const dashboardExpensePaymentHistory =
       '/dashboard/expenses/payment-history';

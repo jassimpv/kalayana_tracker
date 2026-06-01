@@ -22,8 +22,15 @@ class ExpensePaymentHistoryPage extends GetView<DashboardController> {
         (entry) => entry.id == expenseId,
       );
 
-      return SafeArea(
-        top: false,
+      return Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: ThemeColors.scaffoldColor,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+        ),
         child: Column(
           children: [
             const SizedBox(height: 16),

@@ -41,7 +41,16 @@ class OverviewPanel extends GetView<DashboardController> {
           ),
           const SizedBox(height: 20),
           _PremiumQuickActions(
-            onExpense: () => showExpenseDialog(context),
+            onExpense: () => Navigator.of(context).push(
+              buildNestedDashboardRoute(
+                settings: const RouteSettings(
+                  name: AppRoutes.dashboardExpenseAdd,
+                ),
+                child: const ExpenseAddPage(),
+                transitionDuration: const Duration(milliseconds: 280),
+                startOffset: const Offset(0.12, 0),
+              ),
+            ),
             onReminder: () => showReminderDialog(context),
             onPurchase: () => showPurchaseDialog(context),
           ),
