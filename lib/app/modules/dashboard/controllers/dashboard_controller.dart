@@ -58,8 +58,13 @@ class DashboardController extends GetxController {
   final loading = true.obs;
   final error = RxnString();
   final profile = <String, dynamic>{}.obs;
+  final collaborators = <DashboardCollaborator>[].obs;
+  final workspaceId = RxnString();
+  final joinCode = RxnString();
+  final collaborationLoading = false.obs;
   StreamSubscription<WeddingData>? _dataSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSub;
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _workspaceSub;
 
   @override
   void onInit() {
@@ -72,6 +77,7 @@ class DashboardController extends GetxController {
   void onClose() {
     _dataSub?.cancel();
     _profileSub?.cancel();
+    _workspaceSub?.cancel();
     super.onClose();
   }
 
@@ -272,6 +278,70 @@ class DashboardController extends GetxController {
       'marriageDate': weddingDate?.toIso8601String(),
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+    await _updateCurrentMember();
+  }
+
+  Future<void> joinWorkspace(String code) async {
+    final user = FirebaseAuth.instance.currentUser;
+    final normalizedCode = _normalizeJoinCode(code);
+    if (user == null || normalizedCode.isEmpty) return;
+
+    collaborationLoading.value = true;
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('weddingWorkspaces')
+          .where('joinCode', isEqualTo: normalizedCode)
+          .limit(1)
+          .get();
+      if (query.docs.isEmpty) {
+        _showDashboardSnack('Collaborators', 'Join code not found.');
+        return;
+      }
+      final workspace = query.docs.first;
+      await workspace.reference.set({
+        'members': {user.uid: _currentMemberData(user, 'Member')},
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'workspaceId': workspace.id,
+        'collaboratorRole': 'Member',
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      _showDashboardSnack('Collaborators', 'Workspace joined.');
+      _bindStreams();
+    } catch (exception) {
+      _showDashboardSnack('Collaborators', exception.toString());
+    } finally {
+      collaborationLoading.value = false;
+    }
+  }
+
+  Future<void> leaveWorkspace() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final currentWorkspaceId = workspaceId.value;
+    if (user == null || currentWorkspaceId == null) return;
+
+    collaborationLoading.value = true;
+    try {
+      await FirebaseFirestore.instance
+          .collection('weddingWorkspaces')
+          .doc(currentWorkspaceId)
+          .set({
+            'members': {user.uid: FieldValue.delete()},
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'workspaceId': user.uid,
+        'collaboratorRole': 'Admin',
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      _showDashboardSnack('Collaborators', 'You left the shared workspace.');
+      _bindStreams();
+    } catch (exception) {
+      _showDashboardSnack('Collaborators', exception.toString());
+    } finally {
+      collaborationLoading.value = false;
+    }
   }
 
   Future<void> _save(WeddingData value) async {
@@ -288,6 +358,10 @@ class DashboardController extends GetxController {
   }
 
   void _bindStreams() {
+    _dataSub?.cancel();
+    _profileSub?.cancel();
+    _workspaceSub?.cancel();
+
     _dataSub = repository.watch().listen(
       (value) {
         data.value = value;
@@ -307,8 +381,122 @@ class DashboardController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           profile.value = snapshot.data() ?? {};
+          final nextWorkspaceId = profile['workspaceId']?.toString();
+          if (nextWorkspaceId != null &&
+              nextWorkspaceId.isNotEmpty &&
+              nextWorkspaceId != workspaceId.value) {
+            _bindWorkspace(nextWorkspaceId);
+          }
         });
   }
+
+  void _bindWorkspace(String nextWorkspaceId) {
+    workspaceId.value = nextWorkspaceId;
+    _workspaceSub?.cancel();
+    _workspaceSub = FirebaseFirestore.instance
+        .collection('weddingWorkspaces')
+        .doc(nextWorkspaceId)
+        .snapshots()
+        .listen((snapshot) {
+          final workspace = snapshot.data() ?? {};
+          joinCode.value = workspace['joinCode']?.toString();
+          final members = workspace['members'];
+          if (members is Map<String, dynamic>) {
+            collaborators.value =
+                members.entries
+                    .where((entry) => entry.value is Map<String, dynamic>)
+                    .map((entry) {
+                      final value = Map<String, dynamic>.from(
+                        entry.value as Map<String, dynamic>,
+                      );
+                      return DashboardCollaborator.fromJson(entry.key, value);
+                    })
+                    .toList()
+                  ..sort((a, b) {
+                    if (a.uid == FirebaseAuth.instance.currentUser?.uid) {
+                      return -1;
+                    }
+                    if (b.uid == FirebaseAuth.instance.currentUser?.uid) {
+                      return 1;
+                    }
+                    return a.name.compareTo(b.name);
+                  });
+          } else {
+            collaborators.clear();
+          }
+        });
+  }
+
+  Future<void> _updateCurrentMember() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final currentWorkspaceId = workspaceId.value;
+    if (user == null || currentWorkspaceId == null) return;
+    final role = profile['collaboratorRole']?.toString() ?? 'Member';
+    await FirebaseFirestore.instance
+        .collection('weddingWorkspaces')
+        .doc(currentWorkspaceId)
+        .set({
+          'members': {user.uid: _currentMemberData(user, role)},
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+  }
+}
+
+class DashboardCollaborator {
+  const DashboardCollaborator({
+    required this.uid,
+    required this.name,
+    required this.email,
+    required this.role,
+    required this.photoUrl,
+  });
+
+  factory DashboardCollaborator.fromJson(
+    String uid,
+    Map<String, dynamic> json,
+  ) {
+    return DashboardCollaborator(
+      uid: uid,
+      name: json['name']?.toString().trim().isNotEmpty == true
+          ? json['name'].toString().trim()
+          : 'Member',
+      email: json['email']?.toString() ?? '',
+      role: json['role']?.toString() ?? 'Member',
+      photoUrl: json['photoUrl']?.toString(),
+    );
+  }
+
+  final String uid;
+  final String name;
+  final String email;
+  final String role;
+  final String? photoUrl;
+}
+
+Map<String, dynamic> _currentMemberData(User user, String role) {
+  return {
+    'uid': user.uid,
+    'name': user.displayName ?? user.email?.split('@').first ?? 'Member',
+    'email': user.email,
+    'photoUrl': user.photoURL,
+    'role': role,
+    'joinedAt': FieldValue.serverTimestamp(),
+  };
+}
+
+String _normalizeJoinCode(String code) {
+  final compact = code.trim().toUpperCase().replaceAll(RegExp('[^A-Z0-9]'), '');
+  if (compact.length < 8) return compact;
+  return '${compact.substring(0, 4)}-${compact.substring(4, 8)}-${compact.substring(8).padRight(4, 'K').substring(0, 4)}';
+}
+
+void _showDashboardSnack(String title, String message) {
+  Get.snackbar(
+    title,
+    message,
+    snackPosition: SnackPosition.BOTTOM,
+    margin: const EdgeInsets.all(16),
+  );
 }
 
 class DashboardBinding extends Bindings {

@@ -161,8 +161,7 @@ class _ExpenseFilterChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          constraints: const BoxConstraints(minHeight: 48, minWidth: 56),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 8),
           decoration: BoxDecoration(
             color: selected ? ThemeColors.primary : const Color(0xFFFFEED7),
             borderRadius: BorderRadius.circular(999),

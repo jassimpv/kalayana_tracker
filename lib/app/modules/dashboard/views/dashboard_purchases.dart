@@ -169,8 +169,7 @@ class _PurchaseFilterChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          constraints: const BoxConstraints(minWidth: 66),
-          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 8),
           decoration: BoxDecoration(
             color: selected ? ThemeColors.primary : const Color(0xFFFFF0DB),
             borderRadius: BorderRadius.circular(999),

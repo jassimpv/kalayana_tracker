@@ -55,10 +55,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1097547412500',
     projectId: 'expense-tracker-20653',
     storageBucket: 'expense-tracker-20653.firebasestorage.app',
-    androidClientId:
-        '1097547412500-dlttq0ck3gks6gklndimu5p09h9eebdt.apps.googleusercontent.com',
-    iosClientId:
-        '1097547412500-5r0mucmb4kb1qr1samnpinqjatghtk36.apps.googleusercontent.com',
+    androidClientId: '1097547412500-04qgdrv5g4cs1f9h5riv7lnesggdpndf.apps.googleusercontent.com',
+    iosClientId: '1097547412500-5r0mucmb4kb1qr1samnpinqjatghtk36.apps.googleusercontent.com',
     iosBundleId: 'com.fueltech.kalayanaexpresstracker',
   );
 

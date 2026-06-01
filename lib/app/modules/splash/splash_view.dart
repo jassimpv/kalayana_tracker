@@ -46,6 +46,7 @@ class _SplashViewState extends State<SplashView>
     final route = FirebaseAuth.instance.currentUser == null
         ? AppRoutes.auth
         : AppRoutes.dashboard;
+
     Get.offAllNamed(route);
   }
 

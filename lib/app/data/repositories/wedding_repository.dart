@@ -14,7 +14,7 @@ class FirestoreWeddingRepository implements WeddingRepository {
   final FirebaseFirestore _firestore;
   final FirebaseAuth _auth;
 
-  DocumentReference<Map<String, dynamic>> get _doc {
+  DocumentReference<Map<String, dynamic>> get _legacyDoc {
     final user = _auth.currentUser;
     if (user == null) {
       throw StateError('Wedding data is only available after signing in.');
@@ -26,27 +26,78 @@ class FirestoreWeddingRepository implements WeddingRepository {
         .doc('dashboard');
   }
 
+  DocumentReference<Map<String, dynamic>> _doc(String workspaceId) {
+    return _firestore
+        .collection('weddingWorkspaces')
+        .doc(workspaceId)
+        .collection('dashboard')
+        .doc('main');
+  }
+
+  DocumentReference<Map<String, dynamic>> _workspaceDoc(String workspaceId) {
+    return _firestore.collection('weddingWorkspaces').doc(workspaceId);
+  }
+
+  Future<String> _workspaceId() async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw StateError('Wedding data is only available after signing in.');
+    }
+    final userRef = _firestore.collection('users').doc(user.uid);
+    final snapshot = await userRef.get();
+    final existing = snapshot.data()?['workspaceId']?.toString().trim();
+    if (existing != null && existing.isNotEmpty) return existing;
+
+    final workspaceId = user.uid;
+    await _workspaceDoc(workspaceId).set({
+      'ownerId': user.uid,
+      'joinCode': _joinCodeFor(user.uid),
+      'members': {user.uid: _memberData(user, 'Admin')},
+      'createdAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    await userRef.set({
+      'workspaceId': workspaceId,
+      'collaboratorRole': 'Admin',
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    return workspaceId;
+  }
+
   @override
   Stream<WeddingData> watch() {
-    return _doc.snapshots().map((snapshot) {
-      final data = snapshot.data();
-      return data == null ? WeddingData.empty() : WeddingData.fromJson(data);
-    });
+    return Stream.fromFuture(_workspaceId())
+        .asyncExpand((workspaceId) {
+          return _doc(workspaceId).snapshots();
+        })
+        .map((snapshot) {
+          final data = snapshot.data();
+          return data == null
+              ? WeddingData.empty()
+              : WeddingData.fromJson(data);
+        });
   }
 
   @override
   Future<void> save(WeddingData data) async {
-    await _doc.set({
-      ...data.toJson(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    final workspaceId = await _workspaceId();
+    await _doc(
+      workspaceId,
+    ).set({...data.toJson(), 'updatedAt': FieldValue.serverTimestamp()});
   }
 
   @override
   Future<void> seedIfEmpty() async {
-    final snapshot = await _doc.get();
+    final workspaceId = await _workspaceId();
+    final snapshot = await _doc(workspaceId).get();
     if (!snapshot.exists) {
-      await save(WeddingData.withDefaultExpenses());
+      final legacySnapshot = await _legacyDoc.get();
+      final legacyData = legacySnapshot.data();
+      await save(
+        legacyData == null
+            ? WeddingData.withDefaultExpenses()
+            : WeddingData.fromJson(legacyData),
+      );
       return;
     }
     final data = WeddingData.fromJson(snapshot.data() ?? {});
@@ -59,4 +110,21 @@ class FirestoreWeddingRepository implements WeddingRepository {
       );
     }
   }
+}
+
+String _joinCodeFor(String uid) {
+  final source = uid.toUpperCase().replaceAll(RegExp('[^A-Z0-9]'), '');
+  final padded = '$source${'7X9Q2Z8L'}'.padRight(8, 'K');
+  return 'KALY-${padded.substring(0, 4)}-${padded.substring(4, 8)}';
+}
+
+Map<String, dynamic> _memberData(User user, String role) {
+  return {
+    'uid': user.uid,
+    'name': user.displayName ?? user.email?.split('@').first ?? 'Member',
+    'email': user.email,
+    'photoUrl': user.photoURL,
+    'role': role,
+    'joinedAt': FieldValue.serverTimestamp(),
+  };
 }

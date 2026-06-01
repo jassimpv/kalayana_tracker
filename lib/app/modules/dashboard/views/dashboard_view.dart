@@ -76,25 +76,49 @@ class _DashboardViewState extends State<DashboardView> {
 
   bool _handleBackNavigation() {
     final navigatorState = _navigatorKey.currentState;
+
     if (navigatorState != null && navigatorState.canPop()) {
       navigatorState.pop();
       return false;
     }
+
     if (controller.selectedIndex.value != 0) {
       _handleNavigation(0);
       return false;
     }
+
     return true;
   }
 
   void _handleNavigation(int index) {
     final navigator = _navigatorKey.currentState;
-    if (navigator == null || controller.selectedIndex.value == index) return;
+    if (navigator == null) return;
 
     final previousIndex = controller.selectedIndex.value;
-    navigator.pushReplacement(
+
+    // If user is inside Add/Detail/History and taps current tab,
+    // return back to that tab root page.
+    if (previousIndex == index &&
+        _isStandaloneDashboardRoute(_currentNestedRoute)) {
+      final destination = _DashboardDestination.fromIndex(index);
+
+      navigator.pushAndRemoveUntil(
+        _buildDashboardTabRoute(index, previousIndex, index),
+        (route) => false,
+      );
+
+      _handleNestedRouteChanged(destination.route);
+      controller.selectedIndex.value = index;
+      return;
+    }
+
+    if (previousIndex == index) return;
+
+    navigator.pushAndRemoveUntil(
       _buildDashboardTabRoute(index, previousIndex, index),
+      (route) => false,
     );
+
     controller.selectedIndex.value = index;
   }
 
@@ -153,7 +177,18 @@ class _DashboardViewState extends State<DashboardView> {
                                     _isStandaloneDashboardRoute(
                                       _currentNestedRoute,
                                     )
-                                    ? () => Navigator.of(context).maybePop()
+                                    ? () {
+                                        final navigator =
+                                            _navigatorKey.currentState;
+                                        if (navigator != null &&
+                                            navigator.canPop()) {
+                                          navigator.pop();
+                                        } else {
+                                          _handleNavigation(
+                                            controller.selectedIndex.value,
+                                          );
+                                        }
+                                      }
                                     : null,
                               )
                             : const SizedBox.shrink(),
@@ -201,45 +236,22 @@ class _DashboardViewState extends State<DashboardView> {
           floatingActionButton: Obx(
             () =>
                 !_showDashboardChrome ||
-                    controller.selectedIndex.value == 2 ||
+                    controller.selectedIndex.value == 0 ||
                     controller.selectedIndex.value == 4
                 ? const SizedBox.shrink()
                 : Padding(
                     padding: const EdgeInsets.only(bottom: 84),
-                    child: controller.selectedIndex.value == 3
-                        ? FloatingActionButton(
-                            onPressed: () => _handlePrimaryAction(
-                              context,
-                              controller.selectedIndex.value,
-                            ),
-                            backgroundColor: ThemeColors.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 12,
-                            shape: const CircleBorder(),
-                            child: const Icon(Icons.add_rounded, size: 34),
-                          )
-                        : FloatingActionButton.extended(
-                            onPressed: () => _handlePrimaryAction(
-                              context,
-                              controller.selectedIndex.value,
-                            ),
-                            backgroundColor: ThemeColors.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 12,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            icon: const Icon(Icons.add_rounded, size: 26),
-                            label: Text(
-                              _primaryActionLabel(
-                                controller.selectedIndex.value,
-                              ),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0,
-                              ),
-                            ),
-                          ),
+                    child: FloatingActionButton(
+                      onPressed: () => _handlePrimaryAction(
+                        context,
+                        controller.selectedIndex.value,
+                      ),
+                      backgroundColor: ThemeColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 12,
+                      shape: const CircleBorder(),
+                      child: const Icon(Icons.add_rounded, size: 34),
+                    ),
                   ),
           ),
         ),
@@ -269,14 +281,6 @@ class _DashboardViewState extends State<DashboardView> {
         startOffset: const Offset(0.12, 0),
       ),
     );
-  }
-
-  String _primaryActionLabel(int index) {
-    return switch (index) {
-      2 => 'Reminder',
-      3 => 'Purchase',
-      _ => 'Expense',
-    };
   }
 }
 
@@ -485,10 +489,10 @@ class _DashboardTabPage extends GetView<DashboardController> {
                     ),
                     SliverPadding(
                       padding: EdgeInsets.only(
-                        top: 8.0,
+                        top: index == 4 ? 0 : 8,
                         bottom: MediaQuery.paddingOf(context).bottom + 60,
-                        left: 16,
-                        right: 16,
+                        left: index == 4 ? 0 : 16,
+                        right: index == 4 ? 0 : 16,
                       ),
                       sliver: SliverToBoxAdapter(
                         child: _page(index, controller.data.value),
