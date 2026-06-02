@@ -28,8 +28,29 @@ class OverviewPanel extends GetView<DashboardController> {
         ),
         onReminder: () => showReminderDialog(context),
         onPurchase: () => showPurchaseDialog(context),
+        onShowReminders: () => _openDashboardTab(context, 2),
+        onShowProfile: () => _openDashboardTab(context, 4),
+        onEditWedding: () => showProfileDialog(context),
+        onViewReports: () => Navigator.of(context).push(
+          buildNestedDashboardRoute(
+            settings: const RouteSettings(name: AppRoutes.dashboardReports),
+            child: const ReportsPanel(),
+            transitionDuration: const Duration(milliseconds: 280),
+            startOffset: const Offset(0.12, 0),
+          ),
+        ),
       );
     });
+  }
+
+  void _openDashboardTab(BuildContext context, int index) {
+    final controller = Get.find<DashboardController>();
+    final previousIndex = controller.selectedIndex.value;
+    Navigator.of(context).pushAndRemoveUntil(
+      _buildDashboardTabRoute(index, previousIndex, index),
+      (route) => false,
+    );
+    controller.selectedIndex.value = index;
   }
 }
 
@@ -42,6 +63,10 @@ class _DashboardOverviewScreen extends StatelessWidget {
     required this.onExpense,
     required this.onReminder,
     required this.onPurchase,
+    required this.onShowReminders,
+    required this.onShowProfile,
+    required this.onEditWedding,
+    required this.onViewReports,
   });
 
   final WeddingData data;
@@ -51,6 +76,10 @@ class _DashboardOverviewScreen extends StatelessWidget {
   final VoidCallback onExpense;
   final VoidCallback onReminder;
   final VoidCallback onPurchase;
+  final VoidCallback onShowReminders;
+  final VoidCallback onShowProfile;
+  final VoidCallback onEditWedding;
+  final VoidCallback onViewReports;
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +114,12 @@ class _DashboardOverviewScreen extends StatelessWidget {
             coupleName: couple,
             weddingDate: weddingDate,
             daysLeft: daysLeft,
+            onReminderTap: onShowReminders,
+            onProfileTap: onShowProfile,
+            onEditWedding: onEditWedding,
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: Column(
               children: [
                 _BudgetHeroCard(
@@ -97,7 +129,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
                   remaining: remaining,
                   progress: progress,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 _BudgetMetricStrip(
                   paid: paid,
                   pending: pending,
@@ -116,6 +148,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
                 _OverviewBudgetAnalytics(
                   progress: progress,
                   categoryTotals: data.categoryTotals,
+                  onViewReports: onViewReports,
                 ),
               ],
             ),
@@ -133,6 +166,9 @@ class _DashboardHeroHeader extends StatelessWidget {
     required this.coupleName,
     required this.weddingDate,
     required this.daysLeft,
+    required this.onReminderTap,
+    required this.onProfileTap,
+    required this.onEditWedding,
   });
 
   final String firstName;
@@ -140,101 +176,121 @@ class _DashboardHeroHeader extends StatelessWidget {
   final String coupleName;
   final DateTime? weddingDate;
   final int? daysLeft;
+  final VoidCallback onReminderTap;
+  final VoidCallback onProfileTap;
+  final VoidCallback onEditWedding;
 
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
-    final heroHeight = topInset + 296;
+    final heroHeight = topInset + 98;
     return SizedBox(
-      height: heroHeight + 96,
+      height: heroHeight + 100,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          ClipPath(
-            clipper: _OverviewHeaderClipper(),
-            child: Container(
-              height: heroHeight,
-              decoration: const BoxDecoration(color: Color(0xFF8F1438)),
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/images/auth_wedding_hero.png',
-                      fit: BoxFit.cover,
-                      alignment: const Alignment(0.72, -0.02),
-                      filterQuality: FilterQuality.high,
-                    ),
+          Container(
+            height: heroHeight + 100,
+            decoration: const BoxDecoration(color: Color(0xFF8F1438)),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/dashboard_figma_wedding_header.png',
+                    fit: BoxFit.cover,
+                    alignment: const Alignment(1.0, 0),
+                    filterQuality: FilterQuality.high,
                   ),
-                  const Positioned.fill(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            Color(0xF28F1438),
-                            Color(0xD09D1740),
-                            Color(0x709D1740),
+                ),
+                Positioned(
+                  top: topInset + 18,
+                  left: 22,
+                  right: 18,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hi $firstName 👋',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 27,
+                                fontWeight: FontWeight.w900,
+                                height: 1.04,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "Let's plan your perfect day",
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.94),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                  ),
-                  Positioned(
-                    top: topInset + 22,
-                    left: 22,
-                    right: 22,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hi $firstName 👋',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 27,
-                                  fontWeight: FontWeight.w900,
-                                  height: 1.05,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Let's plan your perfect day",
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.92),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
+                      const SizedBox(width: 12),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          _HeaderCircleButton(
+                            icon: CupertinoIcons.bell,
+                            onTap: onReminderTap,
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        _HeaderCircleButton(
-                          icon: Icons.notifications_none_rounded,
-                        ),
-                        const SizedBox(width: 10),
-                        _ProfilePill(user: user),
-                      ],
-                    ),
+                          Positioned(
+                            right: 9,
+                            top: -2,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFE8B75C),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 10),
+                      _ProfilePill(user: user, onTap: onProfileTap),
+                    ],
                   ),
-                ],
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: heroHeight + 34,
+            child: ClipPath(
+              clipper: _OverviewHeaderCardScoopClipper(),
+              child: SizedBox(
+                height: 70,
+                child: ColoredBox(
+                  color: const Color(0xFFFFF3E4).withValues(alpha: 0.98),
+                ),
               ),
             ),
           ),
           Positioned(
             left: 16,
-            right: 16,
-            bottom: 10,
-            child: _WeddingIdentityCard(
-              coupleName: coupleName,
-              weddingDate: weddingDate,
-              daysLeft: daysLeft,
+            right: 108,
+            top: heroHeight - 8,
+            child: SizedBox(
+              child: _WeddingIdentityCard(
+                coupleName: coupleName,
+                weddingDate: weddingDate,
+                daysLeft: daysLeft,
+                onEdit: onEditWedding,
+              ),
             ),
           ),
         ],
@@ -244,50 +300,74 @@ class _DashboardHeroHeader extends StatelessWidget {
 }
 
 class _HeaderCircleButton extends StatelessWidget {
-  const _HeaderCircleButton({required this.icon});
+  const _HeaderCircleButton({required this.icon, required this.onTap});
 
   final IconData icon;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 50,
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+    return Material(
+      color: Colors.transparent,
+      shape: const CircleBorder(),
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Ink(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.12),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white.withValues(alpha: 0.88),
+            size: 26,
+          ),
+        ),
       ),
-      child: Icon(icon, color: Colors.white.withValues(alpha: 0.88), size: 26),
     );
   }
 }
 
 class _ProfilePill extends StatelessWidget {
-  const _ProfilePill({required this.user});
+  const _ProfilePill({required this.user, required this.onTap});
 
   final User? user;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 50,
-      padding: const EdgeInsets.fromLTRB(6, 5, 10, 5),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(26),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(26),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
-      child: Row(
-        children: [
-          _ResilientAvatar(
-            initials: _profileInitials(user?.displayName ?? user?.email ?? 'J'),
-            imageUrl: user?.photoURL,
-            size: 40,
+        child: Ink(
+          height: 50,
+          padding: const EdgeInsets.fromLTRB(6, 5, 10, 5),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
-          const SizedBox(width: 6),
-          const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white),
-        ],
+          child: Row(
+            children: [
+              _ResilientAvatar(
+                initials: _profileInitials(
+                  user?.displayName ?? user?.email ?? 'J',
+                ),
+                imageUrl: user?.photoURL,
+                size: 40,
+              ),
+              const SizedBox(width: 6),
+              const Icon(CupertinoIcons.chevron_down, color: Colors.white),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -298,11 +378,13 @@ class _WeddingIdentityCard extends StatelessWidget {
     required this.coupleName,
     required this.weddingDate,
     required this.daysLeft,
+    required this.onEdit,
   });
 
   final String coupleName;
   final DateTime? weddingDate;
   final int? daysLeft;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -312,11 +394,11 @@ class _WeddingIdentityCard extends StatelessWidget {
         ? 'Today'
         : '$daysLeft days to go';
     return Container(
-      constraints: const BoxConstraints(minHeight: 94),
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      constraints: const BoxConstraints(minHeight: 88),
+      padding: const EdgeInsets.fromLTRB(12, 11, 13, 11),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBF5).withValues(alpha: 0.96),
-        borderRadius: BorderRadius.circular(34),
+        borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
             color: ThemeColors.logoDeep.withValues(alpha: 0.10),
@@ -331,32 +413,32 @@ class _WeddingIdentityCard extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 58,
+                height: 58,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFFFFF1D9),
                   border: Border.all(color: Colors.white, width: 3),
                 ),
                 child: const Icon(
-                  Icons.celebration_rounded,
+                  CupertinoIcons.sparkles,
                   color: Color(0xFFB87A25),
-                  size: 34,
+                  size: 31,
                 ),
               ),
               Positioned(
                 right: -4,
                 bottom: -4,
                 child: Container(
-                  width: 31,
-                  height: 31,
+                  width: 27,
+                  height: 27,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                     border: Border.all(color: ThemeColors.logoGold, width: 2),
                   ),
                   child: const AppLogo(
-                    size: 22,
+                    size: 20,
                     padding: 1,
                     showBackground: false,
                   ),
@@ -364,7 +446,7 @@ class _WeddingIdentityCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,11 +455,10 @@ class _WeddingIdentityCard extends StatelessWidget {
                   'Your Wedding',
                   style: TextStyle(
                     color: Color(0xFFB87A25),
-                    fontSize: 14,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 6),
                 Row(
                   children: [
                     Expanded(
@@ -387,36 +468,52 @@ class _WeddingIdentityCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Color(0xFF421018),
-                          fontSize: 21,
+                          fontSize: 18.5,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(
-                      Icons.edit_outlined,
-                      color: Color(0xFFB87A25),
-                      size: 22,
+                    IconButton(
+                      onPressed: onEdit,
+                      tooltip: 'Edit wedding details',
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 20,
+                        height: 20,
+                      ),
+                      icon: const Icon(
+                        CupertinoIcons.pencil,
+                        color: Color(0xFFB87A25),
+                        size: 20,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 9),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    _WeddingMetaChip(
-                      icon: Icons.calendar_month_rounded,
-                      text: weddingDate == null
-                          ? 'Set date'
-                          : formatDate(weddingDate!),
-                    ),
-                    _WeddingMetaChip(
-                      icon: Icons.favorite_border_rounded,
-                      text: daysText,
-                    ),
-                  ],
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Row(
+                    children: [
+                      _WeddingMetaChip(
+                        icon: CupertinoIcons.calendar,
+                        text: weddingDate == null
+                            ? 'Set date'
+                            : formatDate(weddingDate!),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 13,
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        color: const Color(0xFF9D1740).withValues(alpha: 0.55),
+                      ),
+                      _WeddingMetaChip(
+                        icon: CupertinoIcons.heart,
+                        text: daysText,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -473,9 +570,15 @@ class _BudgetHeroCard extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 390;
+        final chartSize = compact ? 86.0 : 98.0;
         return Container(
           width: double.infinity,
-          padding: EdgeInsets.all(compact ? 16 : 18),
+          padding: EdgeInsets.fromLTRB(
+            compact ? 18 : 22,
+            compact ? 20 : 22,
+            compact ? 16 : 20,
+            compact ? 18 : 20,
+          ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -492,101 +595,124 @@ class _BudgetHeroCard extends StatelessWidget {
             ],
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                flex: compact ? 6 : 5,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'Total Wedding Budget',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          Icons.visibility_outlined,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          size: 20,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '₹${formatMoney(total)}',
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Wedding Budget',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: compact ? 34 : 36,
+                          fontSize: 17,
                           fontWeight: FontWeight.w900,
-                          height: 0.95,
+                          height: 1.16,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Overall allocation across all\nexpenses and vendors',
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '₹${formatMoney(total)}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.72),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        height: 1.45,
+                        color: Colors.white,
+                        fontSize: compact ? 38 : 42,
+                        fontWeight: FontWeight.w900,
+                        height: 0.95,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Overall allocation across\nall expenses and vendors',
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.70),
+                      fontSize: compact ? 13 : 14,
+                      fontWeight: FontWeight.w800,
+                      height: 1.38,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: compact ? 10 : 16),
-              SizedBox(
-                width: compact ? 116 : 170,
-                child: Column(
-                  children: [
-                    _ProgressRing(
-                      progress: progress,
-                      color: ThemeColors.logoGold,
-                      size: compact ? 92 : 96,
-                      stroke: 13,
+
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.center,
+                    child: _BudgetDoughnutChart(
+                      paid: paid,
+                      pending: pending,
+                      remaining: remaining,
+                      size: chartSize,
+                      stroke: compact ? 12 : 13,
+                      backgroundColor: Colors.white.withValues(alpha: 0.10),
                       center: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             '${(progress * 100).round()}%',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
-                              fontSize: 26,
+                              fontSize: compact ? 25 : 28,
                               fontWeight: FontWeight.w900,
-                              height: 0.95,
+                              height: 0.94,
                             ),
                           ),
                           const Text(
                             'paid',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    _BudgetLegendGrid(
-                      paid: paid,
-                      pending: pending,
-                      remaining: remaining,
-                      compact: compact,
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+
+              // Column(
+              //   crossAxisAlignment: CrossAxisAlignment.start,
+              //   children:
+              //       [
+              //             _LegendItem('Paid', paid, const Color(0xFFD59A42)),
+              //             _LegendItem(
+              //               'Pending',
+              //               pending,
+              //               const Color(0xFFF0C7AE),
+              //             ),
+              //             _LegendItem(
+              //               'Remaining',
+              //               remaining,
+              //               const Color(0xFFF4E4D8),
+              //             ),
+              //           ]
+              //           .map(
+              //             (item) => Padding(
+              //               padding: const EdgeInsets.only(bottom: 10),
+              //               child: _BudgetLegendDot(
+              //                 label: item.label,
+              //                 value: item.value,
+              //                 color: item.color,
+              //                 compact: compact,
+              //               ),
+              //             ),
+              //           )
+              //           .toList(),
+              // ),
             ],
           ),
         );
@@ -595,99 +721,123 @@ class _BudgetHeroCard extends StatelessWidget {
   }
 }
 
-class _BudgetLegendGrid extends StatelessWidget {
-  const _BudgetLegendGrid({
+class _BudgetDoughnutChart extends StatelessWidget {
+  const _BudgetDoughnutChart({
     required this.paid,
     required this.pending,
     required this.remaining,
-    required this.compact,
+    required this.center,
+    required this.backgroundColor,
+    this.size = 96,
+    this.stroke = 13,
   });
 
   final double paid;
   final double pending;
   final double remaining;
-  final bool compact;
+  final Widget center;
+  final Color backgroundColor;
+  final double size;
+  final double stroke;
 
   @override
   Widget build(BuildContext context) {
-    final items = [
-      _LegendItem('Paid', paid, const Color(0xFFD59A42)),
-      _LegendItem('Pending', pending, const Color(0xFFF0C7AE)),
-      _LegendItem('Remaining', remaining, const Color(0xFFF4E4D8)),
+    final segments = [
+      _DoughnutSegment(paid, const Color(0xFFDFA03B)),
+      _DoughnutSegment(pending, const Color(0xFFF0C7AE)),
+      _DoughnutSegment(remaining, const Color(0xFFF4E4D8)),
     ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: items
-          .map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 7),
-              child: _BudgetLegendDot(
-                label: item.label,
-                value: item.value,
-                color: item.color,
-                compact: compact,
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 950),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, _) => SizedBox.square(
+        dimension: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            CustomPaint(
+              size: Size.square(size),
+              painter: _DoughnutChartPainter(
+                segments: segments,
+                animationValue: value,
+                stroke: stroke,
+                backgroundColor: backgroundColor,
               ),
             ),
-          )
-          .toList(),
+            center,
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _LegendItem {
-  const _LegendItem(this.label, this.value, this.color);
-  final String label;
+class _DoughnutSegment {
+  const _DoughnutSegment(this.value, this.color);
+
   final double value;
   final Color color;
 }
 
-class _BudgetLegendDot extends StatelessWidget {
-  const _BudgetLegendDot({
-    required this.label,
-    required this.value,
-    required this.color,
-    required this.compact,
+class _DoughnutChartPainter extends CustomPainter {
+  const _DoughnutChartPainter({
+    required this.segments,
+    required this.animationValue,
+    required this.stroke,
+    required this.backgroundColor,
   });
 
-  final String label;
-  final double value;
-  final Color color;
-  final bool compact;
+  final List<_DoughnutSegment> segments;
+  final double animationValue;
+  final double stroke;
+  final Color backgroundColor;
 
   @override
-  Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 10,
-            height: 10,
-            margin: const EdgeInsets.only(top: 4),
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (!compact)
-                  Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
-                if (!compact) const SizedBox(height: 3),
-                Text(
-                  '₹${formatMoney(value)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                  style: TextStyle(fontSize: compact ? 12 : 13),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  void paint(Canvas canvas, Size size) {
+    final rect = (Offset.zero & size).deflate(stroke / 2);
+    final basePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = stroke
+      ..strokeCap = StrokeCap.round
+      ..color = backgroundColor;
+    canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
+
+    final drawableSegments = segments
+        .where((segment) => segment.value > 0)
+        .toList(growable: false);
+    final total = drawableSegments.fold<double>(
+      0,
+      (sum, segment) => sum + segment.value,
     );
+    if (total <= 0) return;
+
+    final gap = drawableSegments.length > 1 ? 0.12 : 0.0;
+    final availableSweep = (math.pi * 2) - (gap * drawableSegments.length);
+    var start = -math.pi / 2;
+
+    for (final segment in drawableSegments) {
+      final sweep =
+          availableSweep * (segment.value / total) * animationValue.clamp(0, 1);
+      if (sweep > 0) {
+        final paint = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round
+          ..color = segment.color;
+        canvas.drawArc(rect, start + gap / 2, sweep, false, paint);
+      }
+      start += availableSweep * (segment.value / total) + gap;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DoughnutChartPainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.segments != segments ||
+        oldDelegate.stroke != stroke ||
+        oldDelegate.backgroundColor != backgroundColor;
   }
 }
 
@@ -708,25 +858,25 @@ class _BudgetMetricStrip extends StatelessWidget {
   Widget build(BuildContext context) {
     final metrics = [
       _MetricSpec(
-        Icons.account_balance_wallet_rounded,
+        CupertinoIcons.creditcard,
         'Paid',
         '₹${formatMoney(paid)}',
         const Color(0xFF13A05F),
       ),
       _MetricSpec(
-        Icons.pending_actions_rounded,
+        CupertinoIcons.timer,
         'Pending',
         '₹${formatMoney(pending)}',
         const Color(0xFFE49B22),
       ),
       _MetricSpec(
-        Icons.currency_rupee_rounded,
+        CupertinoIcons.money_dollar_circle,
         'Remaining',
         '₹${formatMoney(remaining)}',
         ThemeColors.primary,
       ),
       _MetricSpec(
-        Icons.pie_chart_rounded,
+        CupertinoIcons.chart_pie_fill,
         'Budget Used',
         '${(progress * 100).round()}%',
         ThemeColors.primary,
@@ -856,7 +1006,7 @@ class _PaymentPulseCard extends StatelessWidget {
                       gradient: ThemeColors.primaryGradient,
                     ),
                     child: Icon(
-                      Icons.calendar_month_rounded,
+                      CupertinoIcons.calendar,
                       color: Colors.white,
                       size: narrow ? 36 : 42,
                     ),
@@ -872,7 +1022,7 @@ class _PaymentPulseCard extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        Icons.notifications_none_rounded,
+                        CupertinoIcons.bell,
                         color: ThemeColors.primary,
                         size: 16,
                       ),
@@ -937,7 +1087,7 @@ class _PaymentPulseCard extends StatelessWidget {
                     children: [
                       Text('View Schedule'),
                       SizedBox(width: 6),
-                      Icon(Icons.chevron_right_rounded),
+                      Icon(CupertinoIcons.chevron_right),
                     ],
                   ),
                 ),
@@ -948,7 +1098,7 @@ class _PaymentPulseCard extends StatelessWidget {
                     backgroundColor: ThemeColors.primary,
                     foregroundColor: Colors.white,
                   ),
-                  icon: const Icon(Icons.chevron_right_rounded),
+                  icon: const Icon(CupertinoIcons.chevron_right),
                 ),
             ],
           ),
@@ -973,24 +1123,19 @@ class _OverviewQuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final actions = [
       _ActionSpec(
-        Icons.post_add_rounded,
+        CupertinoIcons.doc_text,
         'Add Expense',
         'Track spending',
         onExpense,
       ),
       _ActionSpec(
-        Icons.event_note_rounded,
+        CupertinoIcons.calendar_badge_plus,
         'Add Date',
         'Important events',
         onReminder,
       ),
-      _ActionSpec(
-        Icons.shopping_bag_rounded,
-        'Shopping',
-        'Manage items',
-        onPurchase,
-      ),
-      _ActionSpec(Icons.groups_rounded, 'Vendors', 'Manage vendors', () {
+      _ActionSpec(CupertinoIcons.bag, 'Shopping', 'Manage items', onPurchase),
+      _ActionSpec(CupertinoIcons.person_3, 'Vendors', 'Manage vendors', () {
         Get.snackbar(
           'Vendors',
           'Vendor management is coming soon.',
@@ -1021,7 +1166,7 @@ class _OverviewQuickActions extends StatelessWidget {
                 children: [
                   Text('View all'),
                   SizedBox(width: 4),
-                  Icon(Icons.chevron_right_rounded),
+                  Icon(CupertinoIcons.chevron_right),
                 ],
               ),
             ),
@@ -1108,10 +1253,12 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
   const _OverviewBudgetAnalytics({
     required this.progress,
     required this.categoryTotals,
+    required this.onViewReports,
   });
 
   final double progress;
   final Map<String, double> categoryTotals;
+  final VoidCallback onViewReports;
 
   @override
   Widget build(BuildContext context) {
@@ -1170,7 +1317,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                   children: [
                     Text('This Month'),
                     SizedBox(width: 4),
-                    Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                    Icon(CupertinoIcons.chevron_down, size: 18),
                   ],
                 ),
               ),
@@ -1180,11 +1327,13 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _ProgressRing(
-                progress: progress,
-                color: ThemeColors.primary,
+              _BudgetDoughnutChart(
+                paid: progress,
+                pending: 1 - progress,
+                remaining: 0,
                 size: 112,
                 stroke: 14,
+                backgroundColor: ThemeColors.primary.withValues(alpha: 0.08),
                 center: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -1220,12 +1369,27 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                             style: TextStyle(fontWeight: FontWeight.w900),
                           ),
                         ),
-                        Text(
-                          'View Report ›',
-                          style: TextStyle(
-                            color: ThemeColors.primary,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
+                        TextButton(
+                          onPressed: onViewReports,
+                          style: TextButton.styleFrom(
+                            foregroundColor: ThemeColors.primary,
+                            visualDensity: VisualDensity.compact,
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'View Report',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              SizedBox(width: 2),
+                              Icon(CupertinoIcons.chevron_right, size: 16),
+                            ],
                           ),
                         ),
                       ],
@@ -1334,39 +1498,34 @@ class _CategorySpendRow extends StatelessWidget {
 
 IconData _categoryIcon(String category) {
   final normalized = category.toLowerCase();
-  if (normalized.contains('venue')) return Icons.account_balance_rounded;
+  if (normalized.contains('venue')) return CupertinoIcons.building_2_fill;
   if (normalized.contains('food') || normalized.contains('cater')) {
-    return Icons.room_service_rounded;
+    return CupertinoIcons.bag_fill;
   }
-  if (normalized.contains('decor')) return Icons.local_florist_rounded;
-  if (normalized.contains('photo')) return Icons.photo_camera_rounded;
-  if (normalized.contains('travel')) return Icons.flight_takeoff_rounded;
-  return Icons.category_rounded;
+  if (normalized.contains('decor')) return CupertinoIcons.sparkles;
+  if (normalized.contains('photo')) return CupertinoIcons.photo_camera_solid;
+  if (normalized.contains('travel')) return CupertinoIcons.airplane;
+  return CupertinoIcons.tag_fill;
 }
 
-class _OverviewHeaderClipper extends CustomClipper<Path> {
+class _OverviewHeaderCardScoopClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
+    final w = size.width;
+    final h = size.height;
+
     return Path()
-      ..lineTo(0, size.height - 48)
-      ..quadraticBezierTo(
-        size.width * 0.28,
-        size.height + 12,
-        size.width * 0.64,
-        size.height - 16,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.86,
-        size.height - 36,
-        size.width,
-        size.height - 52,
-      )
-      ..lineTo(size.width, 0)
+      ..moveTo(0, 0)
+      ..lineTo(w * 0.48, 0)
+      ..cubicTo(w * 0.60, 0, w * 0.66, h * 0.10, w * 0.70, h * 0.58)
+      ..cubicTo(w * 0.74, h, w * 0.88, h * 0.94, w, h * 0.26)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
       ..close();
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
 // ignore: unused_element

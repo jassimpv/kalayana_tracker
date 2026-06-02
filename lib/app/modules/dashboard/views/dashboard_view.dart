@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -144,7 +145,7 @@ class _DashboardViewState extends State<DashboardView> {
       }
       if (controller.error.value != null) {
         return _StatusScaffold(
-          icon: Icons.error_outline,
+          icon: CupertinoIcons.exclamationmark_triangle,
           title: 'Could not load data',
           message: controller.error.value!,
         );
@@ -164,6 +165,7 @@ class _DashboardViewState extends State<DashboardView> {
             children: [
               Positioned.fill(
                 child: NestedScrollView(
+                  physics: const ClampingScrollPhysics(),
                   headerSliverBuilder: (context, innerBoxIsScrolled) => [
                     SliverOverlapAbsorber(
                       handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
@@ -251,7 +253,7 @@ class _DashboardViewState extends State<DashboardView> {
                       foregroundColor: Colors.white,
                       elevation: 12,
                       shape: const CircleBorder(),
-                      child: const Icon(Icons.add_rounded, size: 34),
+                      child: const Icon(CupertinoIcons.plus, size: 34),
                     ),
                   ),
           ),
@@ -483,6 +485,7 @@ class _DashboardTabPage extends GetView<DashboardController> {
                         ),
                 ),
                 child: CustomScrollView(
+                  physics: const ClampingScrollPhysics(),
                   primary: true,
                   slivers: [
                     SliverOverlapInjector(

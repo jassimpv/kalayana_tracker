@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
@@ -9,11 +10,19 @@ import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboa
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_dialogs.dart';
 
 const navDestinations = [
-  NavItem('Overview', Icons.dashboard_outlined, Icons.dashboard_rounded),
-  NavItem('Expenses', Icons.payments_outlined, Icons.payments_rounded),
-  NavItem('Reminders', Icons.event_note_outlined, Icons.event_note_rounded),
-  NavItem('Shopping', Icons.shopping_bag_outlined, Icons.shopping_bag_rounded),
-  NavItem('Profile', Icons.person_outline, Icons.person_rounded),
+  NavItem(
+    'Overview',
+    CupertinoIcons.square_grid_2x2,
+    CupertinoIcons.square_grid_2x2_fill,
+  ),
+  NavItem(
+    'Expenses',
+    CupertinoIcons.creditcard,
+    CupertinoIcons.creditcard_fill,
+  ),
+  NavItem('Reminders', CupertinoIcons.calendar, CupertinoIcons.calendar),
+  NavItem('Shopping', CupertinoIcons.bag, CupertinoIcons.bag_fill),
+  NavItem('Profile', CupertinoIcons.person, CupertinoIcons.person_fill),
 ];
 
 class NavItem {

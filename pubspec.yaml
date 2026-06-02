@@ -74,6 +74,7 @@ flutter:
   assets:
     - assets/logo.png
     - assets/images/auth_wedding_hero.png
+    - assets/images/dashboard_figma_wedding_header.png
 
   fonts:
     - family: PlusJakartaSans
