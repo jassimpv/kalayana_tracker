@@ -9,82 +9,126 @@ class ProfilePanel extends GetView<DashboardController> {
     final profile = controller.profile;
     final name = _profileDisplayName(user, profile);
     final email = user?.email ?? 'Shared planning space';
-    return Container(
-      color: ThemeColors.primary,
-      child: Column(
-        children: [
-          _ProfileHeader(name: name, email: email, photoUrl: user?.photoURL),
-          _ProfileMenuCard(
-            children: [
-              _ProfileMenuRow(
-                icon: Icons.account_box_outlined,
-                label: 'Profile Details',
-                onTap: () => showProfileDialog(context),
-              ),
-              _ProfileMenuRow(
-                icon: Icons.currency_rupee_rounded,
-                label: 'Currency',
-                value: 'INR (₹)',
-                onTap: () => _showProfileSnack('Currency is set to INR.'),
-              ),
-              ValueListenableBuilder<ThemeMode>(
-                valueListenable: ThemeService.themeModeNotifier,
-                builder: (context, mode, child) {
-                  final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
-                  return _ProfileMenuRow(
-                    icon: Icons.light_mode_outlined,
-                    label: 'Theme',
-                    value: label,
-                    trailingIcon: Icons.keyboard_arrow_down_rounded,
-                    onTap: () => ThemeService.toggleTheme(),
-                  );
-                },
-              ),
-              _ProfileMenuRow(
-                icon: Icons.notifications_none_rounded,
-                label: 'Notification Settings',
-                onTap: () => _showProfileSnack('Notification settings soon.'),
-              ),
-              _ProfileMenuRow(
-                icon: Icons.bar_chart_rounded,
-                label: 'Reports',
-                onTap: () => Navigator.of(context).push(
-                  buildNestedDashboardRoute(
-                    settings: const RouteSettings(
-                      name: AppRoutes.dashboardReports,
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFFBF7), Color(0xFFFFF3EA)],
+        ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 128),
+        child: Column(
+          children: [
+            Builder(
+              builder: (context) {
+                final topInset = MediaQuery.paddingOf(context).top;
+                return SizedBox(
+                  height: topInset + 358,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      _ProfileHeader(
+                        name: name,
+                        email: email,
+                        photoUrl: user?.photoURL,
+                      ),
+                      const Positioned(
+                        left: 22,
+                        right: 22,
+                        bottom: 0,
+                        child: _PremiumPlanBanner(),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 18),
+            _ProfileMenuCard(
+              children: [
+                _ProfileMenuRow(
+                  icon: Icons.account_box_outlined,
+                  label: 'Profile Details',
+                  subtitle: 'View and edit your profile',
+                  onTap: () => showProfileDialog(context),
+                ),
+                _ProfileMenuRow(
+                  icon: Icons.currency_rupee_rounded,
+                  label: 'Currency',
+                  value: 'INR (₹)',
+                  onTap: () => _showProfileSnack('Currency is set to INR.'),
+                ),
+                ValueListenableBuilder<ThemeMode>(
+                  valueListenable: ThemeService.themeModeNotifier,
+                  builder: (context, mode, child) {
+                    final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
+                    return _ProfileMenuRow(
+                      icon: Icons.light_mode_outlined,
+                      label: 'Theme',
+                      value: label,
+                      trailingIcon: Icons.keyboard_arrow_down_rounded,
+                      onTap: () => ThemeService.toggleTheme(),
+                    );
+                  },
+                ),
+                _ProfileMenuRow(
+                  icon: Icons.notifications_none_rounded,
+                  label: 'Notification Settings',
+                  subtitle: 'Manage your alerts',
+                  onTap: () => _showProfileSnack('Notification settings soon.'),
+                ),
+                _ProfileMenuRow(
+                  icon: Icons.bar_chart_rounded,
+                  label: 'Reports',
+                  subtitle: 'View insights and analytics',
+                  onTap: () => Navigator.of(context).push(
+                    buildNestedDashboardRoute(
+                      settings: const RouteSettings(
+                        name: AppRoutes.dashboardReports,
+                      ),
+                      child: const ReportsPanel(),
                     ),
-                    child: const ReportsPanel(),
                   ),
                 ),
-              ),
 
-              _ProfileMenuRow(
-                icon: Icons.group_add_outlined,
-                label: 'Collaborators',
-                onTap: () => Navigator.of(context).push(
-                  buildNestedDashboardRoute(
-                    settings: const RouteSettings(
-                      name: AppRoutes.dashboardCollaborators,
+                _ProfileMenuRow(
+                  icon: Icons.group_add_outlined,
+                  label: 'Collaborators',
+                  subtitle: 'Invite and manage members',
+                  onTap: () => Navigator.of(context).push(
+                    buildNestedDashboardRoute(
+                      settings: const RouteSettings(
+                        name: AppRoutes.dashboardCollaborators,
+                      ),
+                      child: const CollaboratorsPanel(),
                     ),
-                    child: const CollaboratorsPanel(),
                   ),
                 ),
-              ),
-              _ProfileMenuRow(
-                icon: Icons.help_outline_rounded,
-                label: 'Help & Support',
-                onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
-              ),
-              _ProfileMenuRow(
-                icon: Icons.logout_rounded,
-                label: 'Logout',
-                destructive: true,
-                showDivider: false,
-                onTap: controller.logout,
-              ),
-            ],
-          ),
-        ],
+                _ProfileMenuRow(
+                  icon: Icons.help_outline_rounded,
+                  label: 'Help & Support',
+                  subtitle: 'FAQs and contact support',
+                  onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            _ProfileMenuCard(
+              children: [
+                _ProfileMenuRow(
+                  icon: Icons.logout_rounded,
+                  label: 'Logout',
+                  subtitle: 'Sign out from your account',
+                  destructive: true,
+                  showDivider: false,
+                  onTap: controller.logout,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -402,79 +446,96 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
-    return ClipRRect(
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(color: ThemeColors.primary),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -42,
-              top: topInset + 4,
-              child: const _ProfileGlassOrb(size: 138, alpha: 0.13),
-            ),
-            const Positioned(
-              left: -34,
-              bottom: 34,
-              child: _ProfileGlassOrb(size: 118, alpha: 0.08),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.13),
-                      Colors.white.withValues(alpha: 0.02),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 34),
-              child: SizedBox(
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    SizedBox(height: topInset),
-                    _ProfileAvatar(name: name, photoUrl: photoUrl, radius: 44),
-                    const SizedBox(height: 12),
-                    Text(
-                      name,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      email,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.82),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+    return Container(
+      height: topInset + 310,
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(34)),
+        gradient: RadialGradient(
+          center: Alignment.topLeft,
+          radius: 1.18,
+          colors: [Color(0xFFC50B50), Color(0xFF9D073E), Color(0xFF75062E)],
         ),
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Positioned(
+            left: -84,
+            top: -152,
+            child: _ProfileHalo(size: 260, alpha: 0.16),
+          ),
+          const Positioned(
+            left: -48,
+            bottom: -38,
+            child: _ProfileHalo(size: 150, alpha: 0.12),
+          ),
+          Positioned(
+            right: -84,
+            bottom: -26,
+            child: Container(
+              width: 232,
+              height: 232,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: ThemeColors.logoGold.withValues(alpha: 0.18),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 18,
+            top: topInset + 90,
+            child: const _ProfileLeafArt(),
+          ),
+          Positioned(left: 74, top: topInset + 220, child: const _ProfileDot()),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, topInset + 32, 20, 0),
+            child: SizedBox(
+              width: double.infinity,
+              child: Column(
+                children: [
+                  _EditableProfileAvatar(
+                    name: name,
+                    photoUrl: photoUrl,
+                    onTap: () => showProfileDialog(context),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    name,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      height: 1.02,
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    email,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFFF3C873),
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _ProfileGlassOrb extends StatelessWidget {
-  const _ProfileGlassOrb({required this.size, required this.alpha});
+class _ProfileHalo extends StatelessWidget {
+  const _ProfileHalo({required this.size, required this.alpha});
 
   final double size;
   final double alpha;
@@ -486,8 +547,266 @@ class _ProfileGlassOrb extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white.withValues(alpha: alpha),
-        border: Border.all(color: Colors.white.withValues(alpha: alpha * 1.2)),
+        color: const Color(0xFFE54F7B).withValues(alpha: alpha),
+        border: Border.all(
+          color: ThemeColors.logoGold.withValues(alpha: alpha * 1.2),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileLeafArt extends StatelessWidget {
+  const _ProfileLeafArt();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(98, 122),
+      painter: _ProfileLeafPainter(),
+    );
+  }
+}
+
+class _ProfileLeafPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = ThemeColors.logoGold.withValues(alpha: 0.48)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+    final stem = Path()
+      ..moveTo(size.width * 0.22, size.height)
+      ..cubicTo(
+        size.width * 0.54,
+        size.height * 0.72,
+        size.width * 0.48,
+        size.height * 0.34,
+        size.width * 0.86,
+        0,
+      );
+    canvas.drawPath(stem, paint);
+    for (var i = 0; i < 8; i++) {
+      final t = i / 8;
+      final x = size.width * (0.25 + 0.52 * t);
+      final y = size.height * (0.88 - 0.78 * t);
+      final side = i.isEven ? 1.0 : -1.0;
+      final leaf = Path()
+        ..moveTo(x, y)
+        ..cubicTo(
+          x + side * 18,
+          y - 18,
+          x + side * 34,
+          y - 8,
+          x + side * 28,
+          y + 18,
+        )
+        ..cubicTo(x + side * 13, y + 18, x + side * 5, y + 8, x, y);
+      canvas.drawPath(leaf, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _ProfileDot extends StatelessWidget {
+  const _ProfileDot();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 18,
+      height: 18,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE8B75C), Color(0xFFC94F3D)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.logoGold.withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EditableProfileAvatar extends StatelessWidget {
+  const _EditableProfileAvatar({
+    required this.name,
+    required this.photoUrl,
+    required this.onTap,
+  });
+
+  final String name;
+  final String? photoUrl;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 128,
+      height: 116,
+      child: Stack(
+        alignment: Alignment.center,
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.88),
+              boxShadow: [
+                BoxShadow(
+                  color: ThemeColors.logoGold.withValues(alpha: 0.28),
+                  blurRadius: 0,
+                  spreadRadius: 3,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: _ProfileAvatar(name: name, photoUrl: photoUrl, radius: 52),
+          ),
+          Positioned(
+            right: 10,
+            bottom: 4,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(999),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    border: Border.all(
+                      color: const Color(0xFFF3D2DD),
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: ThemeColors.logoDeep.withValues(alpha: 0.12),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.edit_outlined,
+                    color: ThemeColors.primary,
+                    size: 26,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PremiumPlanBanner extends StatelessWidget {
+  const _PremiumPlanBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 86),
+      padding: const EdgeInsets.fromLTRB(28, 18, 22, 18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [Color(0xFFB20B46), Color(0xFF97083A), Color(0xFF7D062F)],
+        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF8F1438).withValues(alpha: 0.28),
+            blurRadius: 26,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF8F1438).withValues(alpha: 0.42),
+              border: Border.all(color: const Color(0xFFF4C84E), width: 1.5),
+            ),
+            child: const Icon(
+              Icons.workspace_premium_rounded,
+              color: Color(0xFFF4C84E),
+              size: 32,
+            ),
+          ),
+          const SizedBox(width: 18),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Premium Account',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Enjoy all premium features',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Color(0xFFF7DFE6),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.38)),
+              color: Colors.white.withValues(alpha: 0.06),
+            ),
+            child: const Row(
+              children: [
+                Text(
+                  'Manage Plan',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                SizedBox(width: 10),
+                Icon(Icons.chevron_right_rounded, color: Colors.white),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -501,11 +820,19 @@ class _ProfileMenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 18),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.12)),
+        color: Colors.white.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: const Color(0xFFF5DED4)),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.logoDeep.withValues(alpha: 0.05),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(children: children),
     );
@@ -516,6 +843,7 @@ class _ProfileMenuRow extends StatelessWidget {
   const _ProfileMenuRow({
     required this.icon,
     required this.label,
+    this.subtitle,
     this.value,
     this.trailingIcon = Icons.chevron_right_rounded,
     this.destructive = false,
@@ -525,6 +853,7 @@ class _ProfileMenuRow extends StatelessWidget {
 
   final IconData icon;
   final String label;
+  final String? subtitle;
   final String? value;
   final IconData trailingIcon;
   final bool destructive;
@@ -533,29 +862,68 @@ class _ProfileMenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = destructive ? const Color(0xFFC94F3D) : ThemeColors.logoGold;
+    final color = destructive
+        ? const Color(0xFFE34944)
+        : _profileIconColor(icon);
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
         child: Column(
           children: [
             SizedBox(
-              height: 64,
+              height: subtitle == null ? 82 : 92,
               child: Row(
                 children: [
-                  Icon(icon, color: color, size: 24),
-                  const SizedBox(width: 18),
-                  Expanded(
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: ThemeColors.logoDeep,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                  Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      color: color.withValues(alpha: 0.10),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          color.withValues(alpha: 0.10),
+                          ThemeColors.logoGold.withValues(alpha: 0.08),
+                        ],
                       ),
+                    ),
+                    child: Icon(icon, color: color, size: 29),
+                  ),
+                  const SizedBox(width: 22),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: ThemeColors.logoDeep,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 5),
+                          Text(
+                            subtitle!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: ThemeColors.logoDeep.withValues(
+                                alpha: 0.62,
+                              ),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   if (value != null) ...[
@@ -571,7 +939,7 @@ class _ProfileMenuRow extends StatelessWidget {
                   Icon(
                     trailingIcon,
                     color: ThemeColors.logoDeep.withValues(alpha: 0.58),
-                    size: 22,
+                    size: 30,
                   ),
                 ],
               ),
@@ -587,6 +955,18 @@ class _ProfileMenuRow extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _profileIconColor(IconData icon) {
+  if (icon == Icons.currency_rupee_rounded ||
+      icon == Icons.light_mode_outlined) {
+    return ThemeColors.logoGold;
+  }
+  if (icon == Icons.bar_chart_rounded || icon == Icons.group_add_outlined) {
+    return const Color(0xFFE46D3D);
+  }
+  if (icon == Icons.help_outline_rounded) return const Color(0xFFD95245);
+  return ThemeColors.primary;
 }
 
 class _ReportSurface extends StatelessWidget {

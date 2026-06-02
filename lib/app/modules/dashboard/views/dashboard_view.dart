@@ -54,6 +54,9 @@ class _DashboardViewState extends State<DashboardView> {
 
   bool get _showDashboardAppBar {
     return _currentNestedRoute != AppRoutes.dashboardOverview &&
+        _currentNestedRoute != AppRoutes.dashboardExpenses &&
+        _currentNestedRoute != AppRoutes.dashboardDates &&
+        _currentNestedRoute != AppRoutes.dashboardShopping &&
         _currentNestedRoute != AppRoutes.dashboardProfile;
   }
 
@@ -477,7 +480,8 @@ class _DashboardTabPage extends GetView<DashboardController> {
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: ThemeColors.scaffoldColor,
-                  borderRadius: index == 0
+                  borderRadius:
+                      index == 0 || index == 1 || index == 2 || index == 3
                       ? BorderRadius.zero
                       : const BorderRadius.only(
                           topLeft: Radius.circular(30),
@@ -495,12 +499,33 @@ class _DashboardTabPage extends GetView<DashboardController> {
                     ),
                     SliverPadding(
                       padding: EdgeInsets.only(
-                        top: index == 0 || index == 4 ? 0 : 8,
+                        top:
+                            index == 0 ||
+                                index == 1 ||
+                                index == 2 ||
+                                index == 3 ||
+                                index == 4
+                            ? 0
+                            : 8,
                         bottom:
                             MediaQuery.paddingOf(context).bottom +
                             (index == 0 ? 118 : 60),
-                        left: index == 0 || index == 4 ? 0 : 16,
-                        right: index == 0 || index == 4 ? 0 : 16,
+                        left:
+                            index == 0 ||
+                                index == 1 ||
+                                index == 2 ||
+                                index == 3 ||
+                                index == 4
+                            ? 0
+                            : 16,
+                        right:
+                            index == 0 ||
+                                index == 1 ||
+                                index == 2 ||
+                                index == 3 ||
+                                index == 4
+                            ? 0
+                            : 16,
                       ),
                       sliver: SliverToBoxAdapter(
                         child: _page(index, controller.data.value),

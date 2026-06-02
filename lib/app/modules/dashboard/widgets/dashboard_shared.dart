@@ -903,7 +903,8 @@ class _RingPainter extends CustomPainter {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.action, this.onTap});
+  const _SectionHeader({required this.title, required this.action})
+    : onTap = null;
 
   final String title;
   final String action;
