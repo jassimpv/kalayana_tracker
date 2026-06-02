@@ -3,6 +3,7 @@ class AppRoutes {
   static const auth = '/auth';
   static const dashboard = '/dashboard';
   static const privacyPolicy = '/privacy-policy';
+  static const termsConditions = '/terms-conditions';
   static const deleteAccount = '/delete-account';
 
   static const dashboardOverview = '/dashboard/overview';

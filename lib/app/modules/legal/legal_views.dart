@@ -65,6 +65,46 @@ class PrivacyPolicyView extends StatelessWidget {
   }
 }
 
+class TermsConditionsView extends StatelessWidget {
+  const TermsConditionsView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const _LegalScaffold(
+      title: 'Terms & Conditions',
+      subtitle: 'Terms for using Kalyana Expense Tracker.',
+      children: [
+        _PolicySection(title: 'Last updated', body: 'May 21, 2026'),
+        _PolicySection(
+          title: 'Use of the app',
+          body:
+              'Kalyana Expense Tracker helps you plan wedding expenses, purchases, reminders, and related dashboard information. You are responsible for the accuracy of the information you enter.',
+        ),
+        _PolicySection(
+          title: 'Account access',
+          body:
+              'You must keep your sign-in credentials secure. If you use Google sign in or Firebase Authentication, those services may also apply their own terms.',
+        ),
+        _PolicySection(
+          title: 'Planning information',
+          body:
+              'Budgets, totals, reminders, extracted invoice fields, and reports are provided for planning convenience and should be reviewed before financial decisions are made.',
+        ),
+        _PolicySection(
+          title: 'Service availability',
+          body:
+              'The app may depend on network access, Firebase, Google sign in, and invoice extraction services. Features can be interrupted by service availability or device permissions.',
+        ),
+        _PolicySection(
+          title: 'Account deletion',
+          body:
+              'You can request account deletion from the Delete Account page after verifying your current sign-in method.',
+        ),
+      ],
+    );
+  }
+}
+
 class DeleteAccountView extends StatefulWidget {
   const DeleteAccountView({super.key});
 

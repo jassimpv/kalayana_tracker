@@ -24,12 +24,12 @@ import 'package:kalayanaexpresstracker/app/routes/app_routes.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-part 'dashboard_profile.dart';
-part 'dashboard_overview.dart';
+part 'profile/dashboard_profile.dart';
+part 'expenses/dashboard_overview.dart';
 part '../widgets/dashboard_shared.dart';
-part 'dashboard_expenses.dart';
-part 'dashboard_reminders.dart';
-part 'dashboard_purchases.dart';
+part 'expenses/dashboard_expenses.dart';
+part 'reminders/dashboard_reminders.dart';
+part 'shopping/dashboard_purchases.dart';
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -52,7 +52,8 @@ class _DashboardViewState extends State<DashboardView> {
   }
 
   bool get _showDashboardAppBar {
-    return _currentNestedRoute != AppRoutes.dashboardProfile;
+    return _currentNestedRoute != AppRoutes.dashboardOverview &&
+        _currentNestedRoute != AppRoutes.dashboardProfile;
   }
 
   String get _appBarTitle {
@@ -474,10 +475,12 @@ class _DashboardTabPage extends GetView<DashboardController> {
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
                   color: ThemeColors.scaffoldColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
+                  borderRadius: index == 0
+                      ? BorderRadius.zero
+                      : const BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
                 ),
                 child: CustomScrollView(
                   primary: true,
@@ -489,10 +492,12 @@ class _DashboardTabPage extends GetView<DashboardController> {
                     ),
                     SliverPadding(
                       padding: EdgeInsets.only(
-                        top: index == 4 ? 0 : 8,
-                        bottom: MediaQuery.paddingOf(context).bottom + 60,
-                        left: index == 4 ? 0 : 16,
-                        right: index == 4 ? 0 : 16,
+                        top: index == 0 || index == 4 ? 0 : 8,
+                        bottom:
+                            MediaQuery.paddingOf(context).bottom +
+                            (index == 0 ? 118 : 60),
+                        left: index == 0 || index == 4 ? 0 : 16,
+                        right: index == 0 || index == 4 ? 0 : 16,
                       ),
                       sliver: SliverToBoxAdapter(
                         child: _page(index, controller.data.value),

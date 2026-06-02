@@ -1,4 +1,4 @@
-part of 'dashboard_view.dart';
+part of '../dashboard_view.dart';
 
 class PurchasesPanel extends StatefulWidget {
   const PurchasesPanel({super.key, required this.purchases});

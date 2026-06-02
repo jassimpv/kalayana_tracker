@@ -1,4 +1,4 @@
-part of 'dashboard_view.dart';
+part of '../dashboard_view.dart';
 
 class RemindersPanel extends GetView<DashboardController> {
   const RemindersPanel({super.key, required this.reminders});

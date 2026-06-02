@@ -1,4 +1,4 @@
-part of 'dashboard_view.dart';
+part of '../dashboard_view.dart';
 
 class OverviewPanel extends GetView<DashboardController> {
   const OverviewPanel({super.key, required this.data});
@@ -7,79 +7,1369 @@ class OverviewPanel extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final upcoming = [...data.reminders]
-      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
-    final pendingExpenses = data.expenses
-        .where((item) => item.pendingForSummary > 0)
-        .toList();
-    pendingExpenses.sort((a, b) {
-      final aDate = a.dueDate;
-      final bDate = b.dueDate;
-      if (aDate != null && bDate != null) return aDate.compareTo(bDate);
-      if (aDate != null) return -1;
-      if (bDate != null) return 1;
-      return b.pendingForSummary.compareTo(a.pendingForSummary);
-    });
     return Obx(() {
       final profile = controller.profile;
       final date = profileMarriageDate(profile);
       final paymentProgress = data.totalBudget == 0
           ? 0.0
           : (data.paid / data.totalBudget).clamp(0.0, 1.0);
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _OverviewHero(
-            data: data,
-            weddingDate: date,
-            coupleName: _profileDisplayName(
-              FirebaseAuth.instance.currentUser,
-              profile,
-            ),
+      return _DashboardOverviewScreen(
+        data: data,
+        profile: profile,
+        weddingDate: date,
+        progress: paymentProgress,
+        onExpense: () => Navigator.of(context).push(
+          buildNestedDashboardRoute(
+            settings: const RouteSettings(name: AppRoutes.dashboardExpenseAdd),
+            child: const ExpenseAddPage(),
+            transitionDuration: const Duration(milliseconds: 280),
+            startOffset: const Offset(0.12, 0),
           ),
-          const SizedBox(height: 20),
-          _PremiumQuickActions(
-            onExpense: () => Navigator.of(context).push(
-              buildNestedDashboardRoute(
-                settings: const RouteSettings(
-                  name: AppRoutes.dashboardExpenseAdd,
-                ),
-                child: const ExpenseAddPage(),
-                transitionDuration: const Duration(milliseconds: 280),
-                startOffset: const Offset(0.12, 0),
-              ),
-            ),
-            onReminder: () => showReminderDialog(context),
-            onPurchase: () => showPurchaseDialog(context),
-          ),
-          const SizedBox(height: 20),
-          _BudgetAnalyticsCard(
-            total: data.totalBudget,
-            paid: data.paid,
-            pending: data.pending,
-            progress: paymentProgress,
-          ),
-          const SizedBox(height: 20),
-          _TodayFocusCard(
-            pendingExpenses: pendingExpenses,
-            reminders: upcoming,
-            repayment: data.repaymentPending,
-          ),
-          const SizedBox(height: 20),
-          _UpcomingEventsCarousel(
-            reminders: upcoming.take(5).toList(),
-            onAdd: () => showReminderDialog(context),
-            onEdit: (item) => showReminderDialog(context, reminder: item),
-            onToggle: controller.toggleReminder,
-          ),
-          const SizedBox(height: 20),
-          _PaymentTimeline(expenses: pendingExpenses.take(4).toList()),
-        ],
+        ),
+        onReminder: () => showReminderDialog(context),
+        onPurchase: () => showPurchaseDialog(context),
       );
     });
   }
 }
 
+class _DashboardOverviewScreen extends StatelessWidget {
+  const _DashboardOverviewScreen({
+    required this.data,
+    required this.profile,
+    required this.weddingDate,
+    required this.progress,
+    required this.onExpense,
+    required this.onReminder,
+    required this.onPurchase,
+  });
+
+  final WeddingData data;
+  final Map<String, dynamic> profile;
+  final DateTime? weddingDate;
+  final double progress;
+  final VoidCallback onExpense;
+  final VoidCallback onReminder;
+  final VoidCallback onPurchase;
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final displayName = _profileDisplayName(user, profile);
+    final firstName = displayName.split(RegExp(r'\s+')).first;
+    final groom = profileGroom(profile);
+    final bride = profileBride(profile);
+    final couple = groom.isNotEmpty && bride.isNotEmpty
+        ? '$groom & $bride'
+        : displayName == '-'
+        ? 'Your Wedding'
+        : displayName;
+    final daysLeft = daysUntilDate(weddingDate);
+    final paid = data.paid;
+    final pending = data.pending;
+    final remaining = math.max(data.totalBudget - paid - pending, 0.0);
+
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFF3E4), Color(0xFFFFFCF7)],
+        ),
+      ),
+      child: Column(
+        children: [
+          _DashboardHeroHeader(
+            firstName: firstName == '-' ? 'Jassim' : firstName,
+            user: user,
+            coupleName: couple,
+            weddingDate: weddingDate,
+            daysLeft: daysLeft,
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+            child: Column(
+              children: [
+                _BudgetHeroCard(
+                  total: data.totalBudget,
+                  paid: paid,
+                  pending: pending,
+                  remaining: remaining,
+                  progress: progress,
+                ),
+                const SizedBox(height: 14),
+                _BudgetMetricStrip(
+                  paid: paid,
+                  pending: pending,
+                  remaining: remaining,
+                  progress: progress,
+                ),
+                const SizedBox(height: 18),
+                _PaymentPulseCard(daysLeft: daysLeft, onTap: onReminder),
+                const SizedBox(height: 20),
+                _OverviewQuickActions(
+                  onExpense: onExpense,
+                  onReminder: onReminder,
+                  onPurchase: onPurchase,
+                ),
+                const SizedBox(height: 18),
+                _OverviewBudgetAnalytics(
+                  progress: progress,
+                  categoryTotals: data.categoryTotals,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardHeroHeader extends StatelessWidget {
+  const _DashboardHeroHeader({
+    required this.firstName,
+    required this.user,
+    required this.coupleName,
+    required this.weddingDate,
+    required this.daysLeft,
+  });
+
+  final String firstName;
+  final User? user;
+  final String coupleName;
+  final DateTime? weddingDate;
+  final int? daysLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    final topInset = MediaQuery.paddingOf(context).top;
+    final heroHeight = topInset + 296;
+    return SizedBox(
+      height: heroHeight + 96,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipPath(
+            clipper: _OverviewHeaderClipper(),
+            child: Container(
+              height: heroHeight,
+              decoration: const BoxDecoration(color: Color(0xFF8F1438)),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.asset(
+                      'assets/images/auth_wedding_hero.png',
+                      fit: BoxFit.cover,
+                      alignment: const Alignment(0.72, -0.02),
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ),
+                  const Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            Color(0xF28F1438),
+                            Color(0xD09D1740),
+                            Color(0x709D1740),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: topInset + 22,
+                    left: 22,
+                    right: 22,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Hi $firstName 👋',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 27,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.05,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Let's plan your perfect day",
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.92),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        _HeaderCircleButton(
+                          icon: Icons.notifications_none_rounded,
+                        ),
+                        const SizedBox(width: 10),
+                        _ProfilePill(user: user),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 10,
+            child: _WeddingIdentityCard(
+              coupleName: coupleName,
+              weddingDate: weddingDate,
+              daysLeft: daysLeft,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeaderCircleButton extends StatelessWidget {
+  const _HeaderCircleButton({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      child: Icon(icon, color: Colors.white.withValues(alpha: 0.88), size: 26),
+    );
+  }
+}
+
+class _ProfilePill extends StatelessWidget {
+  const _ProfilePill({required this.user});
+
+  final User? user;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 50,
+      padding: const EdgeInsets.fromLTRB(6, 5, 10, 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        children: [
+          _ResilientAvatar(
+            initials: _profileInitials(user?.displayName ?? user?.email ?? 'J'),
+            imageUrl: user?.photoURL,
+            size: 40,
+          ),
+          const SizedBox(width: 6),
+          const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeddingIdentityCard extends StatelessWidget {
+  const _WeddingIdentityCard({
+    required this.coupleName,
+    required this.weddingDate,
+    required this.daysLeft,
+  });
+
+  final String coupleName;
+  final DateTime? weddingDate;
+  final int? daysLeft;
+
+  @override
+  Widget build(BuildContext context) {
+    final daysText = daysLeft == null
+        ? 'Date pending'
+        : daysLeft! <= 0
+        ? 'Today'
+        : '$daysLeft days to go';
+    return Container(
+      constraints: const BoxConstraints(minHeight: 94),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBF5).withValues(alpha: 0.96),
+        borderRadius: BorderRadius.circular(34),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.logoDeep.withValues(alpha: 0.10),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFFF1D9),
+                  border: Border.all(color: Colors.white, width: 3),
+                ),
+                child: const Icon(
+                  Icons.celebration_rounded,
+                  color: Color(0xFFB87A25),
+                  size: 34,
+                ),
+              ),
+              Positioned(
+                right: -4,
+                bottom: -4,
+                child: Container(
+                  width: 31,
+                  height: 31,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: ThemeColors.logoGold, width: 2),
+                  ),
+                  child: const AppLogo(
+                    size: 22,
+                    padding: 1,
+                    showBackground: false,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Your Wedding',
+                  style: TextStyle(
+                    color: Color(0xFFB87A25),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        coupleName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF421018),
+                          fontSize: 21,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.edit_outlined,
+                      color: Color(0xFFB87A25),
+                      size: 22,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 9),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    _WeddingMetaChip(
+                      icon: Icons.calendar_month_rounded,
+                      text: weddingDate == null
+                          ? 'Set date'
+                          : formatDate(weddingDate!),
+                    ),
+                    _WeddingMetaChip(
+                      icon: Icons.favorite_border_rounded,
+                      text: daysText,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeddingMetaChip extends StatelessWidget {
+  const _WeddingMetaChip({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: const Color(0xFF9D1740)),
+        const SizedBox(width: 6),
+        Text(
+          text,
+          style: const TextStyle(
+            color: Color(0xFF9D1740),
+            fontSize: 12,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BudgetHeroCard extends StatelessWidget {
+  const _BudgetHeroCard({
+    required this.total,
+    required this.paid,
+    required this.pending,
+    required this.remaining,
+    required this.progress,
+  });
+
+  final double total;
+  final double paid;
+  final double pending;
+  final double remaining;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 390;
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(compact ? 16 : 18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF8B0E33), Color(0xFF6C0928)],
+            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF8B0E33).withValues(alpha: 0.24),
+                blurRadius: 26,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: compact ? 6 : 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Total Wedding Budget',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.visibility_outlined,
+                          color: Colors.white.withValues(alpha: 0.9),
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '₹${formatMoney(total)}',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: compact ? 34 : 36,
+                          fontWeight: FontWeight.w900,
+                          height: 0.95,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Overall allocation across all\nexpenses and vendors',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        height: 1.45,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: compact ? 10 : 16),
+              SizedBox(
+                width: compact ? 116 : 170,
+                child: Column(
+                  children: [
+                    _ProgressRing(
+                      progress: progress,
+                      color: ThemeColors.logoGold,
+                      size: compact ? 92 : 96,
+                      stroke: 13,
+                      center: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${(progress * 100).round()}%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              height: 0.95,
+                            ),
+                          ),
+                          const Text(
+                            'paid',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _BudgetLegendGrid(
+                      paid: paid,
+                      pending: pending,
+                      remaining: remaining,
+                      compact: compact,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _BudgetLegendGrid extends StatelessWidget {
+  const _BudgetLegendGrid({
+    required this.paid,
+    required this.pending,
+    required this.remaining,
+    required this.compact,
+  });
+
+  final double paid;
+  final double pending;
+  final double remaining;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      _LegendItem('Paid', paid, const Color(0xFFD59A42)),
+      _LegendItem('Pending', pending, const Color(0xFFF0C7AE)),
+      _LegendItem('Remaining', remaining, const Color(0xFFF4E4D8)),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items
+          .map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 7),
+              child: _BudgetLegendDot(
+                label: item.label,
+                value: item.value,
+                color: item.color,
+                compact: compact,
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _LegendItem {
+  const _LegendItem(this.label, this.value, this.color);
+  final String label;
+  final double value;
+  final Color color;
+}
+
+class _BudgetLegendDot extends StatelessWidget {
+  const _BudgetLegendDot({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.compact,
+  });
+
+  final String label;
+  final double value;
+  final Color color;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTextStyle(
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!compact)
+                  Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                if (!compact) const SizedBox(height: 3),
+                Text(
+                  '₹${formatMoney(value)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: TextStyle(fontSize: compact ? 12 : 13),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BudgetMetricStrip extends StatelessWidget {
+  const _BudgetMetricStrip({
+    required this.paid,
+    required this.pending,
+    required this.remaining,
+    required this.progress,
+  });
+
+  final double paid;
+  final double pending;
+  final double remaining;
+  final double progress;
+
+  @override
+  Widget build(BuildContext context) {
+    final metrics = [
+      _MetricSpec(
+        Icons.account_balance_wallet_rounded,
+        'Paid',
+        '₹${formatMoney(paid)}',
+        const Color(0xFF13A05F),
+      ),
+      _MetricSpec(
+        Icons.pending_actions_rounded,
+        'Pending',
+        '₹${formatMoney(pending)}',
+        const Color(0xFFE49B22),
+      ),
+      _MetricSpec(
+        Icons.currency_rupee_rounded,
+        'Remaining',
+        '₹${formatMoney(remaining)}',
+        ThemeColors.primary,
+      ),
+      _MetricSpec(
+        Icons.pie_chart_rounded,
+        'Budget Used',
+        '${(progress * 100).round()}%',
+        ThemeColors.primary,
+      ),
+    ];
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.90),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: ThemeColors.primary.withValues(alpha: 0.10)),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.logoDeep.withValues(alpha: 0.08),
+            blurRadius: 22,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          for (var i = 0; i < metrics.length; i++) ...[
+            Expanded(child: _MetricTile(spec: metrics[i])),
+            if (i != metrics.length - 1)
+              Container(
+                width: 1,
+                height: 58,
+                color: ThemeColors.primary.withValues(alpha: 0.12),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricSpec {
+  const _MetricSpec(this.icon, this.label, this.value, this.color);
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+}
+
+class _MetricTile extends StatelessWidget {
+  const _MetricTile({required this.spec});
+
+  final _MetricSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF0E7),
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Icon(spec.icon, color: ThemeColors.primary, size: 22),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          spec.label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 5),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            spec.value,
+            style: TextStyle(
+              color: spec.color,
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PaymentPulseCard extends StatelessWidget {
+  const _PaymentPulseCard({required this.daysLeft, required this.onTap});
+
+  final int? daysLeft;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final days = daysLeft == null
+        ? '--'
+        : daysLeft! <= 0
+        ? '0'
+        : daysLeft.toString();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < 380;
+        return Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFFFF6E9), Color(0xFFFFEBD4)],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: ThemeColors.logoGold.withValues(alpha: 0.32),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: narrow ? 64 : 74,
+                    height: narrow ? 64 : 74,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: ThemeColors.primaryGradient,
+                    ),
+                    child: Icon(
+                      Icons.calendar_month_rounded,
+                      color: Colors.white,
+                      size: narrow ? 36 : 42,
+                    ),
+                  ),
+                  Positioned(
+                    right: -3,
+                    bottom: -3,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.notifications_none_rounded,
+                        color: ThemeColors.primary,
+                        size: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Payment Pulse',
+                      style: TextStyle(
+                        color: Color(0xFFB87A25),
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      '$days days left',
+                      maxLines: narrow ? 2 : 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: const Color(0xFF421018),
+                        fontSize: narrow ? 22 : 24,
+                        fontWeight: FontWeight.w900,
+                        height: 1.05,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Stay on track and make\nyour day perfect ✨',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Color(0xFF421018),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        height: 1.22,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!narrow) ...[
+                const SizedBox(width: 10),
+                FilledButton(
+                  onPressed: onTap,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: ThemeColors.primary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(112, 46),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('View Schedule'),
+                      SizedBox(width: 6),
+                      Icon(Icons.chevron_right_rounded),
+                    ],
+                  ),
+                ),
+              ] else
+                IconButton.filled(
+                  onPressed: onTap,
+                  style: IconButton.styleFrom(
+                    backgroundColor: ThemeColors.primary,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.chevron_right_rounded),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _OverviewQuickActions extends StatelessWidget {
+  const _OverviewQuickActions({
+    required this.onExpense,
+    required this.onReminder,
+    required this.onPurchase,
+  });
+
+  final VoidCallback onExpense;
+  final VoidCallback onReminder;
+  final VoidCallback onPurchase;
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = [
+      _ActionSpec(
+        Icons.post_add_rounded,
+        'Add Expense',
+        'Track spending',
+        onExpense,
+      ),
+      _ActionSpec(
+        Icons.event_note_rounded,
+        'Add Date',
+        'Important events',
+        onReminder,
+      ),
+      _ActionSpec(
+        Icons.shopping_bag_rounded,
+        'Shopping',
+        'Manage items',
+        onPurchase,
+      ),
+      _ActionSpec(Icons.groups_rounded, 'Vendors', 'Manage vendors', () {
+        Get.snackbar(
+          'Vendors',
+          'Vendor management is coming soon.',
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+        );
+      }),
+    ];
+    return Column(
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Quick Actions',
+                style: TextStyle(
+                  color: Color(0xFF421018),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              style: TextButton.styleFrom(foregroundColor: ThemeColors.primary),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('View all'),
+                  SizedBox(width: 4),
+                  Icon(Icons.chevron_right_rounded),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            for (var i = 0; i < actions.length; i++) ...[
+              Expanded(child: _ActionCard(spec: actions[i])),
+              if (i != actions.length - 1) const SizedBox(width: 8),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ActionSpec {
+  const _ActionSpec(this.icon, this.title, this.subtitle, this.onTap);
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+}
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({required this.spec});
+
+  final _ActionSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.74),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: spec.onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          height: 86,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: ThemeColors.primary.withValues(alpha: 0.10),
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(spec.icon, color: ThemeColors.primary, size: 27),
+              const SizedBox(height: 6),
+              Text(
+                spec.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                spec.subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.outline,
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OverviewBudgetAnalytics extends StatelessWidget {
+  const _OverviewBudgetAnalytics({
+    required this.progress,
+    required this.categoryTotals,
+  });
+
+  final double progress;
+  final Map<String, double> categoryTotals;
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top = entries.isEmpty
+        ? const [
+            MapEntry('Venue', 220000.0),
+            MapEntry('Catering', 180400.0),
+            MapEntry('Decoration', 120000.0),
+          ]
+        : entries.take(3).toList();
+    final total = top.fold<double>(0, (sum, item) => sum + item.value);
+    final colors = [
+      ThemeColors.primary,
+      const Color(0xFFC88932),
+      const Color(0xFFE36C76),
+    ];
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.78),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: ThemeColors.primary.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Budget Analytics',
+                  style: TextStyle(
+                    color: Color(0xFF421018),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              OutlinedButton(
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF421018),
+                  minimumSize: const Size(98, 36),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  side: BorderSide(
+                    color: ThemeColors.primary.withValues(alpha: 0.12),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('This Month'),
+                    SizedBox(width: 4),
+                    Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _ProgressRing(
+                progress: progress,
+                color: ThemeColors.primary,
+                size: 112,
+                stroke: 14,
+                center: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${(progress * 100).round()}%',
+                      style: const TextStyle(
+                        color: Color(0xFF421018),
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const Text(
+                      'paid',
+                      style: TextStyle(
+                        color: Color(0xFF421018),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 18),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Top Spending Categories',
+                            style: TextStyle(fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                        Text(
+                          'View Report ›',
+                          style: TextStyle(
+                            color: ThemeColors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    for (var i = 0; i < top.length; i++)
+                      _CategorySpendRow(
+                        name: top[i].key,
+                        value: top[i].value,
+                        percent: total == 0 ? 0 : top[i].value / total,
+                        color: colors[i % colors.length],
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategorySpendRow extends StatelessWidget {
+  const _CategorySpendRow({
+    required this.name,
+    required this.value,
+    required this.percent,
+    required this.color,
+  });
+
+  final String name;
+  final double value;
+  final double percent;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(_categoryIcon(name), color: color, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '₹${formatMoney(value)}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${(percent * 100).round()}%',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 7),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    value: percent.clamp(0.0, 1.0),
+                    minHeight: 5,
+                    color: color,
+                    backgroundColor: color.withValues(alpha: 0.08),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+IconData _categoryIcon(String category) {
+  final normalized = category.toLowerCase();
+  if (normalized.contains('venue')) return Icons.account_balance_rounded;
+  if (normalized.contains('food') || normalized.contains('cater')) {
+    return Icons.room_service_rounded;
+  }
+  if (normalized.contains('decor')) return Icons.local_florist_rounded;
+  if (normalized.contains('photo')) return Icons.photo_camera_rounded;
+  if (normalized.contains('travel')) return Icons.flight_takeoff_rounded;
+  return Icons.category_rounded;
+}
+
+class _OverviewHeaderClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return Path()
+      ..lineTo(0, size.height - 48)
+      ..quadraticBezierTo(
+        size.width * 0.28,
+        size.height + 12,
+        size.width * 0.64,
+        size.height - 16,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.86,
+        size.height - 36,
+        size.width,
+        size.height - 52,
+      )
+      ..lineTo(size.width, 0)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+// ignore: unused_element
 class _OverviewHero extends StatelessWidget {
   const _OverviewHero({
     required this.data,
@@ -418,6 +1708,7 @@ class _OverviewPulseCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _PremiumQuickActions extends StatelessWidget {
   const _PremiumQuickActions({
     required this.onExpense,
@@ -542,6 +1833,7 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
   }
 }
 
+// ignore: unused_element
 class _BudgetAnalyticsCard extends StatelessWidget {
   const _BudgetAnalyticsCard({
     required this.total,
@@ -745,6 +2037,7 @@ class _AnalyticsStatCard extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _TodayFocusCard extends StatelessWidget {
   const _TodayFocusCard({
     required this.pendingExpenses,
@@ -854,6 +2147,7 @@ class _FocusRow extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _UpcomingEventsCarousel extends StatelessWidget {
   const _UpcomingEventsCarousel({
     required this.reminders,
@@ -1206,6 +2500,7 @@ String _momentDaySuffix(int? days) {
   return 'days left';
 }
 
+// ignore: unused_element
 class _PaymentTimeline extends StatelessWidget {
   const _PaymentTimeline({required this.expenses});
 

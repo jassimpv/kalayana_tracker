@@ -202,8 +202,7 @@ class ThemeColors {
   // ============================================================================
 
   static bool get _isArabic => Get.locale?.languageCode == 'ar';
-  static String get _fontFamily =>
-      _isArabic ? 'NotoSansArabic' : 'PlusJakartaSans';
+  static String get _fontFamily => _isArabic ? 'NotoSansArabic' : 'Inter';
   static const List<String> _fontFamilyFallback = <String>[
     'Inter',
     'Outfit',

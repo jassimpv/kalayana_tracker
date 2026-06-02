@@ -17,6 +17,10 @@ class AppPages {
       page: () => const PrivacyPolicyView(),
     ),
     GetPage(
+      name: AppRoutes.termsConditions,
+      page: () => const TermsConditionsView(),
+    ),
+    GetPage(
       name: AppRoutes.deleteAccount,
       page: () => const DeleteAccountView(),
     ),

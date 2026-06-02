@@ -1,4 +1,4 @@
-part of 'dashboard_view.dart';
+part of '../dashboard_view.dart';
 
 class ExpensesPanel extends GetView<DashboardController> {
   const ExpensesPanel({super.key, required this.expenses});
@@ -42,46 +42,135 @@ class _ExpenseListMockup extends StatefulWidget {
 
 class _ExpenseListMockupState extends State<_ExpenseListMockup> {
   String _selectedFilter = 'All';
+  String _query = '';
 
   @override
   Widget build(BuildContext context) {
+    final total = widget.expenses.fold<double>(
+      0,
+      (sum, item) => sum + item.totalAmount,
+    );
+    final pending = widget.expenses.fold<double>(
+      0,
+      (sum, item) => sum + item.pendingForSummary,
+    );
+    final repayment = widget.expenses.fold<double>(
+      0,
+      (sum, item) => sum + item.repaymentPending,
+    );
+    final overdueCount = widget.expenses.where((item) => item.isOverdue).length;
+    final splitPaymentCount = widget.expenses
+        .where((item) => item.hasSplitPayments)
+        .length;
+    final pendingExpenses =
+        widget.expenses
+            .where(
+              (item) => item.pendingForSummary > 0 || item.repaymentPending > 0,
+            )
+            .toList()
+          ..sort((a, b) {
+            final aDate = a.dueDate;
+            final bDate = b.dueDate;
+            if (aDate != null && bDate != null) return aDate.compareTo(bDate);
+            if (aDate != null) return -1;
+            if (bDate != null) return 1;
+            return b.pendingForSummary.compareTo(a.pendingForSummary);
+          });
     final filters = [
-      const _ExpenseFilter('All'),
-      const _ExpenseFilter('Paid'),
-      const _ExpenseFilter('Pending'),
-      const _ExpenseFilter('Partial'),
+      _ExpenseFilter('All', widget.expenses.length, Icons.receipt_long_rounded),
+      _ExpenseFilter(
+        'Paid',
+        widget.expenses
+            .where((item) => expenseShortStatus(item) == 'Paid')
+            .length,
+        Icons.verified_rounded,
+      ),
+      _ExpenseFilter(
+        'Pending',
+        widget.expenses
+            .where((item) => expenseShortStatus(item) == 'Pending')
+            .length,
+        Icons.schedule_rounded,
+      ),
+      _ExpenseFilter(
+        'Partial',
+        widget.expenses
+            .where((item) => expenseShortStatus(item) == 'Partial')
+            .length,
+        Icons.pie_chart_rounded,
+      ),
+      _ExpenseFilter(
+        'Repay',
+        widget.expenses.where((item) => item.repaymentPending > 0).length,
+        Icons.assignment_return_rounded,
+      ),
+      _ExpenseFilter('Overdue', overdueCount, Icons.warning_rounded),
     ];
     final filteredExpenses = widget.expenses
-        .where(
-          (item) => _selectedFilter == 'All'
-              ? true
-              : expenseShortStatus(item) == _selectedFilter,
-        )
+        .where((item) => _matchesExpenseFilter(item, _selectedFilter))
+        .where((item) => _matchesExpenseQuery(item, _query))
         .toList();
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _ExpenseSearchField(),
-        const SizedBox(height: 14),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: filters
-                .map(
-                  (filter) => _ExpenseFilterChip(
-                    filter: filter,
-                    selected: filter.label == _selectedFilter,
-                    onTap: () => setState(() {
-                      _selectedFilter = filter.label;
-                    }),
-                  ),
-                )
-                .toList(),
+        _AnimatedReveal(
+          child: _ExpenseDashboardHero(
+            total: total,
+            pending: pending,
+            repayment: repayment,
+            billCount: widget.expenses.length,
+            onAdd: widget.onAdd,
           ),
         ),
         const SizedBox(height: 18),
+        _ExpenseStatusStrip(
+          billCount: widget.expenses.length,
+          overdueCount: overdueCount,
+          pending: pending,
+          splitPaymentCount: splitPaymentCount,
+        ),
+        if (pendingExpenses.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          _PendingPaymentReminderCard(expenses: pendingExpenses),
+        ],
+        const SizedBox(height: 18),
+        _PremiumSurface(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            children: [
+              _ExpenseSearchField(
+                onChanged: (value) => setState(() => _query = value),
+              ),
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: filters
+                      .map(
+                        (filter) => _ExpenseFilterChip(
+                          filter: filter,
+                          selected: filter.label == _selectedFilter,
+                          onTap: () => setState(() {
+                            _selectedFilter = filter.label;
+                          }),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        _ExpenseListHeader(
+          visibleCount: filteredExpenses.length,
+          totalCount: widget.expenses.length,
+          selectedFilter: _selectedFilter,
+        ),
+        const SizedBox(height: 12),
         if (widget.expenses.isEmpty)
           const PremiumEmptyState(
             icon: Icons.payments_rounded,
@@ -91,26 +180,33 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
         else if (filteredExpenses.isEmpty)
           PremiumEmptyState(
             icon: Icons.filter_alt_off_rounded,
-            title: 'No $_selectedFilter expenses',
-            subtitle: 'Try another status filter to view more expenses.',
+            title: _query.trim().isEmpty
+                ? 'No $_selectedFilter expenses'
+                : 'No matching expenses',
+            subtitle: 'Try another search term or status filter.',
           )
         else
-          ...filteredExpenses.map((item) => _ExpenseListTileCard(item: item)),
+          ...filteredExpenses.map((item) => _ExpenseBillCard(item: item)),
+        const SizedBox(height: 4),
+        _ExpenseExportCard(expenses: widget.expenses),
       ],
     );
   }
 }
 
 class _ExpenseSearchField extends StatelessWidget {
-  const _ExpenseSearchField();
+  const _ExpenseSearchField({required this.onChanged});
+
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
-      enabled: false,
+      onChanged: onChanged,
       decoration: InputDecoration(
-        hintText: 'Search expenses...',
+        hintText: 'Search by bill, category, payer, or notes',
         prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: const Icon(Icons.tune_rounded),
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.74),
         contentPadding: const EdgeInsets.symmetric(
@@ -135,9 +231,11 @@ class _ExpenseSearchField extends StatelessWidget {
 }
 
 class _ExpenseFilter {
-  const _ExpenseFilter(this.label);
+  const _ExpenseFilter(this.label, this.count, this.icon);
 
   final String label;
+  final int count;
+  final IconData icon;
 }
 
 class _ExpenseFilterChip extends StatelessWidget {
@@ -165,6 +263,11 @@ class _ExpenseFilterChip extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected ? ThemeColors.primary : const Color(0xFFFFEED7),
             borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selected
+                  ? Colors.white.withValues(alpha: 0.16)
+                  : ThemeColors.logoGold.withValues(alpha: 0.18),
+            ),
             boxShadow: selected
                 ? [
                     BoxShadow(
@@ -175,14 +278,36 @@ class _ExpenseFilterChip extends StatelessWidget {
                   ]
                 : null,
           ),
-          child: Text(
-            filter.label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: selected ? Colors.white : ThemeColors.logoDeep,
-              fontWeight: FontWeight.w900,
-              fontSize: 12,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                filter.icon,
+                size: 15,
+                color: selected ? Colors.white : ThemeColors.primary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                filter.label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: selected ? Colors.white : ThemeColors.logoDeep,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                '${filter.count}',
+                style: TextStyle(
+                  color: selected
+                      ? Colors.white.withValues(alpha: 0.78)
+                      : ThemeColors.logoDeep.withValues(alpha: 0.62),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -190,187 +315,160 @@ class _ExpenseFilterChip extends StatelessWidget {
   }
 }
 
-class _ExpenseListTileCard extends GetView<DashboardController> {
-  const _ExpenseListTileCard({required this.item});
+class _ExpenseDashboardHero extends StatelessWidget {
+  const _ExpenseDashboardHero({
+    required this.total,
+    required this.pending,
+    required this.repayment,
+    required this.billCount,
+    required this.onAdd,
+  });
 
-  final ExpenseItem item;
+  final double total;
+  final double pending;
+  final double repayment;
+  final int billCount;
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
-    final status = expenseShortStatus(item);
-    final statusColor = expenseStatusColor(item);
-    final payer = item.paidBy.trim().isEmpty ? 'Self' : item.paidBy.trim();
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Material(
-        color: Colors.white.withValues(alpha: 224),
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () => Navigator.of(context).push(
-            buildNestedDashboardRoute(
-              settings: RouteSettings(
-                name: AppRoutes.dashboardExpenseDetail,
-                arguments: item.id,
-              ),
-              child: ExpenseDetailPage(expenseId: item.id),
-              transitionDuration: const Duration(milliseconds: 320),
-              startOffset: const Offset(0.08, 0),
+    return _PremiumSurface(
+      padding: const EdgeInsets.all(20),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFF7A1230), Color(0xFF9D1740), Color(0xFF3A1117)],
+      ),
+      borderColor: Colors.white24,
+      child: Stack(
+        children: [
+          const Positioned(
+            right: -54,
+            top: -64,
+            child: _BlurCircle(
+              color: Color(0xFFE8B75C),
+              size: 170,
+              alpha: 0.18,
             ),
           ),
-          child: Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 250),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: ThemeColors.logoGold.withValues(alpha: 46),
-              ),
+          const Positioned(
+            left: -70,
+            bottom: -82,
+            child: _BlurCircle(
+              color: Color(0xFFFFE4B8),
+              size: 160,
+              alpha: 0.10,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          ),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 620;
+              final title = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '$billCount wedding bills',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.74),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '₹${formatMoney(total)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      height: 0.96,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    pending <= 0
+                        ? 'Every recorded bill is settled.'
+                        : '${moneyOrDash(pending)} pending${repayment > 0 ? ' + ${moneyOrDash(repayment)} repayment' : ''}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.72),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              );
+              final action = FilledButton.icon(
+                onPressed: onAdd,
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: ThemeColors.primary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                icon: const Icon(Icons.add_card_rounded),
+                label: const Text('Add expense'),
+              );
+              if (compact) {
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.name.isEmpty ? 'Untitled expense' : item.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: ThemeColors.logoDeep,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              _ExpenseTag(label: status, color: statusColor),
-                              _ExpenseTag(label: item.category),
-                              _ExpenseTag(label: payer),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          moneyOrDash(item.totalAmount),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          item.dueDate == null
-                              ? 'No due date'
-                              : formatDate(item.dueDate!),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.outline,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _ExpenseListAmount(
-                        label: 'Paid',
-                        value: moneyOrDash(item.paidForSummary),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _ExpenseListAmount(
-                        label: 'Pending',
-                        value: moneyOrDash(item.pendingForSummary),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  children: [title, const SizedBox(height: 18), action],
+                );
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(child: title),
+                  const SizedBox(width: 20),
+                  action,
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExpenseListHeader extends StatelessWidget {
+  const _ExpenseListHeader({
+    required this.visibleCount,
+    required this.totalCount,
+    required this.selectedFilter,
+  });
+
+  final int visibleCount;
+  final int totalCount;
+  final String selectedFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(
+            selectedFilter == 'All'
+                ? 'Expense ledger'
+                : '$selectedFilter bills',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: ThemeColors.logoDeep,
+              fontWeight: FontWeight.w900,
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _ExpenseTag extends StatelessWidget {
-  const _ExpenseTag({required this.label, this.color});
-
-  final String label;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: (color ?? ThemeColors.logoDeep.withValues(alpha: 20)).withValues(
-          alpha: 242,
-        ),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    );
-  }
-}
-
-class _ExpenseListAmount extends StatelessWidget {
-  const _ExpenseListAmount({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
         Text(
-          label,
+          '$visibleCount of $totalCount',
           style: TextStyle(
             color: Theme.of(context).colorScheme.outline,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: ThemeColors.logoDeep,
             fontSize: 12,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
           ),
         ),
       ],
@@ -378,7 +476,29 @@ class _ExpenseListAmount extends StatelessWidget {
   }
 }
 
-// ignore: unused_element
+bool _matchesExpenseFilter(ExpenseItem item, String filter) {
+  return switch (filter) {
+    'All' => true,
+    'Repay' => item.repaymentPending > 0,
+    'Overdue' => item.isOverdue,
+    _ => expenseShortStatus(item) == filter,
+  };
+}
+
+bool _matchesExpenseQuery(ExpenseItem item, String query) {
+  final needle = query.trim().toLowerCase();
+  if (needle.isEmpty) return true;
+  final fields = [
+    item.name,
+    item.category,
+    item.paidBy,
+    item.repayPerson,
+    item.notes,
+    item.status,
+  ];
+  return fields.any((value) => value.toLowerCase().contains(needle));
+}
+
 class _ExpenseExportCard extends StatelessWidget {
   const _ExpenseExportCard({required this.expenses});
 
