@@ -18,39 +18,20 @@ class OverviewPanel extends GetView<DashboardController> {
         profile: profile,
         weddingDate: date,
         progress: paymentProgress,
-        onExpense: () => Navigator.of(context).push(
-          buildNestedDashboardRoute(
-            settings: const RouteSettings(name: AppRoutes.dashboardExpenseAdd),
-            child: const ExpenseAddPage(),
-            transitionDuration: const Duration(milliseconds: 280),
-            startOffset: const Offset(0.12, 0),
-          ),
-        ),
-        onReminder: () => showReminderDialog(context),
-        onPurchase: () => showPurchaseDialog(context),
-        onShowReminders: () => _openDashboardTab(context, 2),
-        onShowProfile: () => _openDashboardTab(context, 4),
+        onExpense: controller.openExpenseAdd,
+        onReminder: controller.openReminderAdd,
+        onPurchase: controller.openPurchaseAdd,
+        onShowReminders: () => _openDashboardTab(2),
+        onShowProfile: () => _openDashboardTab(4),
         onEditWedding: () => showProfileDialog(context),
-        onViewReports: () => Navigator.of(context).push(
-          buildNestedDashboardRoute(
-            settings: const RouteSettings(name: AppRoutes.dashboardReports),
-            child: const ReportsPanel(),
-            transitionDuration: const Duration(milliseconds: 280),
-            startOffset: const Offset(0.12, 0),
-          ),
-        ),
+        onViewReports: controller.openReports,
       );
     });
   }
 
-  void _openDashboardTab(BuildContext context, int index) {
+  void _openDashboardTab(int index) {
     final controller = Get.find<DashboardController>();
-    final previousIndex = controller.selectedIndex.value;
-    Navigator.of(context).pushAndRemoveUntil(
-      _buildDashboardTabRoute(index, previousIndex, index),
-      (route) => false,
-    );
-    controller.selectedIndex.value = index;
+    controller.openDashboardTab(index);
   }
 }
 

@@ -10,6 +10,7 @@ class PurchasesPanel extends StatefulWidget {
 }
 
 class _PurchasesPanelState extends State<PurchasesPanel> {
+  final controller = Get.find<DashboardController>();
   final _searchController = TextEditingController();
   String _selectedFilter = 'All';
   String _searchQuery = '';
@@ -59,7 +60,7 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
         children: [
           const _ShoppingHero(),
           Transform.translate(
-            offset: const Offset(0, -24),
+            offset: const Offset(0, -20),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 18),
               child: _ShoppingSearchPanel(
@@ -77,25 +78,22 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
               ),
             ),
           ),
-          Transform.translate(
-            offset: const Offset(0, -2),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              child: _WishlistCallout(onTap: () => showPurchaseDialog(context)),
-            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            child: _WishlistCallout(onTap: controller.openPurchaseAdd),
           ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 14),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: _ShoppingListHeader(count: visible.length),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: visible.isEmpty
                 ? _ShoppingEmptyState(
                     filter: _selectedFilter,
-                    onTap: () => showPurchaseDialog(context),
+                    onTap: controller.openPurchaseAdd,
                   )
                 : Column(
                     children: visible
@@ -116,9 +114,9 @@ class _ShoppingHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
     return Container(
-      height: top + 286,
+      height: top + 110,
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(26, top + 46, 26, 0),
+      padding: EdgeInsets.fromLTRB(22, top + 18, 22, 0),
       decoration: const BoxDecoration(
         gradient: RadialGradient(
           center: Alignment.topLeft,
@@ -130,11 +128,11 @@ class _ShoppingHero extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            top: -82,
-            right: 56,
+            top: -76,
+            right: -44,
             child: Container(
-              width: 150,
-              height: 150,
+              width: 154,
+              height: 154,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -146,11 +144,11 @@ class _ShoppingHero extends StatelessWidget {
             ),
           ),
           Positioned(
-            left: -82,
-            bottom: -72,
+            left: -96,
+            bottom: -44,
             child: Container(
-              width: 150,
-              height: 150,
+              width: 138,
+              height: 138,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: const Color(0xFFE03A72).withValues(alpha: 0.42),
@@ -158,36 +156,35 @@ class _ShoppingHero extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: -18,
-            bottom: 22,
+            right: -30,
+            top: 16,
             child: SizedBox(
-              width: 190,
-              height: 150,
+              width: 124,
+              height: 96,
               child: CustomPaint(painter: _ShoppingHeaderArtPainter()),
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 28),
               Text(
                 'Shopping',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   color: Colors.white,
-                  fontSize: 40,
+                  fontSize: 25,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 4),
               const SizedBox(
-                width: 265,
+                width: 230,
                 child: Text(
-                  'Manage your purchases, stay\non budget ✨',
+                  'Manage purchases, stay on budget',
                   style: TextStyle(
                     color: Color(0xFFF7C859),
-                    fontSize: 18,
-                    height: 1.65,
+                    fontSize: 12,
+                    height: 1.2,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -339,13 +336,13 @@ class _ShoppingSearchPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 20),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.96),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.logoDeep.withValues(alpha: 0.10),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 28,
             offset: const Offset(0, 16),
           ),
@@ -354,37 +351,31 @@ class _ShoppingSearchPanel extends StatelessWidget {
       child: Column(
         children: [
           _PurchaseSearchField(controller: controller, onChanged: onChanged),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: _PurchaseFilterChip(
-                  icon: CupertinoIcons.bag,
-                  label: 'All',
-                  count: total,
-                  selected: selectedFilter == 'All',
-                  onTap: () => onFilterChanged('All'),
-                ),
+              _PurchaseFilterChip(
+                icon: CupertinoIcons.bag,
+                label: 'All',
+                count: total,
+                selected: selectedFilter == 'All',
+                onTap: () => onFilterChanged('All'),
               ),
               const SizedBox(width: 10),
-              Expanded(
-                child: _PurchaseFilterChip(
-                  icon: CupertinoIcons.hourglass,
-                  label: 'Pending',
-                  count: pending,
-                  selected: selectedFilter == 'Pending',
-                  onTap: () => onFilterChanged('Pending'),
-                ),
+              _PurchaseFilterChip(
+                icon: CupertinoIcons.hourglass,
+                label: 'Pending',
+                count: pending,
+                selected: selectedFilter == 'Pending',
+                onTap: () => onFilterChanged('Pending'),
               ),
               const SizedBox(width: 10),
-              Expanded(
-                child: _PurchaseFilterChip(
-                  icon: CupertinoIcons.check_mark_circled,
-                  label: 'Purchased',
-                  count: purchased,
-                  selected: selectedFilter == 'Purchased',
-                  onTap: () => onFilterChanged('Purchased'),
-                ),
+              _PurchaseFilterChip(
+                icon: CupertinoIcons.check_mark_circled,
+                label: 'Purchased',
+                count: purchased,
+                selected: selectedFilter == 'Purchased',
+                onTap: () => onFilterChanged('Purchased'),
               ),
             ],
           ),
@@ -411,23 +402,24 @@ class _PurchaseSearchField extends StatelessWidget {
       cursorColor: ThemeColors.primary,
       style: const TextStyle(
         color: ThemeColors.logoDeep,
+        fontSize: 14,
         fontWeight: FontWeight.w800,
       ),
       decoration: InputDecoration(
         hintText: 'Search items, vendors, categories...',
         hintStyle: TextStyle(
           color: ThemeColors.logoDeep.withValues(alpha: 0.36),
-          fontSize: 15.5,
+          fontSize: 14,
           fontWeight: FontWeight.w800,
         ),
         prefixIcon: Icon(
           CupertinoIcons.search,
           color: ThemeColors.primary.withValues(alpha: 0.72),
-          size: 25,
+          size: 23,
         ),
         suffixIcon: Container(
-          width: 58,
-          margin: const EdgeInsets.symmetric(vertical: 12),
+          width: 52,
+          margin: const EdgeInsets.symmetric(vertical: 9),
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(
@@ -438,14 +430,14 @@ class _PurchaseSearchField extends StatelessWidget {
           child: Icon(
             CupertinoIcons.slider_horizontal_3,
             color: ThemeColors.primary.withValues(alpha: 0.92),
-            size: 24,
+            size: 22,
           ),
         ),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 20,
+          horizontal: 14,
+          vertical: 15,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
@@ -483,11 +475,6 @@ class _PurchaseFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = switch (label) {
-      'Pending' => const Color(0xFFF29A16),
-      'Purchased' => const Color(0xFF5EAF45),
-      _ => ThemeColors.primary,
-    };
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -496,8 +483,8 @@ class _PurchaseFilterChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          height: 30,
+          padding: const EdgeInsets.symmetric(horizontal: 13),
           decoration: BoxDecoration(
             gradient: selected
                 ? const LinearGradient(
@@ -524,17 +511,15 @@ class _PurchaseFilterChip extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: selected ? Colors.white : color, size: 21),
-                const SizedBox(width: 7),
                 Text(
                   label,
                   style: TextStyle(
-                    color: selected ? Colors.white : color,
+                    color: selected ? Colors.white : ThemeColors.primary,
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Text(
                   count.toString(),
                   style: TextStyle(
@@ -542,7 +527,7 @@ class _PurchaseFilterChip extends StatelessWidget {
                         ? Colors.white
                         : ThemeColors.logoDeep.withValues(alpha: 0.28),
                     fontWeight: FontWeight.w900,
-                    fontSize: 13,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -562,14 +547,14 @@ class _WishlistCallout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 22, 16, 22),
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.78),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFF0D7D2)),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.logoDeep.withValues(alpha: 0.045),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -578,19 +563,19 @@ class _WishlistCallout extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 72,
-            height: 72,
-            decoration: const BoxDecoration(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFFFBE7E5),
+              color: ThemeColors.primary.withValues(alpha: 0.10),
             ),
             child: Icon(
               CupertinoIcons.bookmark,
               color: ThemeColors.primary,
-              size: 35,
+              size: 22,
             ),
           ),
-          const SizedBox(width: 18),
+          const SizedBox(width: 10),
           const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,26 +586,26 @@ class _WishlistCallout extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 16.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 4),
                 Text(
                   'Add outfits, gifts, jewelry, decor, and booking purchases.',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Color(0xFF78656A),
-                    fontSize: 14,
-                    height: 1.45,
+                    fontSize: 12,
+                    height: 1.25,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           _AddWishlistButton(onTap: onTap),
         ],
       ),
@@ -641,8 +626,8 @@ class _AddWishlistButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
         child: Container(
-          height: 46,
-          padding: const EdgeInsets.symmetric(horizontal: 15),
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF9A123A), Color(0xFFC30B4A)],
@@ -659,13 +644,13 @@ class _AddWishlistButton extends StatelessWidget {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(CupertinoIcons.plus, color: Colors.white, size: 18),
+              Icon(CupertinoIcons.plus, color: Colors.white, size: 16),
               SizedBox(width: 6),
               Text(
                 'Add Wishlist',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 13.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -691,7 +676,7 @@ class _ShoppingListHeader extends StatelessWidget {
             'Shopping List',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -766,20 +751,20 @@ class _PurchaseListCard extends GetView<DashboardController> {
         : item.note.trim();
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: () => showPurchaseDialog(context, purchase: item),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 94),
-          padding: const EdgeInsets.fromLTRB(14, 14, 12, 14),
+          constraints: const BoxConstraints(minHeight: 78),
+          padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.86),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFF1D9D5)),
             boxShadow: [
               BoxShadow(
-                color: ThemeColors.logoDeep.withValues(alpha: 0.035),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -788,15 +773,15 @@ class _PurchaseListCard extends GetView<DashboardController> {
           child: Row(
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: spec.tint,
+                  color: ThemeColors.primary.withValues(alpha: 0.10),
                 ),
-                child: Icon(spec.icon, color: spec.color, size: 30),
+                child: Icon(spec.icon, color: ThemeColors.primary, size: 23),
               ),
-              const SizedBox(width: 15),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -811,7 +796,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: ThemeColors.logoDeep,
-                              fontSize: 15.5,
+                              fontSize: 14,
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -820,15 +805,15 @@ class _PurchaseListCard extends GetView<DashboardController> {
                         _CategoryPill(spec: spec, label: item.category),
                       ],
                     ),
-                    const SizedBox(height: 11),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.storefront_outlined,
-                          color: ThemeColors.logoDeep,
-                          size: 16,
+                          color: ThemeColors.primary,
+                          size: 13,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             vendor,
@@ -836,7 +821,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Color(0xFF60464C),
-                              fontSize: 13.5,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -846,7 +831,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -857,22 +842,22 @@ class _PurchaseListCard extends GetView<DashboardController> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: ThemeColors.primary,
-                      fontSize: 17,
+                      fontSize: 15,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 7),
                   _ShoppingStatusPill(
                     label: purchased ? 'Purchased' : 'Pending',
                     purchased: purchased,
                   ),
                 ],
               ),
-              const SizedBox(width: 9),
-              const Icon(
+              const SizedBox(width: 6),
+              Icon(
                 CupertinoIcons.chevron_right,
-                color: Color(0xFF8E5B65),
-                size: 22,
+                color: ThemeColors.logoDeep.withValues(alpha: 0.34),
+                size: 16,
               ),
             ],
           ),
@@ -891,19 +876,20 @@ class _CategoryPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(maxWidth: 98),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      constraints: const BoxConstraints(maxWidth: 112),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: spec.tint.withValues(alpha: 0.78),
+        color: ThemeColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: ThemeColors.primary.withValues(alpha: 0.16)),
       ),
       child: Text(
-        label,
+        label.isEmpty ? 'General' : label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: spec.color,
-          fontSize: 11.5,
+          color: ThemeColors.primary,
+          fontSize: 11,
           fontWeight: FontWeight.w900,
           height: 1,
         ),
@@ -925,8 +911,8 @@ class _ShoppingStatusPill extends StatelessWidget {
         ? const Color(0xFFE5F4E9)
         : const Color(0xFFFFF1D7);
     return Container(
-      constraints: const BoxConstraints(maxWidth: 110),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      constraints: const BoxConstraints(maxWidth: 104),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(999),
@@ -939,9 +925,9 @@ class _ShoppingStatusPill extends StatelessWidget {
                 ? CupertinoIcons.check_mark_circled
                 : CupertinoIcons.hourglass,
             color: color,
-            size: 15,
+            size: 13,
           ),
-          const SizedBox(width: 5),
+          const SizedBox(width: 4),
           Flexible(
             child: Text(
               label,
@@ -949,7 +935,7 @@ class _ShoppingStatusPill extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: color,
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.w900,
                 height: 1,
               ),

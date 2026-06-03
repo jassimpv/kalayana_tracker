@@ -83,28 +83,14 @@ class ProfilePanel extends GetView<DashboardController> {
                   icon: Icons.bar_chart_rounded,
                   label: 'Reports',
                   subtitle: 'View insights and analytics',
-                  onTap: () => Navigator.of(context).push(
-                    buildNestedDashboardRoute(
-                      settings: const RouteSettings(
-                        name: AppRoutes.dashboardReports,
-                      ),
-                      child: const ReportsPanel(),
-                    ),
-                  ),
+                  onTap: controller.openReports,
                 ),
 
                 _ProfileMenuRow(
                   icon: Icons.group_add_outlined,
                   label: 'Collaborators',
                   subtitle: 'Invite and manage members',
-                  onTap: () => Navigator.of(context).push(
-                    buildNestedDashboardRoute(
-                      settings: const RouteSettings(
-                        name: AppRoutes.dashboardCollaborators,
-                      ),
-                      child: const CollaboratorsPanel(),
-                    ),
-                  ),
+                  onTap: controller.openCollaborators,
                 ),
                 _ProfileMenuRow(
                   icon: Icons.help_outline_rounded,
@@ -154,8 +140,9 @@ class ReportsPanel extends GetView<DashboardController> {
             color: ThemeColors.logoGold.withValues(alpha: 0.12),
           ),
         ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+        child: DashboardAdaptiveScroll(
+          overflowTolerance: 8,
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -180,13 +167,13 @@ class ReportsPanel extends GetView<DashboardController> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _ReportSurface(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const _ReportTitle('Expense by Category'),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     if (categoryEntries.isEmpty)
                       const PremiumEmptyState(
                         icon: Icons.pie_chart_outline_rounded,
@@ -197,13 +184,13 @@ class ReportsPanel extends GetView<DashboardController> {
                       Row(
                         children: [
                           SizedBox(
-                            width: 148,
-                            height: 148,
+                            width: 124,
+                            height: 124,
                             child: CustomPaint(
                               painter: _CategoryDonutPainter(categoryEntries),
                             ),
                           ),
-                          const SizedBox(width: 18),
+                          const SizedBox(width: 14),
                           Expanded(
                             child: _CategoryLegend(entries: categoryEntries),
                           ),
@@ -212,17 +199,17 @@ class ReportsPanel extends GetView<DashboardController> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               _ReportSurface(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const _ReportTitle('Paid vs Pending'),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 14),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: SizedBox(
-                        height: 40,
+                        height: 30,
                         child: Row(
                           children: [
                             Expanded(
@@ -240,7 +227,7 @@ class ReportsPanel extends GetView<DashboardController> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -257,13 +244,13 @@ class ReportsPanel extends GetView<DashboardController> {
                   ],
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 12),
               FilledButton(
                 onPressed: () => _printExpensePdf(context, data.expenses),
                 style: FilledButton.styleFrom(
                   backgroundColor: ThemeColors.primary,
                   foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(54),
+                  minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -309,7 +296,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
             color: ThemeColors.logoGold.withValues(alpha: 0.12),
           ),
         ),
-        child: SingleChildScrollView(
+        child: DashboardAdaptiveScroll(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -692,7 +679,7 @@ class _EditableProfileAvatar extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: ThemeColors.logoDeep.withValues(alpha: 0.12),
+                        color: Colors.black.withValues(alpha: 0.10),
                         blurRadius: 12,
                         offset: const Offset(0, 6),
                       ),
@@ -828,7 +815,7 @@ class _ProfileMenuCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFF5DED4)),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.logoDeep.withValues(alpha: 0.05),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -977,14 +964,14 @@ class _ReportSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.82),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.13)),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.logoDeep.withValues(alpha: 0.035),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -1031,7 +1018,7 @@ class _ReportMetricCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           Text(
             value,
             maxLines: 1,

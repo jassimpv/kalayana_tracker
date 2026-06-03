@@ -457,7 +457,7 @@ Future<void> showReminderDialog(
       builder: (context, setState) => _PlannerDialog(
         icon: Icons.event_available_rounded,
         title: reminder == null ? 'Add reminder' : 'Edit reminder',
-        subtitle: 'Keep rituals, payments, invites, and vendor dates visible.',
+        subtitle: 'Keep important dates easy to follow.',
         actions: [
           TextButton(
             onPressed: Navigator.of(context).pop,
@@ -484,6 +484,12 @@ Future<void> showReminderDialog(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const _DialogIntroCard(
+                icon: Icons.event_note_rounded,
+                title: 'Reminder details',
+                subtitle: 'Set the title, category, and due date.',
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: title,
                 decoration: const InputDecoration(
@@ -492,7 +498,7 @@ Future<void> showReminderDialog(
                 ),
                 validator: _required,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: reminderCategories.contains(category)
                     ? category
@@ -509,7 +515,7 @@ Future<void> showReminderDialog(
                     .toList(),
                 onChanged: (value) => category = value ?? category,
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               _DatePickerTile(
                 icon: Icons.calendar_month_rounded,
                 title: 'Due date',
@@ -551,7 +557,7 @@ Future<void> showPurchaseDialog(
     builder: (context) => _PlannerDialog(
       icon: Icons.shopping_bag_rounded,
       title: purchase == null ? 'Add purchase' : 'Edit purchase',
-      subtitle: 'Use predefined categories so purchase reports stay clean.',
+      subtitle: 'Keep shopping items organized and clear.',
       actions: [
         TextButton(
           onPressed: Navigator.of(context).pop,
@@ -579,6 +585,12 @@ Future<void> showPurchaseDialog(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const _DialogIntroCard(
+              icon: Icons.shopping_bag_rounded,
+              title: 'Shopping item',
+              subtitle: 'Add the item, category, status, and note.',
+            ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: name,
               decoration: const InputDecoration(
@@ -587,7 +599,7 @@ Future<void> showPurchaseDialog(
               ),
               validator: _required,
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: category,
               decoration: const InputDecoration(
@@ -602,7 +614,7 @@ Future<void> showPurchaseDialog(
                   .toList(),
               onChanged: (value) => category = value ?? category,
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: purchaseStatuses.contains(status)
                   ? status
@@ -619,7 +631,7 @@ Future<void> showPurchaseDialog(
                   .toList(),
               onChanged: (value) => status = value ?? status,
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             TextFormField(
               controller: note,
               decoration: const InputDecoration(
@@ -867,13 +879,15 @@ class _PlannerDialog extends StatelessWidget {
     final scheme = theme.colorScheme;
 
     return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      backgroundColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
         child: DecoratedBox(
           decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
             gradient: ThemeColors.surfaceGradient is LinearGradient
                 ? ThemeColors.surfaceGradient as LinearGradient
                 : LinearGradient(
@@ -881,33 +895,49 @@ class _PlannerDialog extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: [scheme.surface, ThemeColors.inputBackground],
                   ),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.08)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 28,
+                offset: const Offset(0, 16),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 14),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      width: 46,
-                      height: 46,
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
                         gradient: ThemeColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: scheme.primary.withValues(alpha: 0.24),
+                            blurRadius: 18,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      child: Icon(icon, color: Colors.white),
+                      child: Icon(icon, color: Colors.white, size: 22),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             title,
-                            style: theme.textTheme.titleLarge?.copyWith(
+                            style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w900,
+                              height: 1.05,
                             ),
                           ),
                           if (subtitle != null) ...[
@@ -926,18 +956,14 @@ class _PlannerDialog extends StatelessWidget {
                   ],
                 ),
               ),
-              Divider(
-                height: 1,
-                color: scheme.outlineVariant.withValues(alpha: 0.5),
-              ),
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
                   child: child,
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -951,6 +977,71 @@ class _PlannerDialog extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DialogIntroCard extends StatelessWidget {
+  const _DialogIntroCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: scheme.primary.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: scheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: scheme.primary, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: ThemeColors.textPrimary,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: ThemeColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -976,20 +1067,26 @@ class _DatePickerTile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: scheme.surfaceContainerHighest.withValues(alpha: 0.55),
-          border: Border.all(
-            color: scheme.outlineVariant.withValues(alpha: 0.7),
-          ),
-          borderRadius: BorderRadius.circular(18),
+          color: scheme.surface.withValues(alpha: 0.84),
+          border: Border.all(color: scheme.primary.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           children: [
-            Icon(icon, color: scheme.primary),
-            const SizedBox(width: 12),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: scheme.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: scheme.primary, size: 19),
+            ),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -998,19 +1095,21 @@ class _DatePickerTile extends StatelessWidget {
                     title,
                     style: theme.textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w800,
+                      height: 1.1,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     value,
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: scheme.outline),
+            Icon(Icons.chevron_right_rounded, color: scheme.outline, size: 20),
           ],
         ),
       ),

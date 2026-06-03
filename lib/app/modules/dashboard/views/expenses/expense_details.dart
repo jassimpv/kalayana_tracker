@@ -22,7 +22,11 @@ class ExpenseDetailPage extends GetView<DashboardController> {
       return Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: ThemeColors.scaffoldColor,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFDF4EC), Color(0xFFFFF8F0)],
+          ),
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
@@ -33,16 +37,16 @@ class ExpenseDetailPage extends GetView<DashboardController> {
           child: Column(
             children: [
               Container(
-                margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                padding: const EdgeInsets.all(4),
+                margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -54,8 +58,10 @@ class ExpenseDetailPage extends GetView<DashboardController> {
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   overlayColor: WidgetStateProperty.all(Colors.transparent),
+                  dividerColor: Colors.transparent,
+                  dividerHeight: 0,
                   indicator: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                     color: ThemeColors.primary,
                   ),
                   labelColor: Colors.white,
@@ -64,11 +70,11 @@ class ExpenseDetailPage extends GetView<DashboardController> {
                   ),
                   tabs: const [
                     SizedBox(
-                      height: 52,
+                      height: 40,
                       child: Center(child: Text('Overview')),
                     ),
                     SizedBox(
-                      height: 52,
+                      height: 40,
                       child: Center(child: Text('Timeline')),
                     ),
                   ],
@@ -77,7 +83,7 @@ class ExpenseDetailPage extends GetView<DashboardController> {
               Expanded(
                 child: item == null
                     ? const SingleChildScrollView(
-                        padding: EdgeInsets.fromLTRB(16, 18, 16, 120),
+                        padding: EdgeInsets.fromLTRB(12, 8, 12, 96),
                         child: PremiumEmptyState(
                           icon: Icons.receipt_long_rounded,
                           title: 'Expense not found',
@@ -87,11 +93,11 @@ class ExpenseDetailPage extends GetView<DashboardController> {
                     : TabBarView(
                         children: [
                           SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                            padding: const EdgeInsets.fromLTRB(12, 6, 12, 96),
                             child: ExpenseDetailOverview(item: item),
                           ),
                           SingleChildScrollView(
-                            padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                            padding: const EdgeInsets.fromLTRB(12, 6, 12, 96),
                             child: ExpenseDetailTimeline(item: item),
                           ),
                         ],

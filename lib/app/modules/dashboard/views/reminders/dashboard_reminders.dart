@@ -38,30 +38,63 @@ class RemindersPanel extends GetView<DashboardController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ReminderHero(
-            dueToday: dueTodayPayments.length,
-            upcoming: upcomingPayments.length,
-            completed: completedCount,
-            total: reminders.length,
+          _ReminderHero(),
+          Transform.translate(
+            offset: const Offset(0, -15),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: _ReminderStatsCard(
+                stats: [
+                  _ReminderStat(
+                    icon: CupertinoIcons.creditcard_fill,
+                    value: dueTodayPayments.length,
+                    label: 'Due Today',
+                    color: const Color(0xFFA90B3D),
+                    tint: const Color(0xFFFBE8EA),
+                  ),
+                  _ReminderStat(
+                    icon: CupertinoIcons.calendar_badge_plus,
+                    value: upcomingPayments.length,
+                    label: 'Upcoming',
+                    color: const Color(0xFFF28B18),
+                    tint: const Color(0xFFFFF0E0),
+                  ),
+                  _ReminderStat(
+                    icon: CupertinoIcons.check_mark_circled_solid,
+                    value: completedCount,
+                    label: 'Completed',
+                    color: const Color(0xFF0D7A3A),
+                    tint: const Color(0xFFEAF3ED),
+                  ),
+                  _ReminderStat(
+                    icon: CupertinoIcons.arrow_counterclockwise,
+                    value: reminders.length,
+                    label: 'All Reminders',
+                    color: const Color(0xFF6A0C91),
+                    tint: const Color(0xFFF0E7F7),
+                  ),
+                ],
+              ),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             child: _PaymentEmptyCallout(
               hasDuePayments: dueTodayPayments.isNotEmpty,
               payment: dueTodayPayments.firstOrNull,
-              onTap: () => showReminderDialog(context),
+              onTap: controller.openReminderAdd,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: _ReminderTaskHeader(showingCompleted: false, onTap: () {}),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: taskReminders.isEmpty
-                ? _ReminderEmptyTasks(onTap: () => showReminderDialog(context))
+                ? _ReminderEmptyTasks(onTap: controller.openReminderAdd)
                 : Column(
                     children: taskReminders
                         .map((item) => _WeddingTaskCard(item: item))
@@ -75,23 +108,13 @@ class RemindersPanel extends GetView<DashboardController> {
 }
 
 class _ReminderHero extends StatelessWidget {
-  const _ReminderHero({
-    required this.dueToday,
-    required this.upcoming,
-    required this.completed,
-    required this.total,
-  });
-
-  final int dueToday;
-  final int upcoming;
-  final int completed;
-  final int total;
-
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.paddingOf(context).top;
     return Container(
-      padding: EdgeInsets.fromLTRB(24, top + 36, 24, 0),
+      width: double.infinity,
+      height: top + 110,
+      padding: EdgeInsets.fromLTRB(22, top + 18, 22, 0),
       decoration: const BoxDecoration(
         gradient: RadialGradient(
           center: Alignment.topLeft,
@@ -103,72 +126,37 @@ class _ReminderHero extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           Positioned(
-            top: -60,
-            left: -76,
-            child: _ReminderGlow(size: 210, color: const Color(0xFFE01968)),
+            top: -76,
+            left: -96,
+            child: _ReminderGlow(size: 138, color: const Color(0xFFE01968)),
           ),
           Positioned(
-            top: -110,
-            right: -36,
-            child: _ReminderGlow(size: 230, color: const Color(0xFFC11A4D)),
+            top: -76,
+            right: -44,
+            child: _ReminderGlow(size: 154, color: const Color(0xFFC11A4D)),
           ),
-          const Positioned(top: 60, right: -2, child: _ReminderHeaderArt()),
+          const Positioned(top: 20, right: -28, child: _ReminderHeaderArt()),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 58),
               Text(
                 'Reminders',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   color: Colors.white,
-                  fontSize: 40,
+                  fontSize: 25,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 0,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               const Text(
-                'Stay on track, never miss a payment ✨',
+                'Stay on track, never miss a payment',
                 style: TextStyle(
                   color: Color(0xFFF7C859),
-                  fontSize: 15.5,
+                  fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 28),
-              _ReminderStatsCard(
-                stats: [
-                  _ReminderStat(
-                    icon: CupertinoIcons.creditcard_fill,
-                    value: dueToday,
-                    label: 'Due Today',
-                    color: const Color(0xFFA90B3D),
-                    tint: const Color(0xFFFBE8EA),
-                  ),
-                  _ReminderStat(
-                    icon: CupertinoIcons.calendar_badge_plus,
-                    value: upcoming,
-                    label: 'Upcoming',
-                    color: const Color(0xFFF28B18),
-                    tint: const Color(0xFFFFF0E0),
-                  ),
-                  _ReminderStat(
-                    icon: CupertinoIcons.check_mark_circled_solid,
-                    value: completed,
-                    label: 'Completed',
-                    color: const Color(0xFF0D7A3A),
-                    tint: const Color(0xFFEAF3ED),
-                  ),
-                  _ReminderStat(
-                    icon: CupertinoIcons.arrow_counterclockwise,
-                    value: total,
-                    label: 'All Reminders',
-                    color: const Color(0xFF6A0C91),
-                    tint: const Color(0xFFF0E7F7),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 1),
             ],
           ),
         ],
@@ -202,9 +190,15 @@ class _ReminderHeaderArt extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 150,
-      height: 102,
-      child: CustomPaint(painter: _ReminderHeaderArtPainter()),
+      width: 112,
+      height: 78,
+      child: FittedBox(
+        child: SizedBox(
+          width: 150,
+          height: 102,
+          child: CustomPaint(painter: _ReminderHeaderArtPainter()),
+        ),
+      ),
     );
   }
 }
@@ -315,13 +309,13 @@ class _ReminderStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 6),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.96),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: ThemeColors.logoDeep.withValues(alpha: 0.10),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 26,
             offset: const Offset(0, 14),
           ),
@@ -336,7 +330,7 @@ class _ReminderStatsCard extends StatelessWidget {
                 if (entry.key != stats.length - 1)
                   Container(
                     width: 1,
-                    height: 64,
+                    height: 48,
                     color: const Color(0xFFEACBC8).withValues(alpha: 0.72),
                   ),
               ],
@@ -375,32 +369,32 @@ class _ReminderStatTile extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 42,
-          height: 42,
+          width: 34,
+          height: 34,
           decoration: BoxDecoration(
             color: stat.tint,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(stat.icon, color: stat.color, size: 22),
+          child: Icon(stat.icon, color: stat.color, size: 18),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         Text(
           stat.value.toString(),
           style: TextStyle(
             color: stat.color,
-            fontSize: 27,
+            fontSize: 18,
             fontWeight: FontWeight.w900,
             height: 1,
           ),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 3),
         Text(
           stat.label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: stat.color,
-            fontSize: 11,
+            fontSize: 9.5,
             fontWeight: FontWeight.w900,
           ),
         ),
@@ -432,7 +426,7 @@ class _PaymentEmptyCallout extends StatelessWidget {
         : 'Create a payment reminder to track upcoming bills.';
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(22, 18, 14, 18),
+      padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.58),
         borderRadius: BorderRadius.circular(18),
@@ -441,7 +435,7 @@ class _PaymentEmptyCallout extends StatelessWidget {
       child: Row(
         children: [
           const _PaymentBadge(),
-          const SizedBox(width: 16),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,26 +446,26 @@ class _PaymentEmptyCallout extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
                   subtitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF78656A),
-                    fontSize: 14,
-                    height: 1.45,
+                    fontSize: 12,
+                    height: 1.25,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
           _AddReminderButton(onTap: onTap),
         ],
       ),
@@ -485,20 +479,20 @@ class _PaymentBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 78,
-      height: 78,
+      width: 44,
+      height: 44,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Container(
-            width: 78,
-            height: 78,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: ThemeColors.logoDeep.withValues(alpha: 0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 10),
                 ),
@@ -506,16 +500,16 @@ class _PaymentBadge extends StatelessWidget {
             ),
           ),
           Container(
-            width: 54,
-            height: 54,
-            decoration: const BoxDecoration(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFFFFE6EB),
+              color: ThemeColors.primary.withValues(alpha: 0.10),
             ),
           ),
           Container(
-            width: 36,
-            height: 26,
+            width: 25,
+            height: 18,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFE62971), Color(0xFF9D1740)],
@@ -525,15 +519,15 @@ class _PaymentBadge extends StatelessWidget {
             child: const Icon(
               CupertinoIcons.creditcard_fill,
               color: Colors.white,
-              size: 21,
+              size: 15,
             ),
           ),
           Positioned(
-            right: 7,
-            bottom: 9,
+            right: 2,
+            bottom: 3,
             child: Container(
-              width: 25,
-              height: 25,
+              width: 17,
+              height: 17,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color(0xFFFFF1EA),
@@ -541,7 +535,7 @@ class _PaymentBadge extends StatelessWidget {
               child: const Icon(
                 CupertinoIcons.bell_fill,
                 color: Color(0xFF8F1438),
-                size: 15,
+                size: 10,
               ),
             ),
           ),
@@ -564,8 +558,8 @@ class _AddReminderButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(18),
         child: Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF9A123A), Color(0xFFC30B4A)],
@@ -582,13 +576,13 @@ class _AddReminderButton extends StatelessWidget {
           child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(CupertinoIcons.plus, color: Colors.white, size: 19),
+              Icon(CupertinoIcons.plus, color: Colors.white, size: 16),
               SizedBox(width: 6),
               Text(
                 'Add Reminder',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
               ),
@@ -618,7 +612,7 @@ class _ReminderTaskHeader extends StatelessWidget {
             'Wedding Tasks',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -705,20 +699,20 @@ class _WeddingTaskCard extends GetView<DashboardController> {
         : const Color(0xFFB21546);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: () => showReminderDialog(context, reminder: item),
         borderRadius: BorderRadius.circular(18),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 94),
-          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          constraints: const BoxConstraints(minHeight: 78),
+          padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.84),
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFF1D9D5)),
             boxShadow: [
               BoxShadow(
-                color: ThemeColors.logoDeep.withValues(alpha: 0.035),
+                color: Colors.black.withValues(alpha: 0.06),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -730,16 +724,15 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                 onTap: () => controller.toggleReminder(item),
                 borderRadius: BorderRadius.circular(999),
                 child: Container(
-                  width: 56,
-                  height: 56,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFFFFBF7),
+                    color: ThemeColors.primary.withValues(alpha: 0.10),
                     border: Border.all(
                       color: item.isDone
                           ? const Color(0xFF0D7A3A)
-                          : const Color(0xFFE4A33B),
-                      width: 1.5,
+                          : ThemeColors.primary.withValues(alpha: 0.18),
                     ),
                   ),
                   child: Icon(
@@ -749,11 +742,11 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                     color: item.isDone
                         ? const Color(0xFF0D7A3A)
                         : ThemeColors.primary,
-                    size: 25,
+                    size: 21,
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -767,22 +760,22 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                         color: item.isDone
                             ? const Color(0xFF78656A)
                             : ThemeColors.logoDeep,
-                        fontSize: 15.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w900,
                         decoration: item.isDone
                             ? TextDecoration.lineThrough
                             : null,
                       ),
                     ),
-                    const SizedBox(height: 9),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Icon(
                           CupertinoIcons.calendar,
                           color: ThemeColors.primary,
-                          size: 15,
+                          size: 13,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 6),
                         Flexible(
                           child: Text(
                             formatDate(item.dueDate),
@@ -790,7 +783,7 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Color(0xFF726166),
-                              fontSize: 13.5,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -800,14 +793,8 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              _DaysLeftPill(days: days, color: daysColor, done: item.isDone),
               const SizedBox(width: 8),
-              Icon(
-                CupertinoIcons.chevron_right,
-                color: ThemeColors.primary,
-                size: 22,
-              ),
+              _DaysLeftPill(days: days, color: daysColor, done: item.isDone),
             ],
           ),
         ),
@@ -842,43 +829,37 @@ class _DaysLeftPill extends StatelessWidget {
         ? 'overdue'
         : 'days left';
 
-    return SizedBox(
-      width: 58,
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7F6),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFF0CCC8)),
+      ),
+      width: 50,
+      height: 50,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            height: 34,
-            constraints: const BoxConstraints(minWidth: 50),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF7F6),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFF0CCC8)),
-            ),
-            child: Center(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: color,
-                  fontSize: done ? 14 : 22,
-                  fontWeight: FontWeight.w900,
-                  height: 1,
-                ),
-              ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: done ? 12 : 17,
+              fontWeight: FontWeight.w900,
+              height: 1,
             ),
           ),
           if (caption.isNotEmpty) ...[
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
-              caption,
+              caption.capitalizeFirst ?? '',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF78656A),
-                fontSize: 11,
+              style: TextStyle(
+                color: color,
+                fontSize: 9.5,
                 fontWeight: FontWeight.w700,
               ),
             ),

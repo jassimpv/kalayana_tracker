@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
-import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_dialogs.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/expense_widgets.dart';
 
 import '../../../../core/theme/app_theme.dart';
@@ -127,8 +126,8 @@ class _ExpensePaymentHistoryContent extends StatelessWidget {
                   child: FilledButton(
                     onPressed: item.pendingForSummary == 0
                         ? null
-                        : () =>
-                              showAddExpensePaymentDialog(context, item: item),
+                        : () => Get.find<DashboardController>()
+                              .openExpensePaymentAdd(item.id),
                     child: const Text('Add Split'),
                   ),
                 ),

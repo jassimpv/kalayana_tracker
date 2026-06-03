@@ -16,8 +16,12 @@ import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboa
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_details.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_history.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_payment_add.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/reminders/reminder_add.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/shopping/purchase_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/app_bar.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_dialogs.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_form_widgets.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_widgets.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/navigation_bar.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/expense_widgets.dart';
@@ -32,113 +36,8 @@ part 'expenses/dashboard_expenses.dart';
 part 'reminders/dashboard_reminders.dart';
 part 'shopping/dashboard_purchases.dart';
 
-class DashboardView extends StatefulWidget {
+class DashboardView extends GetView<DashboardController> {
   const DashboardView({super.key});
-
-  @override
-  State<DashboardView> createState() => _DashboardViewState();
-}
-
-class _DashboardViewState extends State<DashboardView> {
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>(
-    debugLabel: 'dashboardNestedNavigator',
-  );
-  late final DashboardController controller = Get.find<DashboardController>();
-  bool _showDashboardChrome = true;
-  String _currentNestedRoute = AppRoutes.dashboardOverview;
-
-  bool get _showDashboardGreeting {
-    return !_isStandaloneDashboardRoute(_currentNestedRoute) &&
-        controller.selectedIndex.value == 0;
-  }
-
-  bool get _showDashboardAppBar {
-    return _currentNestedRoute != AppRoutes.dashboardOverview &&
-        _currentNestedRoute != AppRoutes.dashboardExpenses &&
-        _currentNestedRoute != AppRoutes.dashboardDates &&
-        _currentNestedRoute != AppRoutes.dashboardShopping &&
-        _currentNestedRoute != AppRoutes.dashboardProfile;
-  }
-
-  String get _appBarTitle {
-    if (_currentNestedRoute == AppRoutes.dashboardExpenseAdd) {
-      return 'Add Expense';
-    }
-    if (_currentNestedRoute == AppRoutes.dashboardExpenseDetail) {
-      return 'Expense Detail';
-    }
-    if (_currentNestedRoute == AppRoutes.dashboardExpensePaymentHistory) {
-      return 'Payment History';
-    }
-    if (_currentNestedRoute == AppRoutes.dashboardReports) {
-      return 'Reports';
-    }
-    if (_currentNestedRoute == AppRoutes.dashboardCollaborators) {
-      return 'Collaborators';
-    }
-    return _DashboardDestination.fromRoute(_currentNestedRoute).title;
-  }
-
-  bool _handleBackNavigation() {
-    final navigatorState = _navigatorKey.currentState;
-
-    if (navigatorState != null && navigatorState.canPop()) {
-      navigatorState.pop();
-      return false;
-    }
-
-    if (controller.selectedIndex.value != 0) {
-      _handleNavigation(0);
-      return false;
-    }
-
-    return true;
-  }
-
-  void _handleNavigation(int index) {
-    final navigator = _navigatorKey.currentState;
-    if (navigator == null) return;
-
-    final previousIndex = controller.selectedIndex.value;
-
-    // If user is inside Add/Detail/History and taps current tab,
-    // return back to that tab root page.
-    if (previousIndex == index &&
-        _isStandaloneDashboardRoute(_currentNestedRoute)) {
-      final destination = _DashboardDestination.fromIndex(index);
-
-      navigator.pushAndRemoveUntil(
-        _buildDashboardTabRoute(index, previousIndex, index),
-        (route) => false,
-      );
-
-      _handleNestedRouteChanged(destination.route);
-      controller.selectedIndex.value = index;
-      return;
-    }
-
-    if (previousIndex == index) return;
-
-    navigator.pushAndRemoveUntil(
-      _buildDashboardTabRoute(index, previousIndex, index),
-      (route) => false,
-    );
-
-    controller.selectedIndex.value = index;
-  }
-
-  void _handleNestedRouteChanged(String? routeName) {
-    final nextRoute = routeName ?? AppRoutes.dashboardOverview;
-    final shouldShowChrome = !_isStandaloneDashboardRoute(nextRoute);
-    if (_showDashboardChrome == shouldShowChrome &&
-        _currentNestedRoute == nextRoute) {
-      return;
-    }
-    setState(() {
-      _showDashboardChrome = shouldShowChrome;
-      _currentNestedRoute = nextRoute;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +56,7 @@ class _DashboardViewState extends State<DashboardView> {
         canPop: false,
         onPopInvokedWithResult: (didPop, result) {
           if (didPop) return;
-          if (_handleBackNavigation()) {
+          if (controller.handleDashboardBack()) {
             Navigator.of(context).pop();
           }
         },
@@ -167,50 +66,18 @@ class _DashboardViewState extends State<DashboardView> {
           body: Stack(
             children: [
               Positioned.fill(
-                child: NestedScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                    SliverOverlapAbsorber(
-                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-                        context,
+                child: Column(
+                  children: [
+                    if (controller.isDashboardSubPage)
+                      CustomAppBar(
+                        title: _dashboardPageTitle(
+                          controller.dashboardPage.value,
+                        ),
+                        showGreeting: false,
+                        onBack: controller.closeDashboardSubPage,
                       ),
-                      sliver: SliverToBoxAdapter(
-                        child: _showDashboardAppBar
-                            ? CustomAppBar(
-                                title: _appBarTitle,
-                                showGreeting: _showDashboardGreeting,
-                                onBack:
-                                    _isStandaloneDashboardRoute(
-                                      _currentNestedRoute,
-                                    )
-                                    ? () {
-                                        final navigator =
-                                            _navigatorKey.currentState;
-                                        if (navigator != null &&
-                                            navigator.canPop()) {
-                                          navigator.pop();
-                                        } else {
-                                          _handleNavigation(
-                                            controller.selectedIndex.value,
-                                          );
-                                        }
-                                      }
-                                    : null,
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ),
+                    Expanded(child: _DashboardBody(controller: controller)),
                   ],
-                  body: Navigator(
-                    key: _navigatorKey,
-                    initialRoute: _DashboardDestination.overview.route,
-                    onGenerateRoute: _DashboardDestination.onGenerateRoute,
-                    observers: [
-                      DashboardTabNavigatorObserver(
-                        onRouteChanged: _handleNestedRouteChanged,
-                      ),
-                    ],
-                  ),
                 ),
               ),
               Positioned(
@@ -218,19 +85,19 @@ class _DashboardViewState extends State<DashboardView> {
                 right: 0,
                 bottom: 0,
                 child: IgnorePointer(
-                  ignoring: !_showDashboardChrome,
+                  ignoring: controller.isDashboardSubPage,
                   child: AnimatedSlide(
                     duration: const Duration(milliseconds: 220),
                     curve: Curves.easeOutCubic,
-                    offset: _showDashboardChrome
-                        ? Offset.zero
-                        : const Offset(0, 1.25),
+                    offset: controller.isDashboardSubPage
+                        ? const Offset(0, 1.25)
+                        : Offset.zero,
                     child: AnimatedOpacity(
                       duration: const Duration(milliseconds: 180),
-                      opacity: _showDashboardChrome ? 1 : 0,
+                      opacity: controller.isDashboardSubPage ? 0 : 1,
                       child: BottomNav(
                         controller: controller,
-                        onItemClick: _handleNavigation,
+                        onItemClick: controller.openDashboardTab,
                       ),
                     ),
                   ),
@@ -241,17 +108,15 @@ class _DashboardViewState extends State<DashboardView> {
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: Obx(
             () =>
-                !_showDashboardChrome ||
+                controller.isDashboardSubPage ||
                     controller.selectedIndex.value == 0 ||
                     controller.selectedIndex.value == 4
                 ? const SizedBox.shrink()
                 : Padding(
                     padding: const EdgeInsets.only(bottom: 84),
                     child: FloatingActionButton(
-                      onPressed: () => _handlePrimaryAction(
-                        context,
-                        controller.selectedIndex.value,
-                      ),
+                      onPressed: () =>
+                          _handlePrimaryAction(controller.selectedIndex.value),
                       backgroundColor: ThemeColors.primary,
                       foregroundColor: Colors.white,
                       elevation: 12,
@@ -265,206 +130,85 @@ class _DashboardViewState extends State<DashboardView> {
     });
   }
 
-  void _handlePrimaryAction(BuildContext context, int index) {
+  void _handlePrimaryAction(int index) {
     switch (index) {
       case 2:
-        showReminderDialog(context);
+        controller.openReminderAdd();
         return;
       case 3:
-        showPurchaseDialog(context);
+        controller.openPurchaseAdd();
         return;
       default:
-        _pushExpenseAddPage();
+        controller.openExpenseAdd();
     }
-  }
-
-  void _pushExpenseAddPage() {
-    _navigatorKey.currentState?.push(
-      buildNestedDashboardRoute(
-        settings: const RouteSettings(name: AppRoutes.dashboardExpenseAdd),
-        child: const ExpenseAddPage(),
-        transitionDuration: const Duration(milliseconds: 280),
-        startOffset: const Offset(0.12, 0),
-      ),
-    );
   }
 }
 
-enum _DashboardDestination {
-  overview(AppRoutes.dashboardOverview, 0),
-  expenses(AppRoutes.dashboardExpenses, 1),
-  dates(AppRoutes.dashboardDates, 2),
-  shopping(AppRoutes.dashboardShopping, 3),
-  profile(AppRoutes.dashboardProfile, 4);
+class _DashboardBody extends StatelessWidget {
+  const _DashboardBody({required this.controller});
 
-  const _DashboardDestination(this.route, this.tabIndex);
+  final DashboardController controller;
 
-  final String route;
-  final int tabIndex;
+  @override
+  Widget build(BuildContext context) {
+    final page = controller.dashboardPage.value;
+    final argument = controller.dashboardPageArgument.value;
 
-  Widget get widget => _DashboardTabPage(index: tabIndex);
-
-  static _DashboardDestination fromIndex(int index) =>
-      _DashboardDestination.values.firstWhere(
-        (destination) => destination.tabIndex == index,
-        orElse: () => _DashboardDestination.overview,
-      );
-
-  static _DashboardDestination fromRoute(String? route) =>
-      _DashboardDestination.values.firstWhere(
-        (destination) => destination.route == route,
-        orElse: () => _DashboardDestination.overview,
-      );
-
-  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
-    final routeName = settings.name;
-    if (routeName == AppRoutes.dashboardExpenseAdd) {
-      return buildNestedDashboardRoute(
-        settings: settings,
-        child: const ExpenseAddPage(),
-      );
-    }
-    if (routeName == AppRoutes.dashboardExpenseDetail) {
-      final expenseId = settings.arguments as String?;
-      return buildNestedDashboardRoute(
-        settings: settings,
-        child: ExpenseDetailPage(expenseId: expenseId),
-      );
-    }
-    if (routeName == AppRoutes.dashboardExpensePaymentHistory) {
-      final expenseId = settings.arguments as String?;
-      return buildNestedDashboardRoute(
-        settings: settings,
-        child: ExpensePaymentHistoryPage(expenseId: expenseId),
-      );
-    }
-    if (routeName == AppRoutes.dashboardReports) {
-      return buildNestedDashboardRoute(
-        settings: settings,
-        child: const ReportsPanel(),
-      );
-    }
-    if (routeName == AppRoutes.dashboardCollaborators) {
-      return buildNestedDashboardRoute(
-        settings: settings,
-        child: const CollaboratorsPanel(),
-      );
-    }
-
-    final destination = _DashboardDestination.fromRoute(routeName);
-    return buildNestedDashboardRoute(
-      settings: RouteSettings(name: destination.route),
-      child: destination.widget,
-    );
-  }
-}
-
-Route<dynamic> buildNestedDashboardRoute({
-  required RouteSettings settings,
-  required Widget child,
-  Duration transitionDuration = Duration.zero,
-  Offset startOffset = Offset.zero,
-}) {
-  return PageRouteBuilder(
-    settings: settings,
-    pageBuilder: (context, animation, secondaryAnimation) =>
-        SizedBox.expand(child: child),
-    transitionDuration: transitionDuration,
-    reverseTransitionDuration: const Duration(milliseconds: 240),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      if (transitionDuration == Duration.zero) return child;
-      final curve = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      );
-      return FadeTransition(
-        opacity: Tween<double>(begin: 0, end: 1).animate(curve),
-        child: SlideTransition(
-          position: Tween<Offset>(
-            begin: startOffset,
-            end: Offset.zero,
-          ).animate(curve),
-          child: child,
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 220),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      child: switch (page) {
+        DashboardPageKind.expenseAdd => const ExpenseAddPage(
+          key: ValueKey('expense-add'),
         ),
-      );
-    },
-  );
-}
-
-Route<dynamic> _buildDashboardTabRoute(int index, int fromIndex, int toIndex) {
-  final destination = _DashboardDestination.fromIndex(index);
-  final slideFromRight = toIndex > fromIndex;
-  final startOffset = Offset(slideFromRight ? 0.12 : -0.12, 0);
-  return buildNestedDashboardRoute(
-    settings: RouteSettings(name: destination.route),
-    child: destination.widget,
-    transitionDuration: const Duration(milliseconds: 360),
-    startOffset: startOffset,
-  );
-}
-
-class DashboardTabNavigatorObserver extends NavigatorObserver {
-  DashboardTabNavigatorObserver({required this.onRouteChanged});
-
-  final ValueChanged<String?> onRouteChanged;
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    final routeName = route.settings.name;
-    if (routeName == null) return;
-    onRouteChanged(routeName);
-    _syncSelectedIndex(routeName);
-  }
-
-  @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    final routeName = newRoute?.settings.name;
-    if (routeName == null) return;
-    onRouteChanged(routeName);
-    _syncSelectedIndex(routeName);
-  }
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    final routeName = previousRoute?.settings.name;
-    if (routeName == null) return;
-    onRouteChanged(routeName);
-    _syncSelectedIndex(routeName);
-  }
-
-  void _syncSelectedIndex(String? routeName) {
-    final routeIndex = _matchedDashboardRouteNameToIndex(routeName);
-    if (routeIndex == null) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!Get.isRegistered<DashboardController>()) return;
-      final controller = Get.find<DashboardController>();
-      if (controller.selectedIndex.value != routeIndex) {
-        controller.selectedIndex.value = routeIndex;
-      }
-    });
+        DashboardPageKind.reminderAdd => const ReminderAddPage(
+          key: ValueKey('reminder-add'),
+        ),
+        DashboardPageKind.purchaseAdd => const PurchaseAddPage(
+          key: ValueKey('purchase-add'),
+        ),
+        DashboardPageKind.expenseDetail => ExpenseDetailPage(
+          key: ValueKey('expense-detail-$argument'),
+          expenseId: argument,
+        ),
+        DashboardPageKind.expensePaymentAdd => ExpensePaymentAddPage(
+          key: ValueKey('expense-payment-add-$argument'),
+          expenseId: argument,
+        ),
+        DashboardPageKind.expensePaymentHistory => ExpensePaymentHistoryPage(
+          key: ValueKey('expense-payment-history-$argument'),
+          expenseId: argument,
+        ),
+        DashboardPageKind.reports => const ReportsPanel(
+          key: ValueKey('reports'),
+        ),
+        DashboardPageKind.collaborators => const CollaboratorsPanel(
+          key: ValueKey('collaborators'),
+        ),
+        DashboardPageKind.tab => _DashboardTabPage(
+          key: ValueKey('tab-${controller.selectedIndex.value}'),
+          index: controller.selectedIndex.value,
+        ),
+      },
+    );
   }
 }
 
-bool _isStandaloneDashboardRoute(String? routeName) {
-  return routeName == AppRoutes.dashboardExpenseAdd ||
-      routeName == AppRoutes.dashboardExpenseDetail ||
-      routeName == AppRoutes.dashboardExpensePaymentHistory ||
-      routeName == AppRoutes.dashboardReports ||
-      routeName == AppRoutes.dashboardCollaborators;
-}
-
-int? _matchedDashboardRouteNameToIndex(String? routeName) {
-  if (routeName == null) return null;
-  final routeIndex = _DashboardDestination.values.indexWhere(
-    (destination) => destination.route == routeName,
-  );
-  return routeIndex >= 0 ? routeIndex : null;
-}
+String _dashboardPageTitle(DashboardPageKind page) => switch (page) {
+  DashboardPageKind.expenseAdd => 'Add Expense',
+  DashboardPageKind.reminderAdd => 'Add Reminder',
+  DashboardPageKind.purchaseAdd => 'Add Shopping',
+  DashboardPageKind.expenseDetail => 'Expense Detail',
+  DashboardPageKind.expensePaymentAdd => 'Add Payment',
+  DashboardPageKind.expensePaymentHistory => 'Payment History',
+  DashboardPageKind.reports => 'Reports',
+  DashboardPageKind.collaborators => 'Collaborators',
+  DashboardPageKind.tab => 'Dashboard',
+};
 
 class _DashboardTabPage extends GetView<DashboardController> {
-  const _DashboardTabPage({required this.index});
+  const _DashboardTabPage({super.key, required this.index});
 
   final int index;
 
@@ -492,11 +236,6 @@ class _DashboardTabPage extends GetView<DashboardController> {
                   physics: const ClampingScrollPhysics(),
                   primary: true,
                   slivers: [
-                    SliverOverlapInjector(
-                      handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
-                        context,
-                      ),
-                    ),
                     SliverPadding(
                       padding: EdgeInsets.only(
                         top:
@@ -559,16 +298,6 @@ class _DashboardTabPage extends GetView<DashboardController> {
       _ => OverviewPanel(key: const ValueKey('overview'), data: data),
     };
   }
-}
-
-extension on _DashboardDestination {
-  String get title => switch (this) {
-    _DashboardDestination.overview => 'Dashboard',
-    _DashboardDestination.expenses => 'Expenses',
-    _DashboardDestination.dates => 'Reminders',
-    _DashboardDestination.shopping => 'Shopping',
-    _DashboardDestination.profile => 'Profile',
-  };
 }
 
 class _StatusScaffold extends StatelessWidget {

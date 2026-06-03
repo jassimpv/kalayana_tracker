@@ -49,11 +49,27 @@ const purchaseCategories = [
 ];
 const purchaseStatuses = ['Planned', 'Ordered', 'Purchased', 'Cancelled'];
 
+enum DashboardPageKind {
+  tab,
+  expenseAdd,
+  reminderAdd,
+  purchaseAdd,
+  expenseDetail,
+  expensePaymentAdd,
+  expensePaymentHistory,
+  reports,
+  collaborators,
+}
+
 class DashboardController extends GetxController {
   DashboardController(this.repository);
 
   final WeddingRepository repository;
   final selectedIndex = 0.obs;
+  final dashboardPage = DashboardPageKind.tab.obs;
+  final dashboardPageArgument = RxnString();
+  DashboardPageKind? _previousDashboardPage;
+  String? _previousDashboardPageArgument;
   final data = WeddingData.empty().obs;
   final loading = true.obs;
   final error = RxnString();
@@ -65,6 +81,90 @@ class DashboardController extends GetxController {
   StreamSubscription<WeddingData>? _dataSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _workspaceSub;
+
+  bool get isDashboardSubPage => dashboardPage.value != DashboardPageKind.tab;
+
+  void openDashboardTab(int index) {
+    selectedIndex.value = index;
+    dashboardPage.value = DashboardPageKind.tab;
+    dashboardPageArgument.value = null;
+    _previousDashboardPage = null;
+    _previousDashboardPageArgument = null;
+  }
+
+  void openExpenseAdd() =>
+      _openDashboardSubPage(DashboardPageKind.expenseAdd, selectedTab: 1);
+
+  void openReminderAdd() =>
+      _openDashboardSubPage(DashboardPageKind.reminderAdd, selectedTab: 2);
+
+  void openPurchaseAdd() =>
+      _openDashboardSubPage(DashboardPageKind.purchaseAdd, selectedTab: 3);
+
+  void openExpenseDetail(String expenseId) => _openDashboardSubPage(
+    DashboardPageKind.expenseDetail,
+    selectedTab: 1,
+    argument: expenseId,
+  );
+
+  void openExpensePaymentAdd(String expenseId) => _openDashboardSubPage(
+    DashboardPageKind.expensePaymentAdd,
+    selectedTab: 1,
+    argument: expenseId,
+  );
+
+  void openExpensePaymentHistory(String expenseId) => _openDashboardSubPage(
+    DashboardPageKind.expensePaymentHistory,
+    selectedTab: 1,
+    argument: expenseId,
+  );
+
+  void openReports() =>
+      _openDashboardSubPage(DashboardPageKind.reports, selectedTab: 4);
+
+  void openCollaborators() =>
+      _openDashboardSubPage(DashboardPageKind.collaborators, selectedTab: 4);
+
+  void closeDashboardSubPage() {
+    if (_previousDashboardPage != null) {
+      dashboardPage.value = _previousDashboardPage!;
+      dashboardPageArgument.value = _previousDashboardPageArgument;
+      _previousDashboardPage = null;
+      _previousDashboardPageArgument = null;
+      return;
+    }
+    dashboardPage.value = DashboardPageKind.tab;
+    dashboardPageArgument.value = null;
+  }
+
+  bool handleDashboardBack() {
+    if (isDashboardSubPage) {
+      closeDashboardSubPage();
+      return false;
+    }
+    if (selectedIndex.value != 0) {
+      openDashboardTab(0);
+      return false;
+    }
+    return true;
+  }
+
+  void _openDashboardSubPage(
+    DashboardPageKind page, {
+    required int selectedTab,
+    String? argument,
+  }) {
+    if (isDashboardSubPage) {
+      _previousDashboardPage = dashboardPage.value;
+      _previousDashboardPageArgument = dashboardPageArgument.value;
+    } else {
+      _previousDashboardPage = null;
+      _previousDashboardPageArgument = null;
+    }
+    selectedIndex.value = selectedTab;
+    dashboardPage.value = page;
+    dashboardPageArgument.value = argument;
+  }
 
   @override
   void onInit() {

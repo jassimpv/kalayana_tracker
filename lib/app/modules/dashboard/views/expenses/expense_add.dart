@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_form_widgets.dart';
 
 class ExpenseAddPage extends StatefulWidget {
   const ExpenseAddPage({super.key});
@@ -74,183 +74,161 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
     await controller.saveExpense(expense);
     if (!mounted) return;
     setState(() => _isSaving = false);
-    Navigator.of(context).maybePop();
+    controller.closeDashboardSubPage();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: ThemeColors.scaffoldColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
+    return DashboardFormPage(
+      children: [
+        const DashboardFormIntroCard(
+          icon: Icons.payments_rounded,
+          title: 'Add Expense',
+          subtitle: 'Track totals, paid amount, due date, and repayments.',
         ),
-      ),
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Add Expense',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Track your wedding spending in a dedicated expense page.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 22),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Expense name',
-                  prefixIcon: Icon(Icons.storefront_rounded),
-                ),
-                validator: _required,
-              ),
-              const SizedBox(height: 14),
-              DropdownButtonFormField<String>(
-                initialValue: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Category',
-                  prefixIcon: Icon(Icons.category_rounded),
-                ),
-                items: expenseCategories
-                    .map(
-                      (value) =>
-                          DropdownMenuItem(value: value, child: Text(value)),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value == null) return;
-                  setState(() => _category = value);
-                },
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _totalController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Total amount',
-                  prefixIcon: Icon(Icons.attach_money_rounded),
-                ),
-                validator: _required,
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _paidController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Paid amount',
-                  prefixIcon: Icon(Icons.payments_rounded),
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _paidByController,
-                decoration: const InputDecoration(
-                  labelText: 'Paid by',
-                  prefixIcon: Icon(Icons.person_rounded),
-                ),
-              ),
-              const SizedBox(height: 14),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Needs repayment'),
-                value: _needsRepayment,
-                onChanged: (value) {
-                  setState(() => _needsRepayment = value);
-                },
-              ),
-              if (_needsRepayment) ...[
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _repayPersonController,
-                  decoration: const InputDecoration(
-                    labelText: 'Repayment person',
-                    prefixIcon: Icon(Icons.payments_outlined),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _repayAmountController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: const InputDecoration(
-                    labelText: 'Repayment amount',
-                    prefixIcon: Icon(Icons.monetization_on_rounded),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 14),
-              Row(
+        const SizedBox(height: 12),
+        DashboardFormCard(
+          children: [
+            Form(
+              key: _formKey,
+              child: Column(
                 children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _pickDueDate,
-                      icon: const Icon(Icons.calendar_today_rounded),
-                      label: Text(
-                        _dueDate == null
-                            ? 'Choose due date'
-                            : formatDate(_dueDate!),
-                      ),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Expense name',
+                      prefixIcon: Icon(Icons.storefront_rounded),
+                    ),
+                    validator: _required,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: _category,
+                    decoration: const InputDecoration(
+                      labelText: 'Category',
+                      prefixIcon: Icon(Icons.category_rounded),
+                    ),
+                    items: expenseCategories
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value == null) return;
+                      setState(() => _category = value);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _totalController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Total amount',
+                      prefixIcon: Icon(Icons.attach_money_rounded),
+                    ),
+                    validator: _required,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _paidController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Paid amount',
+                      prefixIcon: Icon(Icons.payments_rounded),
                     ),
                   ),
-                  if (_dueDate != null) ...[
-                    const SizedBox(width: 10),
-                    IconButton(
-                      onPressed: () => setState(() => _dueDate = null),
-                      icon: const Icon(Icons.close_rounded),
-                      tooltip: 'Clear date',
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _paidByController,
+                    decoration: const InputDecoration(
+                      labelText: 'Paid by',
+                      prefixIcon: Icon(Icons.person_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Needs repayment'),
+                    value: _needsRepayment,
+                    onChanged: (value) {
+                      setState(() => _needsRepayment = value);
+                    },
+                  ),
+                  if (_needsRepayment) ...[
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _repayPersonController,
+                      decoration: const InputDecoration(
+                        labelText: 'Repayment person',
+                        prefixIcon: Icon(Icons.payments_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _repayAmountController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Repayment amount',
+                        prefixIcon: Icon(Icons.monetization_on_rounded),
+                      ),
                     ),
                   ],
+                  const SizedBox(height: 12),
+                  DashboardDatePickerTile(
+                    icon: Icons.calendar_today_rounded,
+                    title: 'Due date',
+                    value: _dueDate == null
+                        ? 'Choose due date'
+                        : formatDate(_dueDate!),
+                    onTap: _pickDueDate,
+                    onClear: _dueDate == null
+                        ? null
+                        : () => setState(() => _dueDate = null),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _notesController,
+                    minLines: 3,
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      labelText: 'Notes',
+                      alignLabelWithHint: true,
+                      prefixIcon: Icon(Icons.note_rounded),
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _notesController,
-                minLines: 3,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Notes',
-                  alignLabelWithHint: true,
-                  prefixIcon: Icon(Icons.note_rounded),
-                ),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _isSaving ? null : _saveExpense,
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        child: Text('Save expense'),
-                      ),
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 50,
+          child: FilledButton.icon(
+            onPressed: _isSaving ? null : _saveExpense,
+            icon: _isSaving
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.check_rounded),
+            label: Text(_isSaving ? 'Saving' : 'Save Expense'),
           ),
         ),
-      ),
+      ],
     );
   }
 }
