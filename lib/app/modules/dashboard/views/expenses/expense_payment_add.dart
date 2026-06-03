@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
+import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_form_widgets.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/expense_widgets.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/repay_person_picker.dart';
 
 class ExpensePaymentAddPage extends StatefulWidget {
   const ExpensePaymentAddPage({super.key, required this.expenseId});
@@ -19,17 +21,16 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
   final controller = Get.find<DashboardController>();
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
-  final _paidByController = TextEditingController(text: 'Self');
   final _notesController = TextEditingController();
 
   DateTime _paymentDate = DateTime.now();
+  RepayPerson? _paidByPerson;
   String? _initializedExpenseId;
   bool _isSaving = false;
 
   @override
   void dispose() {
     _amountController.dispose();
-    _paidByController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -55,16 +56,17 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
   Future<void> _savePayment(ExpenseItem item) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-    await controller.addExpensePayment(
+    final saved = await controller.addExpensePayment(
       item,
       amount: moneyFromText(_amountController.text) ?? 0,
-      paidBy: _paidByController.text,
+      paidByPersonId: _paidByPerson?.id ?? '',
+      paidByPersonName: _paidByPerson?.name ?? '',
       date: _paymentDate,
       notes: _notesController.text,
     );
     if (!mounted) return;
     setState(() => _isSaving = false);
-    controller.closeDashboardSubPage();
+    if (saved) controller.closeDashboardSubPage();
   }
 
   @override
@@ -122,12 +124,11 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _paidByController,
-                      decoration: const InputDecoration(
-                        labelText: 'Paid by',
-                        prefixIcon: Icon(Icons.person_rounded),
-                      ),
+                    RepayPersonPicker(
+                      selectedPersonId: _paidByPerson?.id,
+                      onChanged: (person) {
+                        setState(() => _paidByPerson = person);
+                      },
                     ),
                     const SizedBox(height: 12),
                     DashboardDatePickerTile(

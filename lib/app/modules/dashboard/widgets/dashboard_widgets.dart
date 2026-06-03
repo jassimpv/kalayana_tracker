@@ -287,9 +287,7 @@ class ExpenseList extends GetView<DashboardController> {
                           DataCell(Text(moneyOrDash(item.paidAmount))),
                           DataCell(Text(moneyOrDash(item.displayPending))),
                           DataCell(StatusPill(label: item.status)),
-                          DataCell(
-                            Text(item.paidBy.isEmpty ? 'Self' : item.paidBy),
-                          ),
+                          DataCell(Text(item.displayPaidBy)),
                           DataCell(
                             Row(
                               mainAxisSize: MainAxisSize.min,
@@ -369,8 +367,8 @@ class _ExpenseCard extends GetView<DashboardController> {
                         children: [
                           LabelPill(label: item.category),
                           StatusPill(label: item.status),
-                          if (item.paidBy.isNotEmpty)
-                            LabelPill(label: 'Paid by ${item.paidBy}'),
+                          if (item.displayPaidBy != 'Not assigned')
+                            LabelPill(label: 'Paid by ${item.displayPaidBy}'),
                         ],
                       ),
                     ],

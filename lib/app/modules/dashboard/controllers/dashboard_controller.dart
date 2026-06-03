@@ -8,6 +8,7 @@ import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
+import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
 import 'package:kalayanaexpresstracker/app/data/repositories/wedding_repository.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
@@ -57,6 +58,7 @@ enum DashboardPageKind {
   expenseDetail,
   expensePaymentAdd,
   expensePaymentHistory,
+  repayPersons,
   reports,
   collaborators,
 }
@@ -75,12 +77,16 @@ class DashboardController extends GetxController {
   final error = RxnString();
   final profile = <String, dynamic>{}.obs;
   final collaborators = <DashboardCollaborator>[].obs;
+  final repayPersons = <RepayPerson>[].obs;
+  final repayPersonsLoading = true.obs;
+  final repayPersonsError = RxnString();
   final workspaceId = RxnString();
   final joinCode = RxnString();
   final collaborationLoading = false.obs;
   StreamSubscription<WeddingData>? _dataSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _workspaceSub;
+  StreamSubscription<List<RepayPerson>>? _repayPersonsSub;
 
   bool get isDashboardSubPage => dashboardPage.value != DashboardPageKind.tab;
 
@@ -118,6 +124,9 @@ class DashboardController extends GetxController {
     selectedTab: 1,
     argument: expenseId,
   );
+
+  void openRepayPersons() =>
+      _openDashboardSubPage(DashboardPageKind.repayPersons, selectedTab: 0);
 
   void openReports() =>
       _openDashboardSubPage(DashboardPageKind.reports, selectedTab: 4);
@@ -178,6 +187,7 @@ class DashboardController extends GetxController {
     _dataSub?.cancel();
     _profileSub?.cancel();
     _workspaceSub?.cancel();
+    _repayPersonsSub?.cancel();
     super.onClose();
   }
 
@@ -202,22 +212,35 @@ class DashboardController extends GetxController {
     );
   }
 
-  Future<void> addExpensePayment(
+  Future<bool> addExpensePayment(
     ExpenseItem item, {
     required double amount,
-    required String paidBy,
+    required String paidByPersonId,
+    required String paidByPersonName,
     required DateTime date,
+    String paymentStatus = paymentSplitStatusPending,
     String notes = '',
   }) async {
-    if (amount <= 0) return;
+    if (amount <= 0) return false;
+    final payerId = paidByPersonId.trim();
+    final payerName = _paidByNameOrSelf(paidByPersonName);
     final normalizedAmount = amount.clamp(0, item.pendingForSummary).toDouble();
-    if (normalizedAmount <= 0) return;
+    if (normalizedAmount <= 0) return false;
     final payment = PaymentSplit(
       amount: normalizedAmount,
-      paidBy: paidBy.trim(),
+      paidBy: payerName,
+      paidByPersonId: payerId,
+      paidByPersonName: payerName,
+      paymentStatus: _normalizePaymentSplitStatus(paymentStatus),
       date: date,
       notes: notes.trim(),
     );
+    if (item.paymentSplit.any(
+      (entry) => _isSamePaymentSplit(entry, payment),
+    )) {
+      _showDashboardSnack('Split', 'This payment split is already added.');
+      return false;
+    }
     await saveExpense(
       item.copyWith(
         paidAmount: (item.paidAmount + normalizedAmount)
@@ -227,6 +250,95 @@ class DashboardController extends GetxController {
         updatedDate: DateTime.now(),
       ),
     );
+    return true;
+  }
+
+  Future<void> deleteExpensePayment(ExpenseItem item, int paymentIndex) async {
+    await deleteExpensePaymentGroup(item, [paymentIndex]);
+  }
+
+  Future<void> deleteExpensePaymentGroup(
+    ExpenseItem item,
+    List<int> paymentIndices,
+  ) async {
+    final indexSet = paymentIndices
+        .where((index) => index >= 0 && index < item.paymentSplit.length)
+        .toSet();
+    if (indexSet.isEmpty) return;
+    final payments = [...item.paymentSplit];
+    final removedAmount = indexSet.fold<double>(
+      0,
+      (total, index) => total + item.paymentSplit[index].amount,
+    );
+    final sortedIndices = indexSet.toList()..sort((a, b) => b.compareTo(a));
+    for (final index in sortedIndices) {
+      payments.removeAt(index);
+    }
+    await saveExpense(
+      item.copyWith(
+        paidAmount: (item.paidAmount - removedAmount)
+            .clamp(0, item.totalAmount)
+            .toDouble(),
+        paymentSplit: payments,
+        updatedDate: DateTime.now(),
+      ),
+    );
+  }
+
+  Future<bool> updateExpensePaymentGroup(
+    ExpenseItem item, {
+    required List<int> paymentIndices,
+    required double amount,
+    required String paidByPersonId,
+    required String paidByPersonName,
+    required String paymentStatus,
+    DateTime? date,
+    String notes = '',
+  }) async {
+    final indexSet = paymentIndices
+        .where((index) => index >= 0 && index < item.paymentSplit.length)
+        .toSet();
+    if (indexSet.isEmpty) return false;
+    if (amount <= 0) {
+      _showDashboardSnack('Split', 'Enter an amount above zero.');
+      return false;
+    }
+    final payerId = paidByPersonId.trim();
+    final payerName = _paidByNameOrSelf(paidByPersonName);
+    final oldAmount = indexSet.fold<double>(
+      0,
+      (total, index) => total + item.paymentSplit[index].amount,
+    );
+    final nextPaidAmount = item.paidAmount - oldAmount + amount;
+    if (nextPaidAmount > item.totalAmount) {
+      _showDashboardSnack('Split', 'Paid amount cannot exceed total expense.');
+      return false;
+    }
+
+    final payments = [...item.paymentSplit];
+    final sortedIndices = indexSet.toList()..sort((a, b) => b.compareTo(a));
+    for (final index in sortedIndices) {
+      payments.removeAt(index);
+    }
+    payments.add(
+      PaymentSplit(
+        amount: amount,
+        date: date ?? DateTime.now(),
+        paidBy: payerName,
+        paidByPersonId: payerId,
+        paidByPersonName: payerName,
+        paymentStatus: _normalizePaymentSplitStatus(paymentStatus),
+        notes: notes.trim().isEmpty ? 'Edited split' : notes.trim(),
+      ),
+    );
+    await saveExpense(
+      item.copyWith(
+        paidAmount: nextPaidAmount.clamp(0, item.totalAmount).toDouble(),
+        paymentSplit: payments,
+        updatedDate: DateTime.now(),
+      ),
+    );
+    return true;
   }
 
   Future<void> markExpenseCompleted(ExpenseItem item) async {
@@ -237,7 +349,10 @@ class DashboardController extends GetxController {
             PaymentSplit(
               amount: remaining,
               date: DateTime.now(),
-              paidBy: item.paidBy.trim().isEmpty ? 'Self' : item.paidBy.trim(),
+              paidBy: item.displayPaidBy,
+              paidByPersonId: item.paidByPersonId,
+              paidByPersonName: item.paidByPersonName,
+              paymentStatus: paymentSplitStatusCompleted,
               notes: 'Marked complete',
             ),
           ]
@@ -274,6 +389,91 @@ class DashboardController extends GetxController {
   Future<void> markRepaymentCompleted(ExpenseItem item) async {
     await saveExpense(
       item.copyWith(isRepaymentCompleted: true, updatedDate: DateTime.now()),
+    );
+  }
+
+  Future<bool> addRepayPerson(String name) async {
+    final normalizedName = name.trim();
+    if (normalizedName.isEmpty) {
+      _showDashboardSnack('Repay', 'Person name cannot be empty.');
+      return false;
+    }
+    if (_hasDuplicateRepayPersonName(normalizedName)) {
+      _showDashboardSnack('Repay', 'A person with this name already exists.');
+      return false;
+    }
+    final now = DateTime.now();
+    try {
+      await repository.addRepayPerson(
+        RepayPerson(
+          id: newId(),
+          name: normalizedName,
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+      return true;
+    } catch (exception) {
+      _showDashboardSnack('Repay', exception.toString());
+      return false;
+    }
+  }
+
+  Future<bool> updateRepayPerson(RepayPerson person, String name) async {
+    final normalizedName = name.trim();
+    if (normalizedName.isEmpty) {
+      _showDashboardSnack('Repay', 'Person name cannot be empty.');
+      return false;
+    }
+    if (_hasDuplicateRepayPersonName(normalizedName, exceptId: person.id)) {
+      _showDashboardSnack('Repay', 'A person with this name already exists.');
+      return false;
+    }
+    try {
+      await repository.updateRepayPerson(
+        person.copyWith(name: normalizedName, updatedAt: DateTime.now()),
+      );
+      return true;
+    } catch (exception) {
+      _showDashboardSnack('Repay', exception.toString());
+      return false;
+    }
+  }
+
+  Future<bool> deleteRepayPerson(RepayPerson person) async {
+    if (isRepayPersonUsed(person.id)) {
+      _showDashboardSnack(
+        'Repay',
+        '${person.name} is already used in a payment or expense.',
+      );
+      return false;
+    }
+    try {
+      await repository.deleteRepayPerson(person.id);
+      return true;
+    } catch (exception) {
+      _showDashboardSnack('Repay', exception.toString());
+      return false;
+    }
+  }
+
+  bool isRepayPersonUsed(String personId) {
+    final normalizedId = personId.trim();
+    if (normalizedId.isEmpty) return false;
+    return data.value.expenses.any((expense) {
+      if (expense.paidByPersonId == normalizedId) return true;
+      return expense.paymentSplit.any(
+        (payment) => payment.paidByPersonId == normalizedId,
+      );
+    });
+  }
+
+  bool _hasDuplicateRepayPersonName(String name, {String? exceptId}) {
+    final normalized = name.trim().toLowerCase();
+    return repayPersons.any(
+      (person) =>
+          person.id != exceptId &&
+          person.name.trim().toLowerCase() == normalized,
     );
   }
 
@@ -461,6 +661,7 @@ class DashboardController extends GetxController {
     _dataSub?.cancel();
     _profileSub?.cancel();
     _workspaceSub?.cancel();
+    _repayPersonsSub?.cancel();
 
     _dataSub = repository.watch().listen(
       (value) {
@@ -470,6 +671,19 @@ class DashboardController extends GetxController {
       onError: (Object exception) {
         error.value = exception.toString();
         loading.value = false;
+      },
+    );
+
+    repayPersonsLoading.value = true;
+    _repayPersonsSub = repository.getRepayPersons().listen(
+      (value) {
+        repayPersons.value = value;
+        repayPersonsLoading.value = false;
+        repayPersonsError.value = null;
+      },
+      onError: (Object exception) {
+        repayPersonsError.value = exception.toString();
+        repayPersonsLoading.value = false;
       },
     );
 
@@ -590,6 +804,34 @@ String _normalizeJoinCode(String code) {
   return '${compact.substring(0, 4)}-${compact.substring(4, 8)}-${compact.substring(8).padRight(4, 'K').substring(0, 4)}';
 }
 
+bool _isSamePaymentSplit(PaymentSplit first, PaymentSplit second) {
+  final firstDate = DateTime(first.date.year, first.date.month, first.date.day);
+  final secondDate = DateTime(
+    second.date.year,
+    second.date.month,
+    second.date.day,
+  );
+  return first.amount.toStringAsFixed(2) == second.amount.toStringAsFixed(2) &&
+      firstDate == secondDate &&
+      first.paidByPersonId.trim().toLowerCase() ==
+          second.paidByPersonId.trim().toLowerCase() &&
+      first.displayPaidBy.trim().toLowerCase() ==
+          second.displayPaidBy.trim().toLowerCase() &&
+      first.notes.trim().toLowerCase() == second.notes.trim().toLowerCase();
+}
+
+String _normalizePaymentSplitStatus(String status) {
+  final normalized = status.trim();
+  return paymentSplitStatuses.contains(normalized)
+      ? normalized
+      : paymentSplitStatusPending;
+}
+
+String _paidByNameOrSelf(String name) {
+  final normalized = name.trim();
+  return normalized.isEmpty ? 'Self' : normalized;
+}
+
 void _showDashboardSnack(String title, String message) {
   Get.snackbar(
     title,
@@ -619,6 +861,8 @@ ExpenseItem buildExpense({
   required String total,
   required String paid,
   required String paidBy,
+  required String paidByPersonId,
+  required String paidByPersonName,
   required String repayPerson,
   required bool needsRepayment,
   required String repayAmount,
@@ -634,6 +878,9 @@ ExpenseItem buildExpense({
       ? category.trim()
       : expenseCategories.first;
   final parsedRepayAmount = moneyFromText(repayAmount);
+  final payerName = _paidByNameOrSelf(paidByPersonName.trim().isEmpty
+      ? paidBy
+      : paidByPersonName);
   final paymentSplit = existing?.paymentSplit.isNotEmpty == true
       ? existing!.paymentSplit
       : paidAmount > 0
@@ -641,7 +888,10 @@ ExpenseItem buildExpense({
           PaymentSplit(
             amount: paidAmount,
             date: now,
-            paidBy: paidBy.trim().isEmpty ? 'Self' : paidBy.trim(),
+            paidBy: payerName,
+            paidByPersonId: paidByPersonId.trim(),
+            paidByPersonName: payerName,
+            paymentStatus: paymentSplitStatusPending,
             notes: 'Initial payment',
           ),
         ]
@@ -656,7 +906,9 @@ ExpenseItem buildExpense({
         .clamp(0, double.infinity)
         .toDouble(),
     paymentStatus: existing?.paymentStatus ?? expenseStatusPending,
-    paidBy: paidBy.trim(),
+    paidBy: paidAmount > 0 ? payerName : paidBy.trim(),
+    paidByPersonId: paidByPersonId.trim(),
+    paidByPersonName: paidAmount > 0 ? payerName : paidByPersonName.trim(),
     repayPerson: repayPerson.trim(),
     needsRepayment: needsRepayment,
     repayAmount: parsedRepayAmount ?? (needsRepayment ? paidAmount : 0),

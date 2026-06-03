@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_form_widgets.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/repay_person_picker.dart';
 
 class ExpenseAddPage extends StatefulWidget {
   const ExpenseAddPage({super.key});
@@ -17,13 +19,13 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
   final _nameController = TextEditingController();
   final _totalController = TextEditingController();
   final _paidController = TextEditingController();
-  final _paidByController = TextEditingController();
   final _repayPersonController = TextEditingController();
   final _repayAmountController = TextEditingController();
   final _notesController = TextEditingController();
 
   String _category = expenseCategories.first;
   DateTime? _dueDate;
+  RepayPerson? _paidByPerson;
   bool _needsRepayment = false;
   bool _isSaving = false;
 
@@ -32,7 +34,6 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
     _nameController.dispose();
     _totalController.dispose();
     _paidController.dispose();
-    _paidByController.dispose();
     _repayPersonController.dispose();
     _repayAmountController.dispose();
     _notesController.dispose();
@@ -63,7 +64,9 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
       category: _category,
       total: _totalController.text,
       paid: _paidController.text,
-      paidBy: _paidByController.text,
+      paidBy: _paidByPerson?.name ?? '',
+      paidByPersonId: _paidByPerson?.id ?? '',
+      paidByPersonName: _paidByPerson?.name ?? '',
       repayPerson: _repayPersonController.text,
       needsRepayment: _needsRepayment,
       repayAmount: _repayAmountController.text,
@@ -145,12 +148,11 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _paidByController,
-                    decoration: const InputDecoration(
-                      labelText: 'Paid by',
-                      prefixIcon: Icon(Icons.person_rounded),
-                    ),
+                  RepayPersonPicker(
+                    selectedPersonId: _paidByPerson?.id,
+                    onChanged: (person) {
+                      setState(() => _paidByPerson = person);
+                    },
                   ),
                   const SizedBox(height: 8),
                   SwitchListTile(

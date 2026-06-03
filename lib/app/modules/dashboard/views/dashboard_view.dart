@@ -18,6 +18,7 @@ import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expe
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_history.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_payment_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/reminders/reminder_add.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/repay/repay_persons_page.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/shopping/purchase_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/app_bar.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_dialogs.dart';
@@ -180,6 +181,9 @@ class _DashboardBody extends StatelessWidget {
             key: ValueKey('expense-payment-history-$argument'),
             expenseId: argument,
           ),
+          DashboardPageKind.repayPersons => const RepayPersonsPage(
+            key: ValueKey('repay-persons'),
+          ),
           DashboardPageKind.reports => const ReportsPanel(
             key: ValueKey('reports'),
           ),
@@ -203,6 +207,7 @@ String _dashboardPageTitle(DashboardPageKind page) => switch (page) {
   DashboardPageKind.expenseDetail => 'Expense Detail',
   DashboardPageKind.expensePaymentAdd => 'Add Payment',
   DashboardPageKind.expensePaymentHistory => 'Payment History',
+  DashboardPageKind.repayPersons => 'Repay',
   DashboardPageKind.reports => 'Reports',
   DashboardPageKind.collaborators => 'Collaborators',
   DashboardPageKind.tab => 'Dashboard',

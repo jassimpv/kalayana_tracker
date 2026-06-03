@@ -12,7 +12,6 @@ class ExpenseDetailTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final paidBy = item.paidBy.trim().isEmpty ? 'Self' : item.paidBy.trim();
     final payments = [...item.paymentSplit]
       ..sort((a, b) => a.date.compareTo(b.date));
 
@@ -46,14 +45,11 @@ class ExpenseDetailTimeline extends StatelessWidget {
               else ...[
                 ...payments.asMap().entries.map((entry) {
                   final payment = entry.value;
-                  final payer = payment.paidBy.trim().isEmpty
-                      ? paidBy
-                      : payment.paidBy.trim();
                   return _ExpenseTimelineRow(
                     markerColor: ThemeColors.logoGold,
                     date: formatDate(payment.date),
                     title: 'Paid ${moneyOrDash(payment.amount)}',
-                    subtitle: payer,
+                    subtitle: 'Paid By: ${payment.displayPaidBy}',
                     isLast: false,
                   );
                 }),

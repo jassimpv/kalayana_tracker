@@ -617,7 +617,7 @@ bool _matchesExpenseQuery(ExpenseItem item, String query) {
   final fields = [
     item.name,
     item.category,
-    item.paidBy,
+    item.displayPaidBy,
     item.repayPerson,
     item.notes,
     item.status,
@@ -931,7 +931,7 @@ List<pw.Widget> _paymentHistoryWidgets(ExpenseItem item) {
         return [
           formatDate(payment.date),
           _pdfMoney(payment.amount),
-          payment.paidBy.trim().isEmpty ? 'Self' : payment.paidBy.trim(),
+          payment.displayPaidBy,
           _pdfMoney(remaining),
           payment.notes.trim().isEmpty ? '-' : payment.notes.trim(),
         ];
@@ -969,7 +969,7 @@ Future<void> _copyExpenseCsv(
         item.totalAmount.toStringAsFixed(0),
         item.paidAmount.toStringAsFixed(0),
         item.pendingForSummary.toStringAsFixed(0),
-        item.paidBy,
+        item.displayPaidBy,
         item.repayPerson,
         item.repaymentPending.toStringAsFixed(0),
         item.dueDate == null ? '' : formatDate(item.dueDate!),
@@ -1335,7 +1335,7 @@ class _ExpenseBillCard extends StatelessWidget {
     final statusColor = _expenseLedgerColor(status);
     final categoryIcon = _expenseCategoryIcon(item.category);
     final repaymentName = item.repayPerson.trim().isEmpty
-        ? item.paidBy.trim()
+        ? item.displayPaidBy
         : item.repayPerson.trim();
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),

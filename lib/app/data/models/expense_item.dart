@@ -8,12 +8,21 @@ const expenseStatusCompleted = 'Completed';
 const expenseStatusPaidByOther = 'Paid by Other';
 const expenseStatusNeedToRepay = 'Need to Repay';
 const expenseStatusOverdue = 'Overdue';
+const paymentSplitStatusPending = 'Pending';
+const paymentSplitStatusCompleted = 'Completed';
+const paymentSplitStatuses = [
+  paymentSplitStatusPending,
+  paymentSplitStatusCompleted,
+];
 
 class PaymentSplit {
   const PaymentSplit({
     required this.amount,
     required this.date,
     this.paidBy = '',
+    this.paidByPersonId = '',
+    this.paidByPersonName = '',
+    this.paymentStatus = paymentSplitStatusPending,
     this.notes = '',
   });
 
@@ -25,6 +34,13 @@ class PaymentSplit {
           dateFromJson(json['paidAt']) ??
           DateTime.now(),
       paidBy: json['paidBy'] as String? ?? '',
+      paidByPersonId: json['paidByPersonId'] as String? ?? '',
+      paidByPersonName:
+          json['paidByPersonName'] as String? ??
+          json['paidByName'] as String? ??
+          json['paidBy'] as String? ??
+          '',
+      paymentStatus: _paymentSplitStatusFromJson(json['paymentStatus']),
       notes: json['notes'] as String? ?? json['note'] as String? ?? '',
     );
   }
@@ -32,14 +48,35 @@ class PaymentSplit {
   final double amount;
   final DateTime date;
   final String paidBy;
+  final String paidByPersonId;
+  final String paidByPersonName;
+  final String paymentStatus;
   final String notes;
+
+  String get displayPaidBy {
+    final personName = paidByPersonName.trim();
+    if (personName.isNotEmpty) return personName;
+    if (paidByPersonId.trim().isNotEmpty) return 'Unknown Person';
+    final legacyName = paidBy.trim();
+    if (legacyName.isNotEmpty) return legacyName;
+    return 'Not assigned';
+  }
 
   Map<String, dynamic> toJson() => {
     'amount': amount,
     'date': date.toIso8601String(),
     'paidBy': paidBy,
+    'paidByPersonId': paidByPersonId,
+    'paidByPersonName': paidByPersonName,
+    'paymentStatus': paymentStatus,
     'notes': notes,
   };
+}
+
+String _paymentSplitStatusFromJson(dynamic value) {
+  final status = value?.toString().trim();
+  if (status != null && paymentSplitStatuses.contains(status)) return status;
+  return paymentSplitStatusPending;
 }
 
 class ExpenseItem {
@@ -54,6 +91,8 @@ class ExpenseItem {
     required this.updatedDate,
     this.pendingAmount,
     this.paidBy = '',
+    this.paidByPersonId = '',
+    this.paidByPersonName = '',
     this.repayPerson = '',
     this.needsRepayment = false,
     this.repayAmount = 0,
@@ -97,6 +136,12 @@ class ExpenseItem {
           json['status'] as String? ??
           expenseStatusPending,
       paidBy: json['paidBy'] as String? ?? '',
+      paidByPersonId: json['paidByPersonId'] as String? ?? '',
+      paidByPersonName:
+          json['paidByPersonName'] as String? ??
+          json['paidByName'] as String? ??
+          json['paidBy'] as String? ??
+          '',
       repayPerson:
           json['repayPerson'] as String? ??
           json['needToRepayPerson'] as String? ??
@@ -123,6 +168,8 @@ class ExpenseItem {
   final double? pendingAmount;
   final String paymentStatus;
   final String paidBy;
+  final String paidByPersonId;
+  final String paidByPersonName;
   final String repayPerson;
   final bool needsRepayment;
   final double repayAmount;
@@ -147,6 +194,15 @@ class ExpenseItem {
   bool get hasSplitPayments => paymentSplit.length > 1;
   bool get hasPartialPayment => paidForSummary > 0 && pendingForSummary > 0;
   bool get isPaidByOther => paidBy.trim().isNotEmpty && paidBy.trim() != 'Self';
+  String get displayPaidBy {
+    final personName = paidByPersonName.trim();
+    if (personName.isNotEmpty) return personName;
+    if (paidByPersonId.trim().isNotEmpty) return 'Unknown Person';
+    final legacyName = paidBy.trim();
+    if (legacyName.isNotEmpty) return legacyName;
+    return 'Not assigned';
+  }
+
   bool get isOverdue =>
       dueDate != null &&
       pendingForSummary > 0 &&
@@ -173,6 +229,8 @@ class ExpenseItem {
     double? pendingAmount,
     String? paymentStatus,
     String? paidBy,
+    String? paidByPersonId,
+    String? paidByPersonName,
     String? repayPerson,
     bool? needsRepayment,
     double? repayAmount,
@@ -193,6 +251,8 @@ class ExpenseItem {
       pendingAmount: pendingAmount ?? this.pendingAmount,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       paidBy: paidBy ?? this.paidBy,
+      paidByPersonId: paidByPersonId ?? this.paidByPersonId,
+      paidByPersonName: paidByPersonName ?? this.paidByPersonName,
       repayPerson: repayPerson ?? this.repayPerson,
       needsRepayment: needsRepayment ?? this.needsRepayment,
       repayAmount: repayAmount ?? this.repayAmount,
@@ -215,6 +275,8 @@ class ExpenseItem {
     'paymentStatus': status,
     'status': status,
     'paidBy': paidBy,
+    'paidByPersonId': paidByPersonId,
+    'paidByPersonName': paidByPersonName,
     'repayPerson': repayPerson,
     'needsRepayment': needsRepayment,
     'repayAmount': repayAmount,

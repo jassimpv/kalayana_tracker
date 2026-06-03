@@ -1116,13 +1116,8 @@ class _OverviewQuickActions extends StatelessWidget {
         onReminder,
       ),
       _ActionSpec(CupertinoIcons.bag, 'Shopping', 'Manage items', onPurchase),
-      _ActionSpec(CupertinoIcons.person_3, 'Vendors', 'Manage vendors', () {
-        Get.snackbar(
-          'Vendors',
-          'Vendor management is coming soon.',
-          snackPosition: SnackPosition.BOTTOM,
-          margin: const EdgeInsets.all(16),
-        );
+      _ActionSpec(CupertinoIcons.person_3, 'Repay', 'Manage people', () {
+        Get.find<DashboardController>().openRepayPersons();
       }),
     ];
     return Column(

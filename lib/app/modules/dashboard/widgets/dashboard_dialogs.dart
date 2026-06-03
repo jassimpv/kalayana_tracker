@@ -5,7 +5,9 @@ import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
+import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/repay_person_picker.dart';
 import 'package:kalayanaexpresstracker/gemini.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -17,10 +19,14 @@ Future<void> showExpenseDialog(
   final name = TextEditingController(text: item?.name ?? '');
   final total = TextEditingController(text: moneyText(item?.totalAmount));
   final paid = TextEditingController(text: moneyText(item?.paidAmount));
-  final paidBy = TextEditingController(text: item?.paidBy ?? '');
   final repayPerson = TextEditingController(text: item?.repayPerson ?? '');
   final repayAmount = TextEditingController(text: moneyText(item?.repayAmount));
   final notes = TextEditingController(text: item?.notes ?? '');
+  RepayPerson? paidByPerson = item == null
+      ? null
+      : controller.repayPersons.firstWhereOrNull(
+          (person) => person.id == item.paidByPersonId,
+        );
   var category = expenseCategories.contains(item?.category)
       ? item!.category
       : expenseCategories.first;
@@ -51,7 +57,11 @@ Future<void> showExpenseDialog(
                   category: category,
                   total: total.text,
                   paid: paid.text,
-                  paidBy: paidBy.text,
+                  paidBy: paidByPerson?.name ?? item?.paidBy ?? '',
+                  paidByPersonId:
+                      paidByPerson?.id ?? item?.paidByPersonId ?? '',
+                  paidByPersonName:
+                      paidByPerson?.name ?? item?.paidByPersonName ?? '',
                   repayPerson: repayPerson.text,
                   needsRepayment: needsRepayment,
                   repayAmount: repayAmount.text,
@@ -143,13 +153,9 @@ Future<void> showExpenseDialog(
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 14),
-              TextFormField(
-                controller: paidBy,
-                decoration: const InputDecoration(
-                  labelText: 'Paid by',
-                  prefixIcon: Icon(Icons.person_rounded),
-                  hintText: 'Self, family member, friend...',
-                ),
+              RepayPersonPicker(
+                selectedPersonId: paidByPerson?.id ?? item?.paidByPersonId,
+                onChanged: (person) => setState(() => paidByPerson = person),
               ),
               const SizedBox(height: 14),
               SwitchListTile(
@@ -345,8 +351,8 @@ Future<void> showAddExpensePaymentDialog(
 }) async {
   final controller = Get.find<DashboardController>();
   final amount = TextEditingController(text: moneyText(item.pendingForSummary));
-  final paidBy = TextEditingController(text: 'Self');
   final notes = TextEditingController();
+  RepayPerson? paidByPerson;
   var date = DateTime.now();
   final formKey = GlobalKey<FormState>();
 
@@ -365,14 +371,15 @@ Future<void> showAddExpensePaymentDialog(
           FilledButton(
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
-              await controller.addExpensePayment(
+              final saved = await controller.addExpensePayment(
                 item,
                 amount: moneyFromText(amount.text) ?? 0,
-                paidBy: paidBy.text,
+                paidByPersonId: paidByPerson?.id ?? '',
+                paidByPersonName: paidByPerson?.name ?? '',
                 date: date,
                 notes: notes.text,
               );
-              if (context.mounted) Navigator.pop(context);
+              if (context.mounted && saved) Navigator.pop(context);
             },
             child: const Text('Save payment'),
           ),
@@ -401,12 +408,9 @@ Future<void> showAddExpensePaymentDialog(
                 },
               ),
               const SizedBox(height: 14),
-              TextFormField(
-                controller: paidBy,
-                decoration: const InputDecoration(
-                  labelText: 'Paid by',
-                  prefixIcon: Icon(Icons.person_rounded),
-                ),
+              RepayPersonPicker(
+                selectedPersonId: paidByPerson?.id,
+                onChanged: (person) => setState(() => paidByPerson = person),
               ),
               const SizedBox(height: 14),
               _DatePickerTile(
@@ -654,7 +658,6 @@ Future<void> showConvertPurchaseToExpenseDialog(
   final controller = Get.find<DashboardController>();
   final total = TextEditingController();
   final paid = TextEditingController();
-  final paidBy = TextEditingController();
   final notes = TextEditingController(
     text: purchase.note.trim().isEmpty
         ? 'Converted from shopping list'
@@ -663,6 +666,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
   var category = expenseCategories.contains(purchase.category)
       ? purchase.category
       : expenseCategories.first;
+  RepayPerson? paidByPerson;
   var dueDate = DateTime.now();
   final formKey = GlobalKey<FormState>();
 
@@ -688,7 +692,9 @@ Future<void> showConvertPurchaseToExpenseDialog(
                   category: category,
                   total: total.text,
                   paid: paid.text,
-                  paidBy: paidBy.text,
+                  paidBy: paidByPerson?.name ?? '',
+                  paidByPersonId: paidByPerson?.id ?? '',
+                  paidByPersonName: paidByPerson?.name ?? '',
                   repayPerson: '',
                   needsRepayment: false,
                   repayAmount: '',
@@ -749,12 +755,9 @@ Future<void> showConvertPurchaseToExpenseDialog(
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 14),
-              TextFormField(
-                controller: paidBy,
-                decoration: const InputDecoration(
-                  labelText: 'Paid by',
-                  prefixIcon: Icon(Icons.person_rounded),
-                ),
+              RepayPersonPicker(
+                selectedPersonId: paidByPerson?.id,
+                onChanged: (person) => setState(() => paidByPerson = person),
               ),
               const SizedBox(height: 14),
               _DatePickerTile(

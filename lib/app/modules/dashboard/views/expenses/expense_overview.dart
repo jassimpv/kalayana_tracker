@@ -21,7 +21,7 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
     final statusColor = item.repaymentPending > 0
         ? const Color(0xFF4422D8)
         : expenseStatusColor(item);
-    final paidBy = item.paidBy.trim().isEmpty ? 'Self' : item.paidBy.trim();
+    final paidBy = item.displayPaidBy;
     final notes = item.notes.trim().isEmpty
         ? 'No notes added'
         : item.notes.trim();
