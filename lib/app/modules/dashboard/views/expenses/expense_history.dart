@@ -21,34 +21,37 @@ class ExpensePaymentHistoryPage extends GetView<DashboardController> {
         (entry) => entry.id == expenseId,
       );
 
-      return Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: ThemeColors.scaffoldColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            Expanded(
-              child: item == null
-                  ? const SingleChildScrollView(
-                      padding: EdgeInsets.fromLTRB(16, 18, 16, 120),
-                      child: PremiumEmptyState(
-                        icon: Icons.account_balance_wallet_rounded,
-                        title: 'Payment not found',
-                        subtitle: 'This expense may have been deleted.',
-                      ),
-                    )
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
-                      child: _ExpensePaymentHistoryContent(item: item),
-                    ),
+      return Scaffold(
+        backgroundColor: ThemeColors.primary,
+        body: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: ThemeColors.scaffoldColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
             ),
-          ],
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Expanded(
+                child: item == null
+                    ? const SingleChildScrollView(
+                        padding: EdgeInsets.fromLTRB(16, 18, 16, 120),
+                        child: PremiumEmptyState(
+                          icon: Icons.account_balance_wallet_rounded,
+                          title: 'Payment not found',
+                          subtitle: 'This expense may have been deleted.',
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
+                        child: _ExpensePaymentHistoryContent(item: item),
+                      ),
+              ),
+            ],
+          ),
         ),
       );
     });

@@ -10,24 +10,27 @@ class DashboardFormPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFFDF4EC), Color(0xFFFFF8F0)],
+    return Scaffold(
+      backgroundColor: ThemeColors.primary,
+      body: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFDF4EC), Color(0xFFFFF8F0)],
+          ),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
         ),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
-      ),
-      child: DashboardAdaptiveScroll(
-        padding: EdgeInsets.fromLTRB(14, 14, 14, 18 + keyboardInset),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: children,
+        child: DashboardAdaptiveScroll(
+          padding: EdgeInsets.fromLTRB(14, 14, 14, 18 + keyboardInset),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: children,
+          ),
         ),
       ),
     );

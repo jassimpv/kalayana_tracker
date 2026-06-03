@@ -681,19 +681,6 @@ class _ShoppingListHeader extends StatelessWidget {
             ),
           ),
         ),
-        Text(
-          '$count items',
-          style: const TextStyle(
-            color: Color(0xFFD17B14),
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        const SizedBox(width: 10),
-        const Icon(
-          CupertinoIcons.chevron_down,
-          color: Color(0xFF72535A),
-          size: 16,
-        ),
       ],
     );
   }
@@ -852,12 +839,6 @@ class _PurchaseListCard extends GetView<DashboardController> {
                     purchased: purchased,
                   ),
                 ],
-              ),
-              const SizedBox(width: 6),
-              Icon(
-                CupertinoIcons.chevron_right,
-                color: ThemeColors.logoDeep.withValues(alpha: 0.34),
-                size: 16,
               ),
             ],
           ),

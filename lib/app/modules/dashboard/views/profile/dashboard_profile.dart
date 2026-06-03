@@ -18,34 +18,23 @@ class ProfilePanel extends GetView<DashboardController> {
         ),
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 128),
+        padding: const EdgeInsets.only(bottom: 108),
         child: Column(
           children: [
             Builder(
               builder: (context) {
                 final topInset = MediaQuery.paddingOf(context).top;
                 return SizedBox(
-                  height: topInset + 358,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      _ProfileHeader(
-                        name: name,
-                        email: email,
-                        photoUrl: user?.photoURL,
-                      ),
-                      const Positioned(
-                        left: 22,
-                        right: 22,
-                        bottom: 0,
-                        child: _PremiumPlanBanner(),
-                      ),
-                    ],
+                  height: topInset + 238,
+                  child: _ProfileHeader(
+                    name: name,
+                    email: email,
+                    photoUrl: user?.photoURL,
                   ),
                 );
               },
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 12),
             _ProfileMenuCard(
               children: [
                 _ProfileMenuRow(
@@ -434,11 +423,11 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
     return Container(
-      height: topInset + 310,
+      height: topInset + 238,
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(34)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         gradient: RadialGradient(
           center: Alignment.topLeft,
           radius: 1.18,
@@ -473,13 +462,13 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: 18,
-            top: topInset + 90,
+            right: 10,
+            top: topInset + 70,
             child: const _ProfileLeafArt(),
           ),
-          Positioned(left: 74, top: topInset + 220, child: const _ProfileDot()),
+          Positioned(left: 64, top: topInset + 172, child: const _ProfileDot()),
           Padding(
-            padding: EdgeInsets.fromLTRB(20, topInset + 32, 20, 0),
+            padding: EdgeInsets.fromLTRB(18, topInset + 22, 18, 0),
             child: SizedBox(
               width: double.infinity,
               child: Column(
@@ -489,26 +478,26 @@ class _ProfileHeader extends StatelessWidget {
                     photoUrl: photoUrl,
                     onTap: () => showProfileDialog(context),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 10),
                   Text(
                     name,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 32,
+                      fontSize: 24,
                       fontWeight: FontWeight.w900,
-                      height: 1.02,
+                      height: 1.05,
                     ),
                   ),
-                  const SizedBox(height: 7),
+                  const SizedBox(height: 4),
                   Text(
                     email,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Color(0xFFF3C873),
-                      fontSize: 19,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
@@ -637,8 +626,8 @@ class _EditableProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 128,
-      height: 116,
+      width: 96,
+      height: 88,
       child: Stack(
         alignment: Alignment.center,
         clipBehavior: Clip.none,
@@ -657,19 +646,19 @@ class _EditableProfileAvatar extends StatelessWidget {
                 ),
               ],
             ),
-            child: _ProfileAvatar(name: name, photoUrl: photoUrl, radius: 52),
+            child: _ProfileAvatar(name: name, photoUrl: photoUrl, radius: 40),
           ),
           Positioned(
-            right: 10,
-            bottom: 4,
+            right: 8,
+            bottom: 2,
             child: Material(
               color: Colors.transparent,
               child: InkWell(
                 onTap: onTap,
                 borderRadius: BorderRadius.circular(999),
                 child: Container(
-                  width: 50,
-                  height: 50,
+                  width: 34,
+                  height: 34,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
@@ -688,109 +677,10 @@ class _EditableProfileAvatar extends StatelessWidget {
                   child: Icon(
                     Icons.edit_outlined,
                     color: ThemeColors.primary,
-                    size: 26,
+                    size: 18,
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PremiumPlanBanner extends StatelessWidget {
-  const _PremiumPlanBanner();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 86),
-      padding: const EdgeInsets.fromLTRB(28, 18, 22, 18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [Color(0xFFB20B46), Color(0xFF97083A), Color(0xFF7D062F)],
-        ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8F1438).withValues(alpha: 0.28),
-            blurRadius: 26,
-            offset: const Offset(0, 16),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFF8F1438).withValues(alpha: 0.42),
-              border: Border.all(color: const Color(0xFFF4C84E), width: 1.5),
-            ),
-            child: const Icon(
-              Icons.workspace_premium_rounded,
-              color: Color(0xFFF4C84E),
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 18),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Premium Account',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Enjoy all premium features',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Color(0xFFF7DFE6),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            height: 44,
-            padding: const EdgeInsets.symmetric(horizontal: 18),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.38)),
-              color: Colors.white.withValues(alpha: 0.06),
-            ),
-            child: const Row(
-              children: [
-                Text(
-                  'Manage Plan',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                SizedBox(width: 10),
-                Icon(Icons.chevron_right_rounded, color: Colors.white),
-              ],
             ),
           ),
         ],
@@ -807,17 +697,17 @@ class _ProfileMenuCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 18),
+      margin: const EdgeInsets.symmetric(horizontal: 14),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFF5DED4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -855,18 +745,18 @@ class _ProfileMenuRow extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         child: Column(
           children: [
             SizedBox(
-              height: subtitle == null ? 82 : 92,
+              height: subtitle == null ? 60 : 68,
               child: Row(
                 children: [
                   Container(
-                    width: 58,
-                    height: 58,
+                    width: 42,
+                    height: 42,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(14),
                       color: color.withValues(alpha: 0.10),
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -877,9 +767,9 @@ class _ProfileMenuRow extends StatelessWidget {
                         ],
                       ),
                     ),
-                    child: Icon(icon, color: color, size: 29),
+                    child: Icon(icon, color: color, size: 22),
                   ),
-                  const SizedBox(width: 22),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -891,12 +781,12 @@ class _ProfileMenuRow extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: ThemeColors.logoDeep,
-                            fontSize: 17,
+                            fontSize: 14,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
                         if (subtitle != null) ...[
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 3),
                           Text(
                             subtitle!,
                             maxLines: 1,
@@ -905,7 +795,7 @@ class _ProfileMenuRow extends StatelessWidget {
                               color: ThemeColors.logoDeep.withValues(
                                 alpha: 0.62,
                               ),
-                              fontSize: 15,
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -918,6 +808,7 @@ class _ProfileMenuRow extends StatelessWidget {
                       value!,
                       style: TextStyle(
                         color: ThemeColors.logoDeep.withValues(alpha: 0.68),
+                        fontSize: 12,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -926,7 +817,7 @@ class _ProfileMenuRow extends StatelessWidget {
                   Icon(
                     trailingIcon,
                     color: ThemeColors.logoDeep.withValues(alpha: 0.58),
-                    size: 30,
+                    size: 22,
                   ),
                 ],
               ),

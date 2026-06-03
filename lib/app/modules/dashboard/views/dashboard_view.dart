@@ -62,7 +62,6 @@ class DashboardView extends GetView<DashboardController> {
         },
         child: Scaffold(
           extendBody: true,
-          backgroundColor: ThemeColors.primary,
           body: Stack(
             children: [
               Positioned.fill(
@@ -154,43 +153,45 @@ class _DashboardBody extends StatelessWidget {
     final page = controller.dashboardPage.value;
     final argument = controller.dashboardPageArgument.value;
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 220),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      child: switch (page) {
-        DashboardPageKind.expenseAdd => const ExpenseAddPage(
-          key: ValueKey('expense-add'),
-        ),
-        DashboardPageKind.reminderAdd => const ReminderAddPage(
-          key: ValueKey('reminder-add'),
-        ),
-        DashboardPageKind.purchaseAdd => const PurchaseAddPage(
-          key: ValueKey('purchase-add'),
-        ),
-        DashboardPageKind.expenseDetail => ExpenseDetailPage(
-          key: ValueKey('expense-detail-$argument'),
-          expenseId: argument,
-        ),
-        DashboardPageKind.expensePaymentAdd => ExpensePaymentAddPage(
-          key: ValueKey('expense-payment-add-$argument'),
-          expenseId: argument,
-        ),
-        DashboardPageKind.expensePaymentHistory => ExpensePaymentHistoryPage(
-          key: ValueKey('expense-payment-history-$argument'),
-          expenseId: argument,
-        ),
-        DashboardPageKind.reports => const ReportsPanel(
-          key: ValueKey('reports'),
-        ),
-        DashboardPageKind.collaborators => const CollaboratorsPanel(
-          key: ValueKey('collaborators'),
-        ),
-        DashboardPageKind.tab => _DashboardTabPage(
-          key: ValueKey('tab-${controller.selectedIndex.value}'),
-          index: controller.selectedIndex.value,
-        ),
-      },
+    return Obx(
+      () => AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        child: switch (page) {
+          DashboardPageKind.expenseAdd => const ExpenseAddPage(
+            key: ValueKey('expense-add'),
+          ),
+          DashboardPageKind.reminderAdd => const ReminderAddPage(
+            key: ValueKey('reminder-add'),
+          ),
+          DashboardPageKind.purchaseAdd => const PurchaseAddPage(
+            key: ValueKey('purchase-add'),
+          ),
+          DashboardPageKind.expenseDetail => ExpenseDetailPage(
+            key: ValueKey('expense-detail-$argument'),
+            expenseId: argument,
+          ),
+          DashboardPageKind.expensePaymentAdd => ExpensePaymentAddPage(
+            key: ValueKey('expense-payment-add-$argument'),
+            expenseId: argument,
+          ),
+          DashboardPageKind.expensePaymentHistory => ExpensePaymentHistoryPage(
+            key: ValueKey('expense-payment-history-$argument'),
+            expenseId: argument,
+          ),
+          DashboardPageKind.reports => const ReportsPanel(
+            key: ValueKey('reports'),
+          ),
+          DashboardPageKind.collaborators => const CollaboratorsPanel(
+            key: ValueKey('collaborators'),
+          ),
+          DashboardPageKind.tab => _DashboardTabPage(
+            key: ValueKey('tab-${controller.selectedIndex.value}'),
+            index: controller.selectedIndex.value,
+          ),
+        },
+      ),
     );
   }
 }

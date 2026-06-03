@@ -32,16 +32,17 @@ class DeviceInfoService {
           .doc(user.uid)
           .collection('deviceInfo')
           .doc(platform);
-      final snapshot = await doc.get();
-
-      if (snapshot.exists) return;
 
       await doc.set({
         ...info,
         'privacyText': privacyText,
-        'createdAt': FieldValue.serverTimestamp(),
+        'lastSeenAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (error, stackTrace) {
+      if (error is FirebaseException && error.code == 'permission-denied') {
+        debugPrint('Device info capture skipped: Firestore permission denied.');
+        return;
+      }
       debugPrint('Device info capture failed: $error');
       debugPrintStack(stackTrace: stackTrace);
     }
