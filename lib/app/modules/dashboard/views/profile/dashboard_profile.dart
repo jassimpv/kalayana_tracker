@@ -44,9 +44,9 @@ class ProfilePanel extends GetView<DashboardController> {
                   onTap: () => showProfileDialog(context),
                 ),
                 _ProfileMenuRow(
-                  icon: Icons.currency_rupee_rounded,
+                  icon: AppConfig.appCurrencyIcon,
                   label: 'Currency',
-                  value: 'INR (₹)',
+                  value: AppConfig.appCurrency,
                   onTap: () => _showProfileSnack('Currency is set to INR.'),
                 ),
                 ValueListenableBuilder<ThemeMode>(
@@ -58,7 +58,7 @@ class ProfilePanel extends GetView<DashboardController> {
                       label: 'Theme',
                       value: label,
                       trailingIcon: Icons.keyboard_arrow_down_rounded,
-                      onTap: () => ThemeService.toggleTheme(),
+                      // onTap: () => ThemeService.toggleTheme(),
                     );
                   },
                 ),
@@ -98,7 +98,7 @@ class ProfilePanel extends GetView<DashboardController> {
                   subtitle: 'Sign out from your account',
                   destructive: true,
                   showDivider: false,
-                  onTap: controller.logout,
+                  onTap: () => _confirmLogout(context, controller),
                 ),
               ],
             ),
@@ -107,6 +107,31 @@ class ProfilePanel extends GetView<DashboardController> {
       ),
     );
   }
+}
+
+Future<void> _confirmLogout(
+  BuildContext context,
+  DashboardController controller,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Logout'),
+      content: const Text('Are you sure you want to sign out?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Logout'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  await controller.logout();
 }
 
 class ReportsPanel extends GetView<DashboardController> {
@@ -118,8 +143,16 @@ class ReportsPanel extends GetView<DashboardController> {
       final data = controller.data.value;
       final total = data.totalBudget;
       final paid = data.paid;
+      final pending = data.pending;
+      final repaymentPending = data.repaymentPending;
       final paidRatio = total <= 0 ? 0.0 : (paid / total).clamp(0.0, 1.0);
+      final pendingRatio = total <= 0 ? 0.0 : 1 - paidRatio;
       final categoryEntries = _topCategoryEntries(data.categoryTotals);
+      final repaymentExpenses = data.expenses
+          .where((item) => item.needsRepayment || item.repaymentAmount > 0)
+          .toList();
+      final paymentPeople = _personPaymentReports(data.expenses);
+      final repaymentPeople = _personRepaymentReports(repaymentExpenses);
       return Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
@@ -142,7 +175,7 @@ class ReportsPanel extends GetView<DashboardController> {
                       icon: Icons.account_balance_wallet_outlined,
                       iconColor: ThemeColors.logoGold,
                       label: 'Total Expense',
-                      value: '₹${formatMoney(total)}',
+                      value: '${AppConfig.appCurrency}${formatMoney(total)}',
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -151,7 +184,30 @@ class ReportsPanel extends GetView<DashboardController> {
                       icon: Icons.task_alt_rounded,
                       iconColor: const Color(0xFF209B4B),
                       label: 'Total Paid',
-                      value: '₹${formatMoney(paid)}',
+                      value: '${AppConfig.appCurrency}${formatMoney(paid)}',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ReportMetricCard(
+                      icon: Icons.schedule_rounded,
+                      iconColor: const Color(0xFFFF6824),
+                      label: 'Pending',
+                      value: '${AppConfig.appCurrency}${formatMoney(pending)}',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _ReportMetricCard(
+                      icon: Icons.assignment_return_rounded,
+                      iconColor: ThemeColors.primary,
+                      label: 'Repayment',
+                      value:
+                          '${AppConfig.appCurrency}${formatMoney(repaymentPending)}',
                     ),
                   ),
                 ],
@@ -193,6 +249,148 @@ class ReportsPanel extends GetView<DashboardController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const _ReportTitle('Total Expense Report'),
+                    const SizedBox(height: 12),
+                    _ReportInfoGrid(
+                      items: [
+                        _ReportInfoSpec(
+                          'Total expense',
+                          moneyOrDash(total),
+                          Icons.receipt_long_rounded,
+                          ThemeColors.logoGold,
+                        ),
+                        _ReportInfoSpec(
+                          'Total paid',
+                          moneyOrDash(paid),
+                          Icons.check_circle_outline_rounded,
+                          const Color(0xFF209B4B),
+                        ),
+                        _ReportInfoSpec(
+                          'Pending amount',
+                          moneyOrDash(pending),
+                          Icons.schedule_rounded,
+                          const Color(0xFFFF6824),
+                        ),
+                        _ReportInfoSpec(
+                          'Repayment pending',
+                          moneyOrDash(repaymentPending),
+                          Icons.assignment_return_rounded,
+                          ThemeColors.primary,
+                        ),
+                        _ReportInfoSpec(
+                          'Completed bills',
+                          '${data.completedExpenses}',
+                          Icons.task_alt_rounded,
+                          const Color(0xFF209B4B),
+                        ),
+                        _ReportInfoSpec(
+                          'Pending bills',
+                          '${data.pendingExpenses}',
+                          Icons.pending_actions_rounded,
+                          const Color(0xFFFF6824),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              _ReportSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _ReportTitle('Detailed Expense Report'),
+                    const SizedBox(height: 12),
+                    if (data.expenses.isEmpty)
+                      const PremiumEmptyState(
+                        icon: Icons.receipt_long_rounded,
+                        title: 'No expense details yet',
+                        subtitle: 'Add expenses to build a detailed report.',
+                      )
+                    else
+                      _DetailedExpenseReport(expenses: data.expenses),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              _ReportSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _ReportTitle('Repayment Report'),
+                    const SizedBox(height: 12),
+                    _ReportInfoGrid(
+                      items: [
+                        _ReportInfoSpec(
+                          'Total repayment',
+                          moneyOrDash(
+                            repaymentExpenses.fold<double>(
+                              0,
+                              (sum, item) => sum + item.repaymentAmount,
+                            ),
+                          ),
+                          Icons.currency_rupee_rounded,
+                          ThemeColors.primary,
+                        ),
+                        _ReportInfoSpec(
+                          'Pending to repay',
+                          moneyOrDash(repaymentPending),
+                          Icons.assignment_return_rounded,
+                          const Color(0xFFFF6824),
+                        ),
+                        _ReportInfoSpec(
+                          'Active repayments',
+                          '${repaymentExpenses.where((item) => item.repaymentPending > 0).length}',
+                          Icons.pending_actions_rounded,
+                          ThemeColors.primary,
+                        ),
+                        _ReportInfoSpec(
+                          'Completed repayments',
+                          '${repaymentExpenses.where((item) => item.repaymentPending == 0).length}',
+                          Icons.task_alt_rounded,
+                          const Color(0xFF209B4B),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (repaymentPeople.isNotEmpty) ...[
+                      _PersonRepaymentReportList(entries: repaymentPeople),
+                      const SizedBox(height: 12),
+                    ],
+                    if (repaymentExpenses.isEmpty)
+                      const PremiumEmptyState(
+                        icon: Icons.assignment_return_rounded,
+                        title: 'No repayment records',
+                        subtitle: 'Repayment items will appear here.',
+                      )
+                    else
+                      _RepaymentExpenseReport(expenses: repaymentExpenses),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              _ReportSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _ReportTitle('Paid By Report'),
+                    const SizedBox(height: 12),
+                    if (paymentPeople.isEmpty)
+                      const PremiumEmptyState(
+                        icon: Icons.group_outlined,
+                        title: 'No payment people yet',
+                        subtitle: 'Payment payer totals will appear here.',
+                      )
+                    else
+                      _PersonPaymentReportList(entries: paymentPeople),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              _ReportSurface(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     const _ReportTitle('Paid vs Pending'),
                     const SizedBox(height: 14),
                     ClipRRect(
@@ -202,14 +400,15 @@ class ReportsPanel extends GetView<DashboardController> {
                         child: Row(
                           children: [
                             Expanded(
-                              flex: (paidRatio * 1000).round().clamp(1, 999),
+                              flex: total <= 0
+                                  ? 1
+                                  : (paidRatio * 1000).round().clamp(1, 999),
                               child: Container(color: const Color(0xFF2DA052)),
                             ),
                             Expanded(
-                              flex: ((1 - paidRatio) * 1000).round().clamp(
-                                1,
-                                999,
-                              ),
+                              flex: total <= 0
+                                  ? 1
+                                  : (pendingRatio * 1000).round().clamp(1, 999),
                               child: Container(color: const Color(0xFFFF6824)),
                             ),
                           ],
@@ -226,7 +425,7 @@ class ReportsPanel extends GetView<DashboardController> {
                         ),
                         _ReportPercentLabel(
                           label: 'Pending',
-                          value: '${((1 - paidRatio) * 100).round()}%',
+                          value: '${(pendingRatio * 100).round()}%',
                         ),
                       ],
                     ),
@@ -967,6 +1166,299 @@ class _ReportPercentLabel extends StatelessWidget {
   }
 }
 
+class _ReportInfoGrid extends StatelessWidget {
+  const _ReportInfoGrid({required this.items});
+
+  final List<_ReportInfoSpec> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 560;
+        return Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: items
+              .map(
+                (item) => SizedBox(
+                  width: isWide
+                      ? (constraints.maxWidth - 10) / 2
+                      : constraints.maxWidth,
+                  child: _ReportInfoTile(item: item),
+                ),
+              )
+              .toList(),
+        );
+      },
+    );
+  }
+}
+
+class _ReportInfoTile extends StatelessWidget {
+  const _ReportInfoTile({required this.item});
+
+  final _ReportInfoSpec item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: item.color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: item.color.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        children: [
+          Icon(item.icon, color: item.color, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ThemeColors.logoDeep.withValues(alpha: 0.70),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item.value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: ThemeColors.logoDeep,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailedExpenseReport extends StatelessWidget {
+  const _DetailedExpenseReport({required this.expenses});
+
+  final List<ExpenseItem> expenses;
+
+  @override
+  Widget build(BuildContext context) {
+    final sorted = expenses.toList()
+      ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+    return Column(
+      children: sorted
+          .map(
+            (item) => _ReportListRow(
+              icon: Icons.receipt_long_rounded,
+              iconColor: ThemeColors.logoGold,
+              title: item.name.isEmpty ? 'Untitled expense' : item.name,
+              subtitle:
+                  '${item.category} | ${item.status} | Paid by ${item.displayPaidBy}',
+              trailingTitle: moneyOrDash(item.totalAmount),
+              trailingSubtitle:
+                  '${moneyOrDash(item.paidForSummary)} paid | ${moneyOrDash(item.pendingForSummary)} pending',
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _RepaymentExpenseReport extends StatelessWidget {
+  const _RepaymentExpenseReport({required this.expenses});
+
+  final List<ExpenseItem> expenses;
+
+  @override
+  Widget build(BuildContext context) {
+    final sorted = expenses.toList()
+      ..sort((a, b) => b.repaymentPending.compareTo(a.repaymentPending));
+    return Column(
+      children: sorted
+          .map(
+            (item) => _ReportListRow(
+              icon: item.repaymentPending > 0
+                  ? Icons.assignment_return_rounded
+                  : Icons.task_alt_rounded,
+              iconColor: item.repaymentPending > 0
+                  ? ThemeColors.primary
+                  : const Color(0xFF209B4B),
+              title: item.repayPerson.trim().isEmpty
+                  ? item.displayPaidBy
+                  : item.repayPerson,
+              subtitle:
+                  '${item.name.isEmpty ? 'Expense' : item.name} | ${item.isRepaymentCompleted ? 'Completed' : 'Pending'}',
+              trailingTitle: moneyOrDash(item.repaymentAmount),
+              trailingSubtitle: '${moneyOrDash(item.repaymentPending)} pending',
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _PersonPaymentReportList extends StatelessWidget {
+  const _PersonPaymentReportList({required this.entries});
+
+  final List<_PersonPaymentReport> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: entries
+          .map(
+            (entry) => _ReportListRow(
+              icon: Icons.person_rounded,
+              iconColor: ThemeColors.primary,
+              title: entry.name,
+              subtitle:
+                  '${entry.paymentCount} payment${entry.paymentCount == 1 ? '' : 's'}',
+              trailingTitle: moneyOrDash(entry.amount),
+              trailingSubtitle: 'Total paid',
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _PersonRepaymentReportList extends StatelessWidget {
+  const _PersonRepaymentReportList({required this.entries});
+
+  final List<_PersonRepaymentReport> entries;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: entries
+          .map(
+            (entry) => _ReportListRow(
+              icon: Icons.assignment_return_rounded,
+              iconColor: entry.pending > 0
+                  ? ThemeColors.primary
+                  : const Color(0xFF209B4B),
+              title: entry.name,
+              subtitle:
+                  '${entry.itemCount} repayment item${entry.itemCount == 1 ? '' : 's'}',
+              trailingTitle: moneyOrDash(entry.total),
+              trailingSubtitle: '${moneyOrDash(entry.pending)} pending',
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _ReportListRow extends StatelessWidget {
+  const _ReportListRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.trailingTitle,
+    required this.trailingSubtitle,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final String trailingTitle;
+  final String trailingSubtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBF5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: ThemeColors.logoDeep,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: ThemeColors.logoDeep.withValues(alpha: 0.62),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                trailingTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: ThemeColors.logoDeep,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                trailingSubtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: ThemeColors.logoDeep.withValues(alpha: 0.60),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CategoryLegend extends StatelessWidget {
   const _CategoryLegend({required this.entries});
 
@@ -1152,6 +1644,37 @@ class _CategoryReportEntry {
   final Color color;
 }
 
+class _ReportInfoSpec {
+  const _ReportInfoSpec(this.label, this.value, this.icon, this.color);
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+}
+
+class _PersonPaymentReport {
+  const _PersonPaymentReport(this.name, this.amount, this.paymentCount);
+
+  final String name;
+  final double amount;
+  final int paymentCount;
+}
+
+class _PersonRepaymentReport {
+  const _PersonRepaymentReport(
+    this.name,
+    this.total,
+    this.pending,
+    this.itemCount,
+  );
+
+  final String name;
+  final double total;
+  final double pending;
+  final int itemCount;
+}
+
 List<_CategoryReportEntry> _topCategoryEntries(Map<String, double> totals) {
   const colors = [
     Color(0xFF2E79A8),
@@ -1182,6 +1705,76 @@ List<_CategoryReportEntry> _topCategoryEntries(Map<String, double> totals) {
       _CategoryReportEntry(top[index].key, top[index].value, colors[index]),
     _CategoryReportEntry('Others', others, colors.last),
   ];
+}
+
+List<_PersonPaymentReport> _personPaymentReports(List<ExpenseItem> expenses) {
+  final totals = <String, double>{};
+  final counts = <String, int>{};
+  for (final expense in expenses) {
+    if (expense.paymentSplit.isEmpty && expense.paidForSummary > 0) {
+      final name = expense.displayPaidBy.trim().isEmpty
+          ? 'Self'
+          : expense.displayPaidBy.trim();
+      totals[name] = (totals[name] ?? 0) + expense.paidForSummary;
+      counts[name] = (counts[name] ?? 0) + 1;
+      continue;
+    }
+
+    for (final payment in expense.paymentSplit) {
+      if (payment.amount <= 0) continue;
+      final name = payment.displayPaidBy.trim().isEmpty
+          ? 'Self'
+          : payment.displayPaidBy.trim();
+      totals[name] = (totals[name] ?? 0) + payment.amount;
+      counts[name] = (counts[name] ?? 0) + 1;
+    }
+  }
+
+  final entries =
+      totals.entries
+          .map(
+            (entry) => _PersonPaymentReport(
+              entry.key,
+              entry.value,
+              counts[entry.key] ?? 0,
+            ),
+          )
+          .toList()
+        ..sort((a, b) => b.amount.compareTo(a.amount));
+  return entries;
+}
+
+List<_PersonRepaymentReport> _personRepaymentReports(
+  List<ExpenseItem> expenses,
+) {
+  final totals = <String, double>{};
+  final pending = <String, double>{};
+  final counts = <String, int>{};
+  for (final expense in expenses) {
+    final name = expense.repayPerson.trim().isEmpty
+        ? expense.displayPaidBy
+        : expense.repayPerson.trim();
+    final normalizedName = name.trim().isEmpty ? 'Self' : name.trim();
+    totals[normalizedName] =
+        (totals[normalizedName] ?? 0) + expense.repaymentAmount;
+    pending[normalizedName] =
+        (pending[normalizedName] ?? 0) + expense.repaymentPending;
+    counts[normalizedName] = (counts[normalizedName] ?? 0) + 1;
+  }
+
+  final entries =
+      totals.entries
+          .map(
+            (entry) => _PersonRepaymentReport(
+              entry.key,
+              entry.value,
+              pending[entry.key] ?? 0,
+              counts[entry.key] ?? 0,
+            ),
+          )
+          .toList()
+        ..sort((a, b) => b.pending.compareTo(a.pending));
+  return entries;
 }
 
 String _profileDisplayName(User? user, Map<String, dynamic> profile) {

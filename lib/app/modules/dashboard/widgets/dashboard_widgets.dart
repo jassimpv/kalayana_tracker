@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
@@ -310,7 +311,7 @@ class ExpenseList extends GetView<DashboardController> {
                                 ),
                                 IconButton(
                                   onPressed: () =>
-                                      controller.deleteExpense(item),
+                                      _confirmDeleteExpense(context, item),
                                   icon: const Icon(Icons.delete_outline),
                                   tooltip: 'Delete',
                                 ),
@@ -367,8 +368,7 @@ class _ExpenseCard extends GetView<DashboardController> {
                         children: [
                           LabelPill(label: item.category),
                           StatusPill(label: item.status),
-                          if (item.displayPaidBy != 'Not assigned')
-                            LabelPill(label: 'Paid by ${item.displayPaidBy}'),
+                          LabelPill(label: 'Paid by ${item.displayPaidBy}'),
                         ],
                       ),
                     ],
@@ -521,7 +521,7 @@ class ReminderList extends GetView<DashboardController> {
                         tooltip: 'Edit',
                       ),
                       IconButton(
-                        onPressed: () => controller.deleteReminder(item),
+                        onPressed: () => _confirmDeleteReminder(context, item),
                         icon: const Icon(Icons.delete_outline),
                         tooltip: 'Delete',
                       ),
@@ -583,7 +583,8 @@ class PurchaseList extends GetView<DashboardController> {
                           tooltip: 'Edit',
                         ),
                         IconButton(
-                          onPressed: () => controller.deletePurchase(item),
+                          onPressed: () =>
+                              _confirmDeletePurchase(context, item),
                           icon: const Icon(Icons.delete_outline),
                           tooltip: 'Delete',
                         ),
@@ -607,6 +608,69 @@ class PurchaseList extends GetView<DashboardController> {
       },
     );
   }
+}
+
+Future<void> _confirmDeleteExpense(
+  BuildContext context,
+  ExpenseItem item,
+) async {
+  final confirmed = await _confirmDeleteAction(
+    context,
+    title: 'Delete Expense',
+    message: 'Delete ${item.name.isEmpty ? 'this expense' : item.name}?',
+  );
+  if (confirmed != true) return;
+  await Get.find<DashboardController>().deleteExpense(item);
+}
+
+Future<void> _confirmDeleteReminder(
+  BuildContext context,
+  EventReminder item,
+) async {
+  final confirmed = await _confirmDeleteAction(
+    context,
+    title: 'Delete Reminder',
+    message: 'Delete ${item.title.isEmpty ? 'this reminder' : item.title}?',
+  );
+  if (confirmed != true) return;
+  await Get.find<DashboardController>().deleteReminder(item);
+}
+
+Future<void> _confirmDeletePurchase(
+  BuildContext context,
+  PurchaseItem item,
+) async {
+  final confirmed = await _confirmDeleteAction(
+    context,
+    title: 'Delete Purchase',
+    message: 'Delete ${item.name.isEmpty ? 'this purchase' : item.name}?',
+  );
+  if (confirmed != true) return;
+  await Get.find<DashboardController>().deletePurchase(item);
+}
+
+Future<bool?> _confirmDeleteAction(
+  BuildContext context, {
+  required String title,
+  required String message,
+}) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
 }
 
 class PendingPayments extends StatelessWidget {
@@ -634,7 +698,7 @@ class PendingPayments extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '₹${formatMoney(item.pendingForSummary)}',
+                    '${AppConfig.appCurrency} ${formatMoney(item.pendingForSummary)}',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.secondary,
                       fontWeight: FontWeight.w900,

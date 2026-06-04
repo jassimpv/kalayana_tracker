@@ -824,7 +824,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '₹${formatMoney(item.amount)}',
+                    '${AppConfig.appCurrency} ${formatMoney(item.amount)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(

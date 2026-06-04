@@ -77,6 +77,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
     final daysLeft = daysUntilDate(weddingDate);
     final paid = data.paid;
     final pending = data.pending;
+    final repayment = data.repaymentPending;
     final remaining = math.max(data.totalBudget - paid - pending, 0.0);
 
     return DecoratedBox(
@@ -114,6 +115,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
                 _BudgetMetricStrip(
                   paid: paid,
                   pending: pending,
+                  repayment: repayment,
                   remaining: remaining,
                   progress: progress,
                 ),
@@ -394,8 +396,8 @@ class _WeddingIdentityCard extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               Container(
-                width: 58,
-                height: 58,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFFFFF1D9),
@@ -405,24 +407,6 @@ class _WeddingIdentityCard extends StatelessWidget {
                   CupertinoIcons.sparkles,
                   color: Color(0xFFB87A25),
                   size: 31,
-                ),
-              ),
-              Positioned(
-                right: -4,
-                bottom: -4,
-                child: Container(
-                  width: 27,
-                  height: 27,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: ThemeColors.logoGold, width: 2),
-                  ),
-                  child: const AppLogo(
-                    size: 20,
-                    padding: 1,
-                    showBackground: false,
-                  ),
                 ),
               ),
             ],
@@ -602,7 +586,7 @@ class _BudgetHeroCard extends StatelessWidget {
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      '₹${formatMoney(total)}',
+                      '${AppConfig.appCurrency}${formatMoney(total)}',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: compact ? 38 : 42,
@@ -645,7 +629,7 @@ class _BudgetHeroCard extends StatelessWidget {
                             '${(progress * 100).round()}%',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: compact ? 25 : 28,
+                              fontSize: compact ? 18 : 25,
                               fontWeight: FontWeight.w900,
                               height: 0.94,
                             ),
@@ -826,12 +810,14 @@ class _BudgetMetricStrip extends StatelessWidget {
   const _BudgetMetricStrip({
     required this.paid,
     required this.pending,
+    required this.repayment,
     required this.remaining,
     required this.progress,
   });
 
   final double paid;
   final double pending;
+  final double repayment;
   final double remaining;
   final double progress;
 
@@ -841,19 +827,19 @@ class _BudgetMetricStrip extends StatelessWidget {
       _MetricSpec(
         CupertinoIcons.creditcard,
         'Paid',
-        '₹${formatMoney(paid)}',
+        '${AppConfig.appCurrency}${formatMoney(paid)}',
         const Color(0xFF13A05F),
       ),
       _MetricSpec(
         CupertinoIcons.timer,
         'Pending',
-        '₹${formatMoney(pending)}',
+        '${AppConfig.appCurrency}${formatMoney(pending)}',
         const Color(0xFFE49B22),
       ),
       _MetricSpec(
         CupertinoIcons.money_dollar_circle,
-        'Remaining',
-        '₹${formatMoney(remaining)}',
+        'Repayment',
+        '${AppConfig.appCurrency}${formatMoney(repayment)}',
         ThemeColors.primary,
       ),
       _MetricSpec(
@@ -1240,13 +1226,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = categoryTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    final top = entries.isEmpty
-        ? const [
-            MapEntry('Venue', 220000.0),
-            MapEntry('Catering', 180400.0),
-            MapEntry('Decoration', 120000.0),
-          ]
-        : entries.take(3).toList();
+    final top = entries.take(3).toList();
     final total = top.fold<double>(0, (sum, item) => sum + item.value);
     final colors = [
       ThemeColors.primary,
@@ -1273,28 +1253,6 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                     fontSize: 17,
                     fontWeight: FontWeight.w900,
                   ),
-                ),
-              ),
-              OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF421018),
-                  minimumSize: const Size(98, 36),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  side: BorderSide(
-                    color: ThemeColors.primary.withValues(alpha: 0.12),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('This Month'),
-                    SizedBox(width: 4),
-                    Icon(CupertinoIcons.chevron_down, size: 18),
-                  ],
                 ),
               ),
             ],
@@ -1371,17 +1329,65 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    for (var i = 0; i < top.length; i++)
-                      _CategorySpendRow(
-                        name: top[i].key,
-                        value: top[i].value,
-                        percent: total == 0 ? 0 : top[i].value / total,
-                        color: colors[i % colors.length],
-                      ),
+                    if (top.isEmpty)
+                      const _CategorySpendEmptyState()
+                    else
+                      for (var i = 0; i < top.length; i++)
+                        _CategorySpendRow(
+                          name: top[i].key,
+                          value: top[i].value,
+                          percent: total == 0 ? 0 : top[i].value / total,
+                          color: colors[i % colors.length],
+                        ),
                   ],
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategorySpendEmptyState extends StatelessWidget {
+  const _CategorySpendEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      decoration: BoxDecoration(
+        color: ThemeColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ThemeColors.primary.withValues(alpha: 0.10)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: ThemeColors.primary.withValues(alpha: 0.10),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              CupertinoIcons.chart_bar_alt_fill,
+              color: ThemeColors.primary,
+              size: 17,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'No spending categories yet',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.outline,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ),
         ],
       ),
@@ -1436,7 +1442,7 @@ class _CategorySpendRow extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '₹${formatMoney(value)}',
+                      '${AppConfig.appCurrency}${formatMoney(value)}',
                       style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
@@ -1715,7 +1721,7 @@ class _OverviewBudgetCard extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '₹${formatMoney(value)}',
+                    'AppConfig.appCurrency${formatMoney(value)}',
                     maxLines: 1,
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
@@ -1992,13 +1998,13 @@ class _BudgetAnalyticsCard extends StatelessWidget {
           final statCards = [
             _AnalyticsStatCard(
               label: 'Paid amount',
-              value: '₹${formatMoney(paid)}',
+              value: 'AppConfig.appCurrency${formatMoney(paid)}',
               icon: Icons.verified_rounded,
               color: ThemeColors.primary,
             ),
             _AnalyticsStatCard(
               label: 'Pending',
-              value: '₹${formatMoney(pending)}',
+              value: 'AppConfig.appCurrency${formatMoney(pending)}',
               icon: Icons.hourglass_top_rounded,
               color: ThemeColors.logoGold,
             ),
@@ -2042,7 +2048,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '₹${formatMoney(total)}',
+                      '${AppConfig.appCurrency} ${formatMoney(total)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.headlineSmall
@@ -2217,7 +2223,8 @@ class _TodayFocusCard extends StatelessWidget {
               icon: Icons.assignment_return_rounded,
               color: const Color(0xFFB85D75),
               title: 'Repayment pending',
-              subtitle: '₹${formatMoney(repayment)} needs settlement',
+              subtitle:
+                  '${AppConfig.appCurrency} ${formatMoney(repayment)} needs settlement',
             ),
           ],
         ],
@@ -2715,7 +2722,7 @@ class _PaymentTimeline extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '₹${formatMoney(item.pendingForSummary)}',
+                      'AppConfig.appCurrency${formatMoney(item.pendingForSummary)}',
                       style: const TextStyle(fontWeight: FontWeight.w900),
                     ),
                   ],

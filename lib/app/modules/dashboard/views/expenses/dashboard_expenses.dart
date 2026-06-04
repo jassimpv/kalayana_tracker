@@ -486,7 +486,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '₹${formatMoney(total)}',
+                    '${AppConfig.appCurrency}${formatMoney(total)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
@@ -1029,7 +1029,7 @@ class _ExpenseSummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '₹${formatMoney(total)}',
+                'AppConfig.appCurrency${formatMoney(total)}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -1047,20 +1047,20 @@ class _ExpenseSummaryCard extends StatelessWidget {
               _LegendRow(
                 color: ThemeColors.weddingTeal,
                 label: 'Paid',
-                value: '₹${formatMoney(paid)}',
+                value: 'AppConfig.appCurrency${formatMoney(paid)}',
               ),
               const SizedBox(height: 8),
               _LegendRow(
                 color: ThemeColors.logoGold,
                 label: 'Pending',
-                value: '₹${formatMoney(pending)}',
+                value: 'AppConfig.appCurrency${formatMoney(pending)}',
               ),
               if (repayment > 0) ...[
                 const SizedBox(height: 8),
                 _LegendRow(
                   color: const Color(0xFFB85D75),
                   label: 'Need to repay',
-                  value: '₹${formatMoney(repayment)}',
+                  value: '${AppConfig.appCurrency}${formatMoney(repayment)}',
                 ),
               ],
             ],
@@ -1114,7 +1114,7 @@ class _ExpenseStatusStrip extends StatelessWidget {
       _MiniExpenseMetric(
         icon: Icons.schedule_rounded,
         label: 'Pending',
-        value: '₹${formatMoney(pending)}',
+        value: '${AppConfig.appCurrency}${formatMoney(pending)}',
         color: ThemeColors.logoGold,
       ),
       _MiniExpenseMetric(
@@ -1499,7 +1499,7 @@ class _ExpenseBillCard extends StatelessWidget {
                         child: Text(
                           item.isRepaymentCompleted
                               ? 'Repayment completed'
-                              : 'Repay ${moneyOrDash(item.repayAmount)}${repaymentName.isEmpty ? '' : ' to $repaymentName'}',
+                              : 'Repay ${moneyOrDash(item.repaymentAmount)}${repaymentName.isEmpty ? '' : ' to $repaymentName'}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

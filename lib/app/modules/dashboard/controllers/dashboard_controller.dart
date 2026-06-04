@@ -13,6 +13,16 @@ import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
 import 'package:kalayanaexpresstracker/app/data/repositories/wedding_repository.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
+const expenseStatusPending = 'Pending';
+const expenseStatusPartiallyPaid = 'Partially Paid';
+const expenseStatusCompleted = 'Completed';
+const expenseStatusPaidByOther = 'Paid by Other';
+const expenseStatusNeedToRepay = 'Need to Repay';
+const expenseStatusOverdue = 'Overdue';
+const paymentSplitStatusPending = 'Pending';
+const paymentSplitStatusCompleted = 'Completed';
+const paymentSplitStatusPaidByOther = 'Paid by Other';
+
 const expenseStatuses = [
   expenseStatusPending,
   expenseStatusPartiallyPaid,
@@ -20,6 +30,11 @@ const expenseStatuses = [
   expenseStatusPaidByOther,
   expenseStatusNeedToRepay,
   expenseStatusOverdue,
+];
+const paymentSplitStatuses = [
+  paymentSplitStatusPending,
+  paymentSplitStatusCompleted,
+  paymentSplitStatusPaidByOther,
 ];
 const expenseCategories = [
   'General',
@@ -235,9 +250,7 @@ class DashboardController extends GetxController {
       date: date,
       notes: notes.trim(),
     );
-    if (item.paymentSplit.any(
-      (entry) => _isSamePaymentSplit(entry, payment),
-    )) {
+    if (item.paymentSplit.any((entry) => _isSamePaymentSplit(entry, payment))) {
       _showDashboardSnack('Split', 'This payment split is already added.');
       return false;
     }
@@ -320,6 +333,7 @@ class DashboardController extends GetxController {
     for (final index in sortedIndices) {
       payments.removeAt(index);
     }
+    final normalizedPaymentStatus = _normalizePaymentSplitStatus(paymentStatus);
     payments.add(
       PaymentSplit(
         amount: amount,
@@ -327,14 +341,20 @@ class DashboardController extends GetxController {
         paidBy: payerName,
         paidByPersonId: payerId,
         paidByPersonName: payerName,
-        paymentStatus: _normalizePaymentSplitStatus(paymentStatus),
+        paymentStatus: normalizedPaymentStatus,
         notes: notes.trim().isEmpty ? 'Edited split' : notes.trim(),
       ),
     );
+    final updatesRepaymentStatus =
+        item.needsRepayment &&
+        _isExpenseRepaymentPayer(item, payerId, payerName);
     await saveExpense(
       item.copyWith(
         paidAmount: nextPaidAmount.clamp(0, item.totalAmount).toDouble(),
         paymentSplit: payments,
+        isRepaymentCompleted: updatesRepaymentStatus
+            ? normalizedPaymentStatus == paymentSplitStatusCompleted
+            : item.isRepaymentCompleted,
         updatedDate: DateTime.now(),
       ),
     );
@@ -387,8 +407,19 @@ class DashboardController extends GetxController {
   }
 
   Future<void> markRepaymentCompleted(ExpenseItem item) async {
+    final payments = item.paymentSplit
+        .map(
+          (payment) => _isExpenseRepaymentPayment(item, payment)
+              ? payment.copyWith(paymentStatus: paymentSplitStatusCompleted)
+              : payment,
+        )
+        .toList();
     await saveExpense(
-      item.copyWith(isRepaymentCompleted: true, updatedDate: DateTime.now()),
+      item.copyWith(
+        isRepaymentCompleted: true,
+        paymentSplit: payments,
+        updatedDate: DateTime.now(),
+      ),
     );
   }
 
@@ -441,7 +472,7 @@ class DashboardController extends GetxController {
   }
 
   Future<bool> deleteRepayPerson(RepayPerson person) async {
-    if (isRepayPersonUsed(person.id)) {
+    if (isRepayPersonUsed(person.id, personName: person.name)) {
       _showDashboardSnack(
         'Repay',
         '${person.name} is already used in a payment or expense.',
@@ -457,13 +488,43 @@ class DashboardController extends GetxController {
     }
   }
 
-  bool isRepayPersonUsed(String personId) {
-    final normalizedId = personId.trim();
-    if (normalizedId.isEmpty) return false;
+  bool isRepayPersonUsed(String personId, {String personName = ''}) {
+    final normalizedId = personId.trim().toLowerCase();
+    final normalizedName = personName.trim().toLowerCase();
+    if (normalizedId.isEmpty && normalizedName.isEmpty) return false;
+
+    bool matchesPerson({String id = '', String name = ''}) {
+      final candidateId = id.trim().toLowerCase();
+      if (normalizedId.isNotEmpty &&
+          candidateId.isNotEmpty &&
+          candidateId == normalizedId) {
+        return true;
+      }
+
+      final candidateName = name.trim().toLowerCase();
+      return normalizedName.isNotEmpty &&
+          candidateName.isNotEmpty &&
+          candidateName == normalizedName;
+    }
+
     return data.value.expenses.any((expense) {
-      if (expense.paidByPersonId == normalizedId) return true;
+      if (matchesPerson(
+        id: expense.paidByPersonId,
+        name: expense.paidByPersonName,
+      )) {
+        return true;
+      }
+      if (matchesPerson(name: expense.paidBy)) return true;
+      if (matchesPerson(name: expense.repayPerson)) return true;
+
       return expense.paymentSplit.any(
-        (payment) => payment.paidByPersonId == normalizedId,
+        (payment) =>
+            matchesPerson(
+              id: payment.paidByPersonId,
+              name: payment.paidByPersonName,
+            ) ||
+            matchesPerson(name: payment.paidBy) ||
+            matchesPerson(name: payment.repayPerson),
       );
     });
   }
@@ -820,6 +881,47 @@ bool _isSamePaymentSplit(PaymentSplit first, PaymentSplit second) {
       first.notes.trim().toLowerCase() == second.notes.trim().toLowerCase();
 }
 
+bool _isExpenseRepaymentPayment(ExpenseItem item, PaymentSplit payment) {
+  return _isExpenseRepaymentPayer(
+    item,
+    payment.paidByPersonId,
+    payment.displayPaidBy,
+  );
+}
+
+bool _isExpenseRepaymentPayer(
+  ExpenseItem item,
+  String paidByPersonId,
+  String paidByName,
+) {
+  final normalizedPaidByPersonId = paidByPersonId.trim().toLowerCase();
+  final itemPaidByPersonId = item.paidByPersonId.trim().toLowerCase();
+  if (normalizedPaidByPersonId.isNotEmpty &&
+      itemPaidByPersonId.isNotEmpty &&
+      normalizedPaidByPersonId == itemPaidByPersonId) {
+    return true;
+  }
+
+  final normalizedPaidByName = paidByName.trim().toLowerCase();
+  if (normalizedPaidByName.isEmpty) {
+    return false;
+  }
+
+  final repayPerson = item.repayPerson.trim().toLowerCase();
+  if (repayPerson.isNotEmpty && normalizedPaidByName == repayPerson) {
+    return true;
+  }
+
+  final itemPaidByPersonName = item.paidByPersonName.trim().toLowerCase();
+  if (itemPaidByPersonName.isNotEmpty &&
+      normalizedPaidByName == itemPaidByPersonName) {
+    return true;
+  }
+
+  final itemPaidBy = item.paidBy.trim().toLowerCase();
+  return itemPaidBy.isNotEmpty && normalizedPaidByName == itemPaidBy;
+}
+
 String _normalizePaymentSplitStatus(String status) {
   final normalized = status.trim();
   return paymentSplitStatuses.contains(normalized)
@@ -878,9 +980,13 @@ ExpenseItem buildExpense({
       ? category.trim()
       : expenseCategories.first;
   final parsedRepayAmount = moneyFromText(repayAmount);
-  final payerName = _paidByNameOrSelf(paidByPersonName.trim().isEmpty
-      ? paidBy
-      : paidByPersonName);
+  final payerName = _paidByNameOrSelf(
+    paidByPersonName.trim().isEmpty ? paidBy : paidByPersonName,
+  );
+  final initialPaymentStatus =
+      paidByPersonId.trim().isNotEmpty && needsRepayment
+      ? paymentSplitStatusPaidByOther
+      : paymentSplitStatusPending;
   final paymentSplit = existing?.paymentSplit.isNotEmpty == true
       ? existing!.paymentSplit
       : paidAmount > 0
@@ -891,7 +997,7 @@ ExpenseItem buildExpense({
             paidBy: payerName,
             paidByPersonId: paidByPersonId.trim(),
             paidByPersonName: payerName,
-            paymentStatus: paymentSplitStatusPending,
+            paymentStatus: initialPaymentStatus,
             notes: 'Initial payment',
           ),
         ]
@@ -906,9 +1012,9 @@ ExpenseItem buildExpense({
         .clamp(0, double.infinity)
         .toDouble(),
     paymentStatus: existing?.paymentStatus ?? expenseStatusPending,
-    paidBy: paidAmount > 0 ? payerName : paidBy.trim(),
-    paidByPersonId: paidByPersonId.trim(),
-    paidByPersonName: paidAmount > 0 ? payerName : paidByPersonName.trim(),
+    paidBy: '',
+    paidByPersonId: '',
+    paidByPersonName: '',
     repayPerson: repayPerson.trim(),
     needsRepayment: needsRepayment,
     repayAmount: parsedRepayAmount ?? (needsRepayment ? paidAmount : 0),

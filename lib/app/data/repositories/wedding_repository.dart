@@ -5,12 +5,12 @@ import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
 
 abstract class WeddingRepository {
   Stream<WeddingData> watch();
+  Future<void> save(WeddingData data);
+  Future<void> seedIfEmpty();
   Stream<List<RepayPerson>> getRepayPersons();
   Future<void> addRepayPerson(RepayPerson person);
   Future<void> updateRepayPerson(RepayPerson person);
   Future<void> deleteRepayPerson(String personId);
-  Future<void> save(WeddingData data);
-  Future<void> seedIfEmpty();
 }
 
 class FirestoreWeddingRepository implements WeddingRepository {
@@ -90,49 +90,6 @@ class FirestoreWeddingRepository implements WeddingRepository {
   }
 
   @override
-  Stream<List<RepayPerson>> getRepayPersons() {
-    return Stream.fromFuture(_workspaceId()).asyncExpand((workspaceId) {
-      return _repayPersonsCollection(
-        workspaceId,
-      ).orderBy('name').snapshots();
-    }).map((snapshot) {
-      return snapshot.docs
-          .map((doc) => RepayPerson.fromJson(doc.id, doc.data()))
-          .where((person) => person.name.trim().isNotEmpty)
-          .toList();
-    });
-  }
-
-  @override
-  Future<void> addRepayPerson(RepayPerson person) async {
-    final workspaceId = await _workspaceId();
-    final doc = person.id.trim().isEmpty
-        ? _repayPersonsCollection(workspaceId).doc()
-        : _repayPersonsCollection(workspaceId).doc(person.id);
-    await doc.set({
-      ...person.copyWith(id: doc.id).toJson(),
-      'createdAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-  }
-
-  @override
-  Future<void> updateRepayPerson(RepayPerson person) async {
-    final workspaceId = await _workspaceId();
-    await _repayPersonsCollection(workspaceId).doc(person.id).set({
-      'id': person.id,
-      'name': person.name.trim(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
-  }
-
-  @override
-  Future<void> deleteRepayPerson(String personId) async {
-    final workspaceId = await _workspaceId();
-    await _repayPersonsCollection(workspaceId).doc(personId).delete();
-  }
-
-  @override
   Future<void> save(WeddingData data) async {
     final workspaceId = await _workspaceId();
     await _doc(
@@ -163,6 +120,42 @@ class FirestoreWeddingRepository implements WeddingRepository {
         ),
       );
     }
+  }
+
+  @override
+  Stream<List<RepayPerson>> getRepayPersons() {
+    return Stream.fromFuture(_workspaceId()).asyncExpand((workspaceId) {
+      return _repayPersonsCollection(
+        workspaceId,
+      ).orderBy('name').snapshots();
+    }).map((snapshot) {
+      return snapshot.docs
+          .map((doc) => RepayPerson.fromJson(doc.id, doc.data()))
+          .where((person) => person.name.trim().isNotEmpty)
+          .toList();
+    });
+  }
+
+  @override
+  Future<void> addRepayPerson(RepayPerson person) async {
+    final workspaceId = await _workspaceId();
+    await _repayPersonsCollection(
+      workspaceId,
+    ).doc(person.id).set(person.toJson());
+  }
+
+  @override
+  Future<void> updateRepayPerson(RepayPerson person) async {
+    final workspaceId = await _workspaceId();
+    await _repayPersonsCollection(
+      workspaceId,
+    ).doc(person.id).set(person.toJson(), SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> deleteRepayPerson(String personId) async {
+    final workspaceId = await _workspaceId();
+    await _repayPersonsCollection(workspaceId).doc(personId).delete();
   }
 }
 

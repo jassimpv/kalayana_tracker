@@ -98,7 +98,7 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
           ),
         ),
         const SizedBox(height: 8),
-        if (item.needsRepayment || item.repayAmount > 0) ...[
+        if (item.needsRepayment || item.repaymentAmount > 0) ...[
           _ExpenseRepaymentPanel(item: item, repayPerson: repayPerson),
           const SizedBox(height: 8),
         ],
@@ -147,10 +147,7 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
             _ExpenseDetailIconAction(
               icon: Icons.delete_outline_rounded,
               tooltip: 'Delete',
-              onPressed: () async {
-                await controller.deleteExpense(item);
-                controller.closeDashboardSubPage();
-              },
+              onPressed: () => _confirmDeleteExpenseDetail(context, item),
               destructive: true,
             ),
           ],
@@ -200,6 +197,35 @@ class _ExpenseDetailAmountGrid extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _confirmDeleteExpenseDetail(
+  BuildContext context,
+  ExpenseItem item,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete Expense'),
+      content: Text(
+        'Delete ${item.name.isEmpty ? 'this expense' : item.name}?',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true) return;
+  final controller = Get.find<DashboardController>();
+  await controller.deleteExpense(item);
+  controller.closeDashboardSubPage();
 }
 
 class _ExpenseProgressSummary extends StatelessWidget {
@@ -347,6 +373,7 @@ class _ExpenseRepaymentPanel extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     final completed = item.isRepaymentCompleted || item.repaymentPending == 0;
+    final repaymentAmount = item.repaymentAmount;
     return ExpenseDetailSurface(
       padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
       child: Row(
@@ -382,8 +409,8 @@ class _ExpenseRepaymentPanel extends GetView<DashboardController> {
                 const SizedBox(height: 3),
                 Text(
                   completed
-                      ? '${moneyOrDash(item.repayAmount)} settled'
-                      : '${moneyOrDash(item.repayAmount)} to $repayPerson',
+                      ? '${moneyOrDash(repaymentAmount)} settled'
+                      : '${moneyOrDash(repaymentAmount)} to $repayPerson',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -403,7 +430,7 @@ class _ExpenseRepaymentPanel extends GetView<DashboardController> {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
               icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
-              label: const Text('Done'),
+              label: const Text('Mark Done'),
             ),
         ],
       ),

@@ -186,7 +186,9 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
           ],
           const SizedBox(height: 18),
           FilledButton.icon(
-            onPressed: _loading || !_verified ? null : () => _deleteUser(user),
+            onPressed: _loading || !_verified
+                ? null
+                : () => _confirmDeleteUser(user),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Theme.of(context).colorScheme.onError,
@@ -253,6 +255,34 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
         _message = null;
       });
     });
+  }
+
+  Future<void> _confirmDeleteUser(User user) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'This permanently deletes your account and saved dashboard data. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await _deleteUser(user);
   }
 
   Future<void> _deleteUser(User user) async {

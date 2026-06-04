@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
@@ -158,11 +159,14 @@ Future<void> showExpenseDialog(
                 onChanged: (person) => setState(() => paidByPerson = person),
               ),
               const SizedBox(height: 14),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Need to repay someone'),
-                value: needsRepayment,
-                onChanged: (value) => setState(() => needsRepayment = value),
+              Material(
+                color: Colors.transparent,
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Need to repay someone'),
+                  value: needsRepayment,
+                  onChanged: (value) => setState(() => needsRepayment = value),
+                ),
               ),
               if (needsRepayment) ...[
                 const SizedBox(height: 14),
@@ -178,7 +182,7 @@ Future<void> showExpenseDialog(
                   controller: repayAmount,
                   decoration: const InputDecoration(
                     labelText: 'Repay amount',
-                    prefixIcon: Icon(Icons.currency_rupee_rounded),
+                    prefixIcon: Icon(AppConfig.appCurrencyIcon),
                   ),
                   keyboardType: TextInputType.number,
                 ),
@@ -375,7 +379,7 @@ Future<void> showAddExpensePaymentDialog(
                 item,
                 amount: moneyFromText(amount.text) ?? 0,
                 paidByPersonId: paidByPerson?.id ?? '',
-                paidByPersonName: paidByPerson?.name ?? '',
+                paidByPersonName: paidByPerson?.name ?? 'Self',
                 date: date,
                 notes: notes.text,
               );
@@ -393,7 +397,7 @@ Future<void> showAddExpensePaymentDialog(
                 controller: amount,
                 decoration: const InputDecoration(
                   labelText: 'Payment amount',
-                  prefixIcon: Icon(Icons.currency_rupee_rounded),
+                  prefixIcon: Icon(AppConfig.appCurrencyIcon),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
@@ -740,7 +744,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
                 controller: total,
                 decoration: const InputDecoration(
                   labelText: 'Bill amount',
-                  prefixIcon: Icon(Icons.currency_rupee_rounded),
+                  prefixIcon: Icon(AppConfig.appCurrencyIcon),
                 ),
                 keyboardType: TextInputType.number,
                 validator: _required,

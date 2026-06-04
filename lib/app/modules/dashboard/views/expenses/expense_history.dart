@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
@@ -517,7 +518,7 @@ class _PaymentTotalsCard extends StatelessWidget {
           ),
           Expanded(
             child: _PaymentLargeMetric(
-              icon: Icons.currency_rupee_rounded,
+              icon: AppConfig.appCurrencyIcon,
               iconColor: ThemeColors.primary,
               iconBackground: const Color(0xFFFFEAF1),
               label: 'Total To Repay',
@@ -584,132 +585,112 @@ class _ExpenseSplitPersonTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCompleted = split.paymentStatus == paymentSplitStatusCompleted;
+    final hasRepayment = split.toRepay > 0;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 18, 10, 0),
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 0),
       child: Column(
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: isCompleted
-                      ? const Color(0xFFECFAE8)
-                      : const Color(0xFFFFEAF1),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: ThemeColors.logoGold.withValues(alpha: 0.16),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: isCompleted
+                          ? const Color(0xFFECFAE8)
+                          : const Color(0xFFFFEAF1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: ThemeColors.logoGold.withValues(alpha: 0.16),
+                      ),
+                    ),
+                    child: Icon(
+                      isCompleted
+                          ? Icons.check_circle_outline_rounded
+                          : Icons.account_balance_wallet_rounded,
+                      color: isCompleted
+                          ? const Color(0xFF2F7A35)
+                          : const Color(0xFFFF8A1F),
+                      size: 24,
+                    ),
                   ),
-                ),
-                child: Icon(
-                  isCompleted
-                      ? Icons.check_circle_outline_rounded
-                      : Icons.account_balance_wallet_rounded,
-                  color: isCompleted
-                      ? const Color(0xFF2F7A35)
-                      : const Color(0xFFFF8A1F),
-                  size: 24,
-                ),
-              ),
-
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  split.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ThemeColors.logoDeep,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      split.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: ThemeColors.logoDeep,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              _ExpenseSplitAmount(
-                label: 'Paid',
-                value: split.paid,
-                labelColor: const Color(0xFF2F7A35),
-              ),
-              Container(
-                width: 1,
-                height: 34,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                color: ThemeColors.logoGold.withValues(alpha: 0.18),
-              ),
-              _ExpenseSplitAmount(
-                label: 'To Repay',
-                value: split.toRepay,
-                emphasize: split.toRepay > 0,
-                labelColor: ThemeColors.primary,
-              ),
-              PopupMenuButton<String>(
-                tooltip: 'Split actions',
-                icon: const Icon(Icons.more_vert_rounded),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    _showEditSplitGroupDialog(
+                  _ExpenseSplitIconAction(
+                    icon: Icons.edit_rounded,
+                    tooltip: 'Edit split',
+                    onPressed: () => _showEditSplitGroupDialog(
                       context,
                       item: item,
                       split: split,
-                    );
-                    return;
-                  }
-                  if (value == 'delete') {
-                    _confirmDeleteSplitGroup(context, item: item, split: split);
-                  }
-                },
-                itemBuilder: (context) => const [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(Icons.edit_rounded),
-                        SizedBox(width: 10),
-                        Text('Edit', style: TextStyle(fontSize: 12)),
-                      ],
                     ),
                   ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline_rounded),
-                        SizedBox(width: 10),
-                        Text('Delete', style: TextStyle(fontSize: 12)),
-                      ],
+                  const SizedBox(width: 6),
+                  _ExpenseSplitIconAction(
+                    icon: Icons.delete_outline_rounded,
+                    tooltip: 'Delete split',
+                    destructive: true,
+                    onPressed: () => _confirmDeleteSplitGroup(
+                      context,
+                      item: item,
+                      split: split,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: _ExpenseSplitAmountCard(
+                      label: 'Amount paid',
+                      value: moneyOrDash(split.paid),
+                      icon: Icons.payments_rounded,
+                      color: const Color(0xFF2F7A35),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _ExpenseSplitAmountCard(
+                      label: hasRepayment ? 'To repay' : 'Repayment',
+                      value: hasRepayment
+                          ? moneyOrDash(split.toRepay)
+                          : 'Settled',
+                      icon: hasRepayment
+                          ? Icons.assignment_return_rounded
+                          : Icons.verified_rounded,
+                      color: hasRepayment
+                          ? ThemeColors.primary
+                          : const Color(0xFF2F7A35),
                     ),
                   ),
                 ],
               ),
             ],
           ),
-
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-              decoration: BoxDecoration(
-                color: isCompleted
-                    ? const Color(0xFFECFAE8)
-                    : const Color(0xFFFFF0DB),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                split.paymentStatus,
-                style: TextStyle(
-                  color: isCompleted
-                      ? const Color(0xFF2F7A35)
-                      : const Color(0xFFFF8A1F),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ),
+          const SizedBox(height: 10),
+          _ExpenseSplitStatusPill(
+            label: hasRepayment ? 'Repayment pending' : split.paymentStatus,
+            completed: isCompleted,
           ),
           if (showDivider)
             Padding(
-              padding: const EdgeInsets.only(top: 14, left: 74, right: 10),
+              padding: const EdgeInsets.only(top: 14),
               child: Divider(
                 height: 1,
                 color: ThemeColors.logoGold.withValues(alpha: 0.16),
@@ -723,48 +704,138 @@ class _ExpenseSplitPersonTile extends StatelessWidget {
   }
 }
 
-class _ExpenseSplitAmount extends StatelessWidget {
-  const _ExpenseSplitAmount({
+class _ExpenseSplitAmountCard extends StatelessWidget {
+  const _ExpenseSplitAmountCard({
     required this.label,
     required this.value,
-    this.emphasize = false,
-    this.labelColor,
+    required this.icon,
+    required this.color,
   });
 
   final String label;
-  final double value;
-  final bool emphasize;
-  final Color? labelColor;
+  final String value;
+  final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 70,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
+    return Container(
+      constraints: const BoxConstraints(minHeight: 70),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.12)),
+      ),
+      child: Row(
         children: [
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: labelColor ?? Theme.of(context).colorScheme.outline,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: Icon(icon, size: 17, color: color),
           ),
-          const SizedBox(height: 6),
-          Text(
-            moneyOrDash(value),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: emphasize ? ThemeColors.primary : ThemeColors.logoDeep,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: ThemeColors.logoDeep,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExpenseSplitIconAction extends StatelessWidget {
+  const _ExpenseSplitIconAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = destructive ? const Color(0xFFB44A35) : ThemeColors.logoDeep;
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: destructive
+              ? const Color(0xFFFFE9DF)
+              : const Color(0xFFFFEED7),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(12),
+            child: Icon(icon, color: color, size: 18),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpenseSplitStatusPill extends StatelessWidget {
+  const _ExpenseSplitStatusPill({required this.label, required this.completed});
+
+  final String label;
+  final bool completed;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = completed ? const Color(0xFF2F7A35) : const Color(0xFFFF8A1F);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ),
     );
   }
@@ -784,7 +855,8 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final payer = payment.displayPaidBy;
-    final isCompleted = payment.paymentStatus == paymentSplitStatusCompleted;
+    final paymentStatus = _paymentStatusForDisplay(item, payment);
+    final isCompleted = paymentStatus == paymentSplitStatusCompleted;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -837,10 +909,7 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
           Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 5,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
                   color: isCompleted
                       ? const Color(0xFFECFAE8)
@@ -848,7 +917,7 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Text(
-                  payment.paymentStatus,
+                  paymentStatus,
                   style: TextStyle(
                     color: isCompleted
                         ? const Color(0xFF2F7A35)
@@ -931,7 +1000,8 @@ Future<void> _showEditSplitGroupDialog(
     (person) => person.id == split.paidByPersonId,
   );
   selectedPerson ??= initialPerson;
-  var selectedStatus = paymentSplitStatuses.contains(split.paymentStatus)
+  var selectedStatus =
+      _editablePaymentSplitStatuses.contains(split.paymentStatus)
       ? split.paymentStatus
       : paymentSplitStatusPending;
   var saving = false;
@@ -1031,7 +1101,7 @@ Future<void> _showEditSplitGroupDialog(
                           keyboardType: TextInputType.number,
                           decoration: const InputDecoration(
                             labelText: 'Paid amount',
-                            prefixIcon: Icon(Icons.currency_rupee_rounded),
+                            prefixIcon: Icon(AppConfig.appCurrencyIcon),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -1058,7 +1128,7 @@ Future<void> _showEditSplitGroupDialog(
                             labelText: 'Payment status',
                             prefixIcon: Icon(Icons.fact_check_rounded),
                           ),
-                          items: paymentSplitStatuses
+                          items: _editablePaymentSplitStatuses
                               .map(
                                 (status) => DropdownMenuItem(
                                   value: status,
@@ -1077,34 +1147,6 @@ Future<void> _showEditSplitGroupDialog(
                   const SizedBox(height: 18),
                   Row(
                     children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: saving
-                              ? null
-                              : () {
-                                  amountController.text = moneyText(split.paid);
-                                  setState(() {
-                                    selectedPerson = initialPerson;
-                                    selectedStatus = split.paymentStatus;
-                                  });
-                                },
-                          icon: const Icon(Icons.undo_rounded),
-                          label: const Text('Undo'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: ThemeColors.logoDeep,
-                            side: BorderSide(
-                              color: ThemeColors.logoGold.withValues(
-                                alpha: 0.34,
-                              ),
-                            ),
-                            minimumSize: const Size.fromHeight(50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
                       Expanded(
                         child: FilledButton.icon(
                           onPressed: saving
@@ -1131,6 +1173,7 @@ Future<void> _showEditSplitGroupDialog(
                                       );
                                   if (context.mounted && saved) {
                                     Navigator.pop(context);
+                                    return;
                                   }
                                   if (context.mounted) {
                                     setState(() => saving = false);
@@ -1167,7 +1210,9 @@ Future<void> _showEditSplitGroupDialog(
       },
     ),
   );
-  amountController.dispose();
+  Future<void>.delayed(const Duration(milliseconds: 300), () {
+    amountController.dispose();
+  });
 }
 
 Future<void> _confirmDeleteSplitGroup(
@@ -1219,6 +1264,11 @@ class _ExpensePaymentSplit {
   final List<int> paymentIndices;
 }
 
+const _editablePaymentSplitStatuses = [
+  paymentSplitStatusPending,
+  paymentSplitStatusCompleted,
+];
+
 List<_ExpensePaymentSplit> _expensePaymentSplits(
   ExpenseItem item,
   List<MapEntry<int, PaymentSplit>> payments,
@@ -1238,9 +1288,13 @@ List<_ExpensePaymentSplit> _expensePaymentSplits(
     if (personId.isNotEmpty) {
       personIdsByKey[key] = personId;
     }
-    statusesByKey[key] = payment.paymentStatus == paymentSplitStatusCompleted
+    final normalizedStatus =
+        paymentSplitStatuses.contains(payment.paymentStatus)
+        ? payment.paymentStatus
+        : paymentSplitStatusPending;
+    statusesByKey[key] = normalizedStatus == paymentSplitStatusCompleted
         ? paymentSplitStatusCompleted
-        : statusesByKey[key] ?? paymentSplitStatusPending;
+        : statusesByKey[key] ?? normalizedStatus;
     indicesByKey.putIfAbsent(key, () => []).add(entry.key);
   }
 
@@ -1248,15 +1302,30 @@ List<_ExpensePaymentSplit> _expensePaymentSplits(
   if (names.isEmpty) return const [];
 
   final share = item.totalAmount / names.length;
+  final repaymentKey = _repaymentSplitKey(item);
   final splits =
       names.map((name) {
         final paid = paidByPerson[name] ?? 0;
+        final isRepaymentPayer =
+            repaymentKey.isNotEmpty && repaymentKey == name;
+        final toRepay =
+            item.needsRepayment &&
+                !item.isRepaymentCompleted &&
+                isRepaymentPayer
+            ? item.repaymentAmount
+            : math.max(0, share - paid).toDouble();
+        final paymentStatus =
+            isRepaymentPayer && item.needsRepayment && item.isRepaymentCompleted
+            ? paymentSplitStatusCompleted
+            : isRepaymentPayer && item.needsRepayment
+            ? paymentSplitStatusPaidByOther
+            : statusesByKey[name] ?? paymentSplitStatusPending;
         return _ExpensePaymentSplit(
           name: namesByKey[name] ?? name,
           paidByPersonId: personIdsByKey[name] ?? '',
-          paymentStatus: statusesByKey[name] ?? paymentSplitStatusPending,
+          paymentStatus: paymentStatus,
           paid: paid,
-          toRepay: math.max(0, share - paid).toDouble(),
+          toRepay: toRepay,
           paymentIndices: indicesByKey[name] ?? const [],
         );
       }).toList()..sort((a, b) {
@@ -1265,6 +1334,46 @@ List<_ExpensePaymentSplit> _expensePaymentSplits(
       });
 
   return splits;
+}
+
+String _repaymentSplitKey(ExpenseItem item) {
+  final repayPerson = item.repayPerson.trim();
+  if (repayPerson.isNotEmpty) {
+    return repayPerson.toLowerCase();
+  }
+
+  final paidByPersonName = item.paidByPersonName.trim();
+  if (paidByPersonName.isNotEmpty) {
+    return paidByPersonName.toLowerCase();
+  }
+
+  final paidBy = item.paidBy.trim();
+  if (paidBy.isNotEmpty) {
+    return paidBy.toLowerCase();
+  }
+
+  return '';
+}
+
+String _paymentStatusForDisplay(ExpenseItem item, PaymentSplit payment) {
+  final repaymentKey = _repaymentSplitKey(item);
+  final paymentKey = payment.displayPaidBy.trim().toLowerCase();
+  if (item.needsRepayment &&
+      item.isRepaymentCompleted &&
+      repaymentKey.isNotEmpty &&
+      repaymentKey == paymentKey) {
+    return paymentSplitStatusCompleted;
+  }
+
+  if (item.needsRepayment &&
+      repaymentKey.isNotEmpty &&
+      repaymentKey == paymentKey) {
+    return paymentSplitStatusPaidByOther;
+  }
+
+  return paymentSplitStatuses.contains(payment.paymentStatus)
+      ? payment.paymentStatus
+      : paymentSplitStatusPending;
 }
 
 List<MapEntry<int, PaymentSplit>> _uniquePaymentEntries(

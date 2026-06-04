@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kalayanaexpresstracker/app/core/config.dart';
 
 double? numberFromJson(dynamic value) {
   if (value == null) return null;
@@ -54,7 +55,7 @@ double? moneyFromText(String text) {
 String moneyText(double? value) => value == null ? '' : formatMoney(value);
 
 String moneyOrDash(double? value) =>
-    value == null ? '-' : '₹${formatMoney(value)}';
+    value == null ? '-' : '${AppConfig.appCurrency} ${formatMoney(value)}';
 
 String formatMoney(double value) {
   final rounded = value.round();

@@ -8,13 +8,15 @@ class RepayPersonPicker extends GetView<DashboardController> {
     super.key,
     required this.selectedPersonId,
     required this.onChanged,
-    this.labelText = 'Paid By - Self',
+    this.labelText = 'Paid by',
+    this.helperText = 'Choose Self or a saved person',
     this.validator,
   });
 
   final String? selectedPersonId;
   final ValueChanged<RepayPerson?> onChanged;
   final String labelText;
+  final String? helperText;
   final FormFieldValidator<String>? validator;
 
   @override
@@ -23,7 +25,7 @@ class RepayPersonPicker extends GetView<DashboardController> {
       final people = controller.repayPersons;
       final selected = people.any((person) => person.id == selectedPersonId)
           ? selectedPersonId
-          : null;
+          : _selfValue;
 
       if (controller.repayPersonsLoading.value) {
         return InputDecorator(
@@ -60,22 +62,26 @@ class RepayPersonPicker extends GetView<DashboardController> {
         decoration: InputDecoration(
           labelText: labelText,
           prefixIcon: const Icon(Icons.person_rounded),
-          helperText: people.isEmpty ? 'Add a repay person first' : null,
+          helperText: people.isEmpty
+              ? 'Self is selected. Add people to split payments.'
+              : helperText,
         ),
-        items: people
-            .map(
-              (person) =>
-                  DropdownMenuItem(value: person.id, child: Text(person.name)),
-            )
-            .toList(),
-        onChanged: people.isEmpty
-            ? null
-            : (id) {
-                final person = people.firstWhereOrNull(
-                  (entry) => entry.id == id,
-                );
-                onChanged(person);
-              },
+        items: [
+          const DropdownMenuItem(value: _selfValue, child: Text('Self')),
+          ...people.map(
+            (person) =>
+                DropdownMenuItem(value: person.id, child: Text(person.name)),
+          ),
+        ],
+        onChanged: (id) {
+          if (id == _selfValue) {
+            onChanged(null);
+            return;
+          }
+
+          final person = people.firstWhereOrNull((entry) => entry.id == id);
+          onChanged(person);
+        },
         validator:
             validator ??
             (value) {
@@ -85,3 +91,5 @@ class RepayPersonPicker extends GetView<DashboardController> {
     });
   }
 }
+
+const _selfValue = '__self__';
