@@ -77,21 +77,14 @@ flutter:
     - assets/images/dashboard_figma_wedding_header.png
 
   fonts:
-    - family: PlusJakartaSans
-      fonts:
-        - asset: assets/fonts/plus_jakarta_sans/PlusJakartaSans-Regular.ttf
-        - asset: assets/fonts/plus_jakarta_sans/PlusJakartaSans-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/plus_jakarta_sans/PlusJakartaSans-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/plus_jakarta_sans/PlusJakartaSans-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/plus_jakarta_sans/PlusJakartaSans-ExtraBold.ttf
-          weight: 800
-        - asset: assets/fonts/plus_jakarta_sans/PlusJakartaSans-ExtraBold.ttf
-          weight: 900
     - family: Outfit
       fonts:
+        - asset: assets/fonts/outfit/Outfit-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/outfit/Outfit-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/outfit/Outfit-Light.ttf
+          weight: 300
         - asset: assets/fonts/outfit/Outfit-Regular.ttf
         - asset: assets/fonts/outfit/Outfit-Medium.ttf
           weight: 500

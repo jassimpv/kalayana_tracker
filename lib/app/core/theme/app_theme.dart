@@ -1,5 +1,6 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -201,18 +202,10 @@ class ThemeColors {
   // THEME DATA FACTORIES
   // ============================================================================
 
-  static bool get _isArabic => Get.locale?.languageCode == 'ar';
-  static String get _fontFamily => _isArabic ? 'NotoSansArabic' : 'Inter';
-  static const List<String> _fontFamilyFallback = <String>[
-    'Inter',
-    'Outfit',
-    'Poppins',
-    'SF UI Display',
-  ];
+  static const String _fontFamily = 'Outfit';
 
   static ThemeData lightTheme(BuildContext context) => ThemeData(
     fontFamily: _fontFamily,
-    fontFamilyFallback: _fontFamilyFallback,
     useMaterial3: true,
     brightness: Brightness.light,
     primaryColor: _lightPrimary,
@@ -247,7 +240,7 @@ class ThemeColors {
       elevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
-        fontFamily: 'PlusJakartaSans',
+        fontFamily: _fontFamily,
         fontSize: 24,
         fontWeight: FontWeight.w700,
         color: whiteColor,
@@ -374,7 +367,6 @@ class ThemeColors {
 
   static ThemeData darkTheme(BuildContext context) => ThemeData(
     fontFamily: _fontFamily,
-    fontFamilyFallback: _fontFamilyFallback,
     useMaterial3: true,
     brightness: Brightness.dark,
     primaryColor: _darkPrimary,

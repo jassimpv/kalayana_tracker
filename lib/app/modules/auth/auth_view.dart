@@ -162,24 +162,24 @@ class _HeroBrand extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _WeddingRingMark(size: compact ? 54 : 76, light: true),
-        SizedBox(height: compact ? 6 : 12),
+        _WeddingRingMark(size: compact ? 36 : 44, light: true),
+        SizedBox(height: compact ? 4 : 6),
         Text(
           'Kalyana',
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
             height: 0.96,
-            fontSize: compact ? 31 : 40,
+            fontSize: compact ? 22 : 26,
           ),
         ),
-        SizedBox(height: compact ? 3 : 8),
+        SizedBox(height: compact ? 2 : 4),
         Text(
           'Expense Tracker',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: const Color(0xFFFFD783),
             fontWeight: FontWeight.w800,
-            fontSize: compact ? 18 : 23,
+            fontSize: compact ? 13 : 15,
           ),
         ),
       ],
@@ -204,13 +204,13 @@ class _HeroCopy extends StatelessWidget {
                 : 'Welcome Back ✨',
             style: const TextStyle(
               color: Colors.white,
-              fontFamily: 'Georgia',
-              fontSize: 32,
+              fontFamily: 'Outfit',
+              fontSize: 22,
               fontWeight: FontWeight.w700,
               height: 1.08,
-            ).copyWith(fontSize: compact ? 26 : 34),
+            ).copyWith(fontSize: compact ? 20 : 22),
           ),
-          SizedBox(height: compact ? 6 : 12),
+          SizedBox(height: compact ? 4 : 6),
           Text(
             Get.find<AuthController>().isCreate.value
                 ? 'Create your wedding command center'
@@ -219,7 +219,7 @@ class _HeroCopy extends StatelessWidget {
               color: Colors.white,
               fontWeight: FontWeight.w800,
               height: 1.2,
-              fontSize: compact ? 15 : 18,
+              fontSize: compact ? 12 : 14,
             ),
           ),
         ],
@@ -458,17 +458,21 @@ class _LoginOptionsRow extends GetView<AuthController> {
     return Row(
       children: [
         const Expanded(child: _RememberMeControl()),
-        TextButton(
-          onPressed: controller.loading.value ? null : controller.resetPassword,
-          style: TextButton.styleFrom(
-            foregroundColor: _authGoldDeep,
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(48, 34),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: const Text(
-            'Forgot Password?',
-            style: TextStyle(fontWeight: FontWeight.w900),
+        Obx(
+          () => TextButton(
+            onPressed: controller.loading.value
+                ? null
+                : controller.resetPassword,
+            style: TextButton.styleFrom(
+              foregroundColor: _authGoldDeep,
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(48, 34),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Forgot Password?',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
           ),
         ),
       ],
@@ -555,42 +559,44 @@ class _PrimaryActionButton extends GetView<AuthController> {
               colors: [Color(0xFF9A0D38), Color(0xFFE00C5B)],
             ),
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(28),
-            onTap: controller.loading.value
-                ? null
-                : () => controller.submit(formKey),
-            child: Center(
-              child: controller.loading.value
-                  ? const SizedBox.square(
-                      dimension: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          controller.isCreate.value
-                              ? 'Create account'
-                              : 'Continue',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(width: 22),
-                        const Icon(
-                          Icons.arrow_forward_rounded,
+          child: Obx(
+            () => InkWell(
+              borderRadius: BorderRadius.circular(28),
+              onTap: controller.loading.value
+                  ? null
+                  : () => controller.submit(formKey),
+              child: Center(
+                child: controller.loading.value
+                    ? const SizedBox.square(
+                        dimension: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
                           color: Colors.white,
-                          size: 28,
                         ),
-                      ],
-                    ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            controller.isCreate.value
+                                ? 'Create account'
+                                : 'Continue',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(width: 22),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ),
@@ -606,30 +612,36 @@ class _GoogleButton extends GetView<AuthController> {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: controller.loading.value ? null : controller.signInWithGoogle,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: _authInk,
-        backgroundColor: Colors.white.withValues(alpha: 0.88),
-        side: BorderSide(color: _authPrimaryDark.withValues(alpha: 0.06)),
-        minimumSize: Size.fromHeight(compact ? 52 : 56),
-        elevation: 6,
-        shadowColor: _authPrimaryDark.withValues(alpha: 0.12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _GoogleGlyph(),
-          SizedBox(width: 16),
-          Flexible(
-            child: Text(
-              'Continue with Google',
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-            ),
+    return Obx(
+      () => OutlinedButton(
+        onPressed: controller.loading.value
+            ? null
+            : controller.signInWithGoogle,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: _authInk,
+          backgroundColor: Colors.white.withValues(alpha: 0.88),
+          side: BorderSide(color: _authPrimaryDark.withValues(alpha: 0.06)),
+          minimumSize: Size.fromHeight(compact ? 52 : 56),
+          elevation: 6,
+          shadowColor: _authPrimaryDark.withValues(alpha: 0.12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(26),
           ),
-        ],
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _GoogleGlyph(),
+            SizedBox(width: 16),
+            Flexible(
+              child: Text(
+                'Continue with Google',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -718,7 +730,7 @@ class _WeddingQuote extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: _authPrimary,
-                    fontFamily: 'Georgia',
+                    fontFamily: 'Outfit',
                     fontSize: compact ? 16 : 20,
                     fontStyle: FontStyle.italic,
                     fontWeight: FontWeight.w600,
