@@ -97,12 +97,19 @@ class AuthController extends GetxController {
     try {
       final googleUser = await GoogleSignIn(
         clientId: kIsWeb ? _webGoogleClientId : null,
+        // serverClientId is required on Android/iOS to receive an idToken
+        serverClientId: kIsWeb ? null : _webGoogleClientId,
       ).signIn();
       if (googleUser == null) return;
       final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      if (idToken == null) {
+        _showError('Google sign-in failed: could not retrieve ID token. Check Firebase SHA fingerprint configuration.');
+        return;
+      }
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
+        idToken: idToken,
       );
       await _auth.signInWithCredential(credential);
       final user = _auth.currentUser!;
@@ -111,6 +118,8 @@ class AuthController extends GetxController {
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+    } on FirebaseAuthException catch (error) {
+      _showError(error.message ?? error.code);
     } catch (error) {
       _showError('Google sign-in failed: $error');
     } finally {

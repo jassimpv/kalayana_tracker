@@ -158,8 +158,14 @@ class _HeroBrand extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _WeddingRingMark(size: compact ? 36 : 44, light: true),
-        SizedBox(height: compact ? 4 : 6),
+        Image.asset(
+          'assets/logo.png',
+          width: compact ? 46 : 56,
+          height: compact ? 46 : 56,
+          fit: BoxFit.contain,
+          filterQuality: FilterQuality.high,
+        ),
+        SizedBox(height: compact ? 6 : 8),
         Text(
           'Kalyana',
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
@@ -784,74 +790,3 @@ class _GoogleGlyphPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _WeddingRingMark extends StatelessWidget {
-  const _WeddingRingMark({required this.size, this.light = false});
-
-  final double size;
-  final bool light;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: size,
-      child: CustomPaint(painter: _WeddingRingPainter(light: light)),
-    );
-  }
-}
-
-class _WeddingRingPainter extends CustomPainter {
-  _WeddingRingPainter({required this.light});
-
-  final bool light;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final gold = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.054
-      ..strokeCap = StrokeCap.round
-      ..shader = LinearGradient(
-        colors: light
-            ? const [Color(0xFFFFF0B0), Color(0xFFE7AD4F), Color(0xFFFFE5A0)]
-            : const [Color(0xFFF8D77A), Color(0xFFC37B16), Color(0xFFFFE39A)],
-      ).createShader(Offset.zero & size);
-    final shadow = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.066
-      ..color = (light ? Colors.black : ThemeColors.primary).withValues(
-        alpha: light ? 0.16 : 0.10,
-      )
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
-    final left = Rect.fromCircle(
-      center: Offset(size.width * 0.42, size.height * 0.58),
-      radius: size.width * 0.23,
-    );
-    final right = Rect.fromCircle(
-      center: Offset(size.width * 0.58, size.height * 0.58),
-      radius: size.width * 0.23,
-    );
-
-    canvas.drawOval(left, shadow);
-    canvas.drawOval(right, shadow);
-    canvas.drawOval(left, gold);
-    canvas.drawOval(right, gold);
-
-    final diamondPath = Path()
-      ..moveTo(size.width * 0.50, size.height * 0.07)
-      ..lineTo(size.width * 0.70, size.height * 0.25)
-      ..lineTo(size.width * 0.50, size.height * 0.44)
-      ..lineTo(size.width * 0.30, size.height * 0.25)
-      ..close()
-      ..moveTo(size.width * 0.30, size.height * 0.25)
-      ..lineTo(size.width * 0.70, size.height * 0.25)
-      ..moveTo(size.width * 0.50, size.height * 0.07)
-      ..lineTo(size.width * 0.50, size.height * 0.44)
-      ..moveTo(size.width * 0.39, size.height * 0.15)
-      ..lineTo(size.width * 0.61, size.height * 0.35);
-    canvas.drawPath(diamondPath, gold);
-  }
-
-  @override
-  bool shouldRepaint(covariant _WeddingRingPainter oldDelegate) =>
-      oldDelegate.light != light;
-}

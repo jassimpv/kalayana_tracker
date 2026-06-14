@@ -2,13 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 
 class DashboardFormPage extends StatelessWidget {
-  const DashboardFormPage({super.key, required this.children});
+  const DashboardFormPage({
+    super.key,
+    required this.children,
+    this.footer,
+  });
 
   final List<Widget> children;
+  final Widget? footer;
 
   @override
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final bottomSafe = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: ThemeColors.primary,
@@ -25,13 +31,37 @@ class DashboardFormPage extends StatelessWidget {
             topRight: Radius.circular(30),
           ),
         ),
-        child: DashboardAdaptiveScroll(
-          padding: EdgeInsets.fromLTRB(14, 14, 14, 18 + keyboardInset),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: children,
-          ),
-        ),
+        child: footer != null
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: DashboardAdaptiveScroll(
+                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: children,
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      14,
+                      0,
+                      14,
+                      18 + bottomSafe + keyboardInset,
+                    ),
+                    child: footer,
+                  ),
+                ],
+              )
+            : DashboardAdaptiveScroll(
+                padding: EdgeInsets.fromLTRB(14, 14, 14, 18 + keyboardInset),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: children,
+                ),
+              ),
       ),
     );
   }

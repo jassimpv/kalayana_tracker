@@ -68,14 +68,14 @@ class _SplashViewState extends State<SplashView>
           children: [
             // Decorative glass orbs
             Positioned(
-              right: -60,
-              top: 60,
-              child: _GlassOrb(size: 200, alpha: 0.07),
+              right: -20,
+              top: 80,
+              child: _GlassOrb(size: 100, alpha: 0.05),
             ),
             Positioned(
-              left: -50,
-              bottom: 140,
-              child: _GlassOrb(size: 160, alpha: 0.05),
+              left: -24,
+              bottom: 180,
+              child: _GlassOrb(size: 80, alpha: 0.04),
             ),
 
             // Centered branding
@@ -87,8 +87,12 @@ class _SplashViewState extends State<SplashView>
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const AppLogo(size: 120, padding: 11),
-                      const SizedBox(height: 32),
+                      const AppLogo(
+                        size: 150,
+                        padding: 14,
+                        showBackground: false,
+                      ),
+                      const SizedBox(height: 28),
                       Text(
                         'Kalyana',
                         style: Theme.of(context).textTheme.displaySmall

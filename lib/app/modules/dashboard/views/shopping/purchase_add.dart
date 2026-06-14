@@ -46,6 +46,23 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
   @override
   Widget build(BuildContext context) {
     return DashboardFormPage(
+      footer: SizedBox(
+        height: 50,
+        child: FilledButton.icon(
+          onPressed: _isSaving ? null : _savePurchase,
+          icon: _isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.check_rounded),
+          label: Text(_isSaving ? 'Saving' : 'Save Shopping'),
+        ),
+      ),
       children: [
         const DashboardFormIntroCard(
           icon: Icons.shopping_bag_rounded,
@@ -112,34 +129,16 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                     controller: _noteController,
                     minLines: 3,
                     maxLines: 5,
+                    textAlignVertical: TextAlignVertical.top,
                     decoration: const InputDecoration(
                       labelText: 'Note',
                       alignLabelWithHint: true,
-                      prefixIcon: Icon(Icons.notes_rounded),
                     ),
                   ),
                 ],
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 50,
-          child: FilledButton.icon(
-            onPressed: _isSaving ? null : _savePurchase,
-            icon: _isSaving
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.check_rounded),
-            label: Text(_isSaving ? 'Saving' : 'Save Shopping'),
-          ),
         ),
       ],
     );

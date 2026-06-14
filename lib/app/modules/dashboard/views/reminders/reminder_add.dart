@@ -56,6 +56,23 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
   @override
   Widget build(BuildContext context) {
     return DashboardFormPage(
+      footer: SizedBox(
+        height: 50,
+        child: FilledButton.icon(
+          onPressed: _isSaving ? null : _saveReminder,
+          icon: _isSaving
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Icon(Icons.check_rounded),
+          label: Text(_isSaving ? 'Saving' : 'Save Reminder'),
+        ),
+      ),
       children: [
         const DashboardFormIntroCard(
           icon: Icons.event_available_rounded,
@@ -108,24 +125,6 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 50,
-          child: FilledButton.icon(
-            onPressed: _isSaving ? null : _saveReminder,
-            icon: _isSaving
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Icon(Icons.check_rounded),
-            label: Text(_isSaving ? 'Saving' : 'Save Reminder'),
-          ),
         ),
       ],
     );

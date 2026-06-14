@@ -95,6 +95,23 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
       behavior: HitTestBehavior.translucent,
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: DashboardFormPage(
+        footer: SizedBox(
+          height: 50,
+          child: FilledButton.icon(
+            onPressed: _isSaving ? null : _saveExpense,
+            icon: _isSaving
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.check_rounded),
+            label: Text(_isSaving ? 'Saving' : 'Save Expense'),
+          ),
+        ),
         children: [
           const DashboardFormIntroCard(
             icon: Icons.payments_rounded,
@@ -159,9 +176,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                         prefixIcon: Icon(Icons.payments_rounded),
                       ),
                       onChanged: (_) {
-                        if (_needsRepayment) {
-                          setState(() {});
-                        }
+                        if (_needsRepayment) setState(() {});
                       },
                     ),
                     const SizedBox(height: 12),
@@ -171,9 +186,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                       onChanged: (person) {
                         setState(() {
                           _paidByPerson = person;
-                          if (person == null) {
-                            _needsRepayment = false;
-                          }
+                          if (person == null) _needsRepayment = false;
                         });
                       },
                     ),
@@ -185,12 +198,10 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                           contentPadding: EdgeInsets.zero,
                           title: const Text('Needs repayment'),
                           value: _needsRepayment,
-                          onChanged: (value) {
-                            setState(() => _needsRepayment = value);
-                          },
+                          onChanged: (value) =>
+                              setState(() => _needsRepayment = value),
                         ),
                       ),
-
                       if (_needsRepayment) ...[
                         const SizedBox(height: 8),
                         _RepaymentAutoSummary(
@@ -216,34 +227,16 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                       controller: _notesController,
                       minLines: 3,
                       maxLines: 5,
+                      textAlignVertical: TextAlignVertical.top,
                       decoration: const InputDecoration(
                         labelText: 'Notes',
                         alignLabelWithHint: true,
-                        prefixIcon: Icon(Icons.note_rounded),
                       ),
                     ),
                   ],
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: 50,
-            child: FilledButton.icon(
-              onPressed: _isSaving ? null : _saveExpense,
-              icon: _isSaving
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check_rounded),
-              label: Text(_isSaving ? 'Saving' : 'Save Expense'),
-            ),
           ),
         ],
       ),
