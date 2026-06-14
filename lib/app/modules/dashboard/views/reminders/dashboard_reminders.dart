@@ -143,8 +143,8 @@ class _ReminderHero extends StatelessWidget {
                 'Reminders',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                   letterSpacing: 0,
                 ),
               ),
@@ -153,8 +153,8 @@ class _ReminderHero extends StatelessWidget {
                 'Stay on track, never miss a payment',
                 style: TextStyle(
                   color: Color(0xFFF7C859),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -382,8 +382,8 @@ class _ReminderStatTile extends StatelessWidget {
           stat.value.toString(),
           style: TextStyle(
             color: stat.color,
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
             height: 1,
           ),
         ),
@@ -395,7 +395,7 @@ class _ReminderStatTile extends StatelessWidget {
           style: TextStyle(
             color: stat.color,
             fontSize: 9.5,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -446,8 +446,8 @@ class _PaymentEmptyCallout extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -457,9 +457,9 @@ class _PaymentEmptyCallout extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Color(0xFF78656A),
-                    fontSize: 12,
+                    fontSize: 11,
                     height: 1.25,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -582,8 +582,8 @@ class _AddReminderButton extends StatelessWidget {
                 'Add Reminder',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -612,8 +612,8 @@ class _ReminderTaskHeader extends StatelessWidget {
             'Wedding Tasks',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -628,7 +628,7 @@ class _ReminderTaskHeader extends StatelessWidget {
                   showingCompleted ? 'Completed' : 'Upcoming',
                   style: const TextStyle(
                     color: Color(0xFFD17B14),
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(width: 5),
@@ -673,7 +673,7 @@ class _ReminderEmptyTasks extends StatelessWidget {
             'No wedding tasks yet',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
@@ -760,8 +760,8 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                         color: item.isDone
                             ? const Color(0xFF78656A)
                             : ThemeColors.logoDeep,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                         decoration: item.isDone
                             ? TextDecoration.lineThrough
                             : null,
@@ -783,8 +783,8 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Color(0xFF726166),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -847,7 +847,7 @@ class _DaysLeftPill extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontSize: done ? 12 : 17,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
               height: 1,
             ),
           ),
@@ -860,7 +860,7 @@ class _DaysLeftPill extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontSize: 9.5,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

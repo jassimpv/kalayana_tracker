@@ -124,16 +124,18 @@ class FirestoreWeddingRepository implements WeddingRepository {
 
   @override
   Stream<List<RepayPerson>> getRepayPersons() {
-    return Stream.fromFuture(_workspaceId()).asyncExpand((workspaceId) {
-      return _repayPersonsCollection(
-        workspaceId,
-      ).orderBy('name').snapshots();
-    }).map((snapshot) {
-      return snapshot.docs
-          .map((doc) => RepayPerson.fromJson(doc.id, doc.data()))
-          .where((person) => person.name.trim().isNotEmpty)
-          .toList();
-    });
+    return Stream.fromFuture(_workspaceId())
+        .asyncExpand((workspaceId) {
+          return _repayPersonsCollection(
+            workspaceId,
+          ).orderBy('name').snapshots();
+        })
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => RepayPerson.fromJson(doc.id, doc.data()))
+              .where((person) => person.name.trim().isNotEmpty)
+              .toList();
+        });
   }
 
   @override

@@ -445,7 +445,7 @@ class ReportsPanel extends GetView<DashboardController> {
                 ),
                 child: const Text(
                   'View Detailed Report',
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
               ),
             ],
@@ -511,8 +511,8 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                             child: Text(
                               joinKey,
                               style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
                                 letterSpacing: 1.2,
                               ),
                             ),
@@ -532,7 +532,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                       'Share this key with family or friends to sync one wedding plan.',
                       style: TextStyle(
                         color: ThemeColors.logoDeep.withValues(alpha: 0.72),
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 22),
@@ -596,7 +596,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                 ),
                 child: const Text(
                   'View Activity Logs',
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                 ),
               ),
             ],
@@ -683,8 +683,8 @@ class _ProfileHeader extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                       height: 1.05,
                     ),
                   ),
@@ -695,8 +695,8 @@ class _ProfileHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Color(0xFFF3C873),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -980,8 +980,8 @@ class _ProfileMenuRow extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: ThemeColors.logoDeep,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         if (subtitle != null) ...[
@@ -994,8 +994,8 @@ class _ProfileMenuRow extends StatelessWidget {
                               color: ThemeColors.logoDeep.withValues(
                                 alpha: 0.62,
                               ),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -1007,8 +1007,8 @@ class _ProfileMenuRow extends StatelessWidget {
                       value!,
                       style: TextStyle(
                         color: ThemeColors.logoDeep.withValues(alpha: 0.68),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1102,7 +1102,7 @@ class _ReportMetricCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: ThemeColors.logoDeep.withValues(alpha: 0.76),
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -1113,7 +1113,7 @@ class _ReportMetricCard extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -1130,7 +1130,7 @@ class _ReportTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     );
   }
 }
@@ -1147,7 +1147,7 @@ class _ReportPercentLabel extends StatelessWidget {
       text: TextSpan(
         style: TextStyle(
           color: ThemeColors.logoDeep.withValues(alpha: 0.76),
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           fontFamily: DefaultTextStyle.of(context).style.fontFamily,
         ),
         children: [
@@ -1157,7 +1157,7 @@ class _ReportPercentLabel extends StatelessWidget {
             text: value,
             style: const TextStyle(
               color: ThemeColors.logoDeep,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -1223,8 +1223,8 @@ class _ReportInfoTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: ThemeColors.logoDeep.withValues(alpha: 0.70),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1234,8 +1234,8 @@ class _ReportInfoTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -1409,7 +1409,7 @@ class _ReportListRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -1419,8 +1419,8 @@ class _ReportListRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: ThemeColors.logoDeep.withValues(alpha: 0.62),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1436,8 +1436,8 @@ class _ReportListRow extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: ThemeColors.logoDeep,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -1448,7 +1448,7 @@ class _ReportListRow extends StatelessWidget {
                 style: TextStyle(
                   color: ThemeColors.logoDeep.withValues(alpha: 0.60),
                   fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1488,12 +1488,12 @@ class _CategoryLegend extends StatelessWidget {
                   entry.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
               Text(
                 '$percent%',
-                style: const TextStyle(fontWeight: FontWeight.w900),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -1574,8 +1574,8 @@ class _CollaboratorList extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -1583,7 +1583,7 @@ class _CollaboratorList extends StatelessWidget {
                       collaborator.role,
                       style: TextStyle(
                         color: ThemeColors.logoDeep.withValues(alpha: 0.72),
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -1628,7 +1628,7 @@ class _ProfileAvatar extends StatelessWidget {
               style: TextStyle(
                 color: ThemeColors.primary,
                 fontSize: radius * 0.58,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
               ),
             )
           : null,

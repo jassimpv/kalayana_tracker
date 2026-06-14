@@ -324,7 +324,7 @@ class _RepaymentAutoRow extends StatelessWidget {
                 style: TextStyle(
                   color: scheme.outline,
                   fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 2),
@@ -333,8 +333,8 @@ class _RepaymentAutoRow extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],

@@ -154,7 +154,7 @@ class _ExpensePaymentHistoryContentState
                     icon: const Icon(Icons.add_circle_outline_rounded),
                     label: const Text(
                       'Add Split',
-                      style: TextStyle(fontSize: 13),
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                 ),
@@ -177,8 +177,8 @@ class _ExpensePaymentHistoryContentState
                       'Recent Splits',
                       style: TextStyle(
                         color: ThemeColors.logoDeep,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const Spacer(),
@@ -187,7 +187,7 @@ class _ExpensePaymentHistoryContentState
                       style: TextStyle(
                         color: ThemeColors.secondaryColor,
                         fontSize: 11,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     Icon(
@@ -241,7 +241,7 @@ class _ExpensePaymentHistoryContentState
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   )
@@ -377,7 +377,7 @@ class _PaymentLargeMetric extends StatelessWidget {
                 style: TextStyle(
                   color: ThemeColors.logoDeep.withValues(alpha: 0.78),
                   fontSize: 11,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 6),
@@ -387,8 +387,8 @@ class _PaymentLargeMetric extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: ThemeColors.primary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -412,8 +412,8 @@ class _ExpenseHistorySectionTitle extends StatelessWidget {
           title,
           style: TextStyle(
             color: ThemeColors.logoDeep,
-            fontSize: 17,
-            fontWeight: FontWeight.w900,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const Spacer(),
@@ -463,8 +463,8 @@ class _ExpenseNoSplitState extends StatelessWidget {
             'No split added',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 6),
@@ -476,7 +476,7 @@ class _ExpenseNoSplitState extends StatelessWidget {
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,
               fontSize: 11,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               height: 1.25,
             ),
           ),
@@ -560,7 +560,7 @@ class _SecurePaymentNote extends StatelessWidget {
               style: TextStyle(
                 color: ThemeColors.logoDeep.withValues(alpha: 0.82),
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 height: 1.35,
               ),
             ),
@@ -626,8 +626,8 @@ class _ExpenseSplitPersonTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: ThemeColors.logoDeep,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -751,7 +751,7 @@ class _ExpenseSplitAmountCard extends StatelessWidget {
                   style: TextStyle(
                     color: color,
                     fontSize: 10,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -761,8 +761,8 @@ class _ExpenseSplitAmountCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -833,7 +833,7 @@ class _ExpenseSplitStatusPill extends StatelessWidget {
           style: TextStyle(
             color: color,
             fontSize: 11,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -886,8 +886,8 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -900,7 +900,7 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
                   style: TextStyle(
                     color: ThemeColors.secondaryColor,
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -923,7 +923,7 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
                         ? const Color(0xFF2F7A35)
                         : const Color(0xFFFF8A1F),
                     fontSize: 10,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -1062,8 +1062,8 @@ Future<void> _showEditSplitGroupDialog(
                               'Edit Split',
                               style: TextStyle(
                                 color: ThemeColors.logoDeep,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                             const SizedBox(height: 3),
@@ -1075,8 +1075,8 @@ Future<void> _showEditSplitGroupDialog(
                                 color: ThemeColors.logoDeep.withValues(
                                   alpha: 0.62,
                                 ),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],

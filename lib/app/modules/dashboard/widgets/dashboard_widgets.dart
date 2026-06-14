@@ -57,7 +57,7 @@ class PageTitle extends StatelessWidget {
               title,
               style: Theme.of(
                 context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w900),
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
@@ -117,7 +117,7 @@ class SyncBadge extends StatelessWidget {
             'Live sync',
             style: TextStyle(
               color: ThemeColors.whiteColor,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -196,7 +196,7 @@ class _MetricTile extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
@@ -235,7 +235,7 @@ class ExpandedPanel extends StatelessWidget {
               title,
               style: Theme.of(
                 context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             child,
@@ -357,8 +357,8 @@ class _ExpenseCard extends GetView<DashboardController> {
                       Text(
                         item.name,
                         style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -380,8 +380,8 @@ class _ExpenseCard extends GetView<DashboardController> {
                     Text(
                       moneyOrDash(item.totalAmount),
                       style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -446,7 +446,7 @@ class _ExpenseMetric extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w700)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -490,7 +490,7 @@ class ReminderList extends GetView<DashboardController> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
                 decoration: item.isDone ? TextDecoration.lineThrough : null,
               ),
             ),
@@ -504,7 +504,7 @@ class ReminderList extends GetView<DashboardController> {
                     'Overdue',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.tertiary,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
               ],
@@ -573,7 +573,7 @@ class PurchaseList extends GetView<DashboardController> {
                             item.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w900),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
                         IconButton(
@@ -694,14 +694,14 @@ class PendingPayments extends StatelessWidget {
                       item.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                   Text(
                     '${AppConfig.appCurrency} ${formatMoney(item.pendingForSummary)}',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.secondary,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -731,7 +731,7 @@ class InfoRow extends StatelessWidget {
       title: Text(label),
       subtitle: Text(
         value,
-        style: const TextStyle(fontWeight: FontWeight.w800),
+        style: const TextStyle(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -754,8 +754,8 @@ class StatusPill extends StatelessWidget {
         label,
         style: TextStyle(
           color: color,
-          fontWeight: FontWeight.w900,
-          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          fontSize: 11,
         ),
       ),
     );
@@ -777,7 +777,7 @@ class LabelPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
       ),
     );
   }
@@ -827,7 +827,7 @@ class EmptyState extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

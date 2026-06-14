@@ -810,7 +810,7 @@ class _AvatarInitials extends StatelessWidget {
       initials,
       style: const TextStyle(
         color: ThemeColors.logoDeep,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -919,7 +919,7 @@ class _SectionHeader extends StatelessWidget {
             title,
             style: Theme.of(
               context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -953,11 +953,11 @@ class _LegendRow extends StatelessWidget {
             label,
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w900)),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
     );
   }

@@ -92,8 +92,8 @@ class BottomNav extends StatelessWidget {
                                 : ThemeColors.primary,
                             fontSize: 10.5,
                             fontWeight: selected
-                                ? FontWeight.w900
-                                : FontWeight.w700,
+                                ? FontWeight.w600
+                                : FontWeight.w500,
                           ),
                           child: Text(
                             item.label,

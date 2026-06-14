@@ -92,7 +92,7 @@ class FirebaseStartupErrorApp extends StatelessWidget {
                       'Firebase setup needs attention',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w900),
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
                     Text(

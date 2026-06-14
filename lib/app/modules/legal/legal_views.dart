@@ -208,7 +208,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
               _message!,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.error,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -388,7 +388,7 @@ class _LegalScaffold extends StatelessWidget {
                           Text(
                             title,
                             style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.w900),
+                                ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -432,7 +432,7 @@ class _PolicySection extends StatelessWidget {
             title,
             style: Theme.of(
               context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
           Text(
@@ -471,7 +471,7 @@ class _AccountSummary extends StatelessWidget {
               email,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],

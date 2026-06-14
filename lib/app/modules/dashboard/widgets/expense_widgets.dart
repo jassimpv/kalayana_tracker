@@ -38,15 +38,15 @@ class PremiumEmptyState extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   subtitle,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -145,7 +145,7 @@ class ExpenseStatusBadge extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

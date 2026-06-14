@@ -313,7 +313,7 @@ class _InvoiceScanPanel extends StatelessWidget {
               Expanded(
                 child: Text(
                   loading ? 'Reading invoice...' : 'Scan invoice to fill bill',
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
               if (loading)
@@ -943,7 +943,7 @@ class _PlannerDialog extends StatelessWidget {
                           Text(
                             title,
                             style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w600,
                               height: 1.05,
                             ),
                           ),
@@ -1031,7 +1031,7 @@ class _DialogIntroCard extends StatelessWidget {
                 Text(
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     color: ThemeColors.textPrimary,
                     height: 1.1,
                   ),
@@ -1041,7 +1041,7 @@ class _DialogIntroCard extends StatelessWidget {
                   subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: ThemeColors.textSecondary,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     height: 1.2,
                   ),
                 ),
@@ -1101,7 +1101,7 @@ class _DatePickerTile extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       height: 1.1,
                     ),
                   ),
@@ -1110,7 +1110,7 @@ class _DatePickerTile extends StatelessWidget {
                     value,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

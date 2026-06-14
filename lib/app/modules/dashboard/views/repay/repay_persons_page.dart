@@ -170,8 +170,8 @@ class _RepayPersonTile extends GetView<DashboardController> {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: ThemeColors.logoDeep,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -181,8 +181,8 @@ class _RepayPersonTile extends GetView<DashboardController> {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -194,8 +194,8 @@ class _RepayPersonTile extends GetView<DashboardController> {
                         color: pending > 0
                             ? ThemeColors.primary
                             : ThemeColors.completedColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -264,8 +264,8 @@ class _RepayPersonDetailView extends GetView<DashboardController> {
             'Pay History',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 10),
@@ -322,8 +322,8 @@ class _RepayPersonDetailHeader extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: ThemeColors.logoDeep,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -331,8 +331,8 @@ class _RepayPersonDetailHeader extends StatelessWidget {
                       'Created ${formatDate(person.createdAt)}',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -398,7 +398,7 @@ class _RepayPersonMetric extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontSize: 11,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 6),
@@ -408,8 +408,8 @@ class _RepayPersonMetric extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 15,
-              fontWeight: FontWeight.w900,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -492,8 +492,8 @@ class _RepayPersonHistoryTile extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -504,7 +504,7 @@ class _RepayPersonHistoryTile extends StatelessWidget {
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -518,8 +518,8 @@ class _RepayPersonHistoryTile extends StatelessWidget {
                 moneyOrDash(item.repaymentAmount),
                 style: const TextStyle(
                   color: ThemeColors.logoDeep,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
@@ -528,7 +528,7 @@ class _RepayPersonHistoryTile extends StatelessWidget {
                 style: TextStyle(
                   color: color,
                   fontSize: 11,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -703,8 +703,8 @@ Future<void> _showRepayPersonDialog(
                                   title,
                                   style: const TextStyle(
                                     color: ThemeColors.logoDeep,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -714,8 +714,8 @@ Future<void> _showRepayPersonDialog(
                                     color: ThemeColors.logoDeep.withValues(
                                       alpha: 0.62,
                                     ),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
                                     height: 1.35,
                                   ),
                                 ),

@@ -145,7 +145,7 @@ class DashboardFormIntroCard extends StatelessWidget {
                   title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: ThemeColors.textPrimary,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     height: 1.08,
                   ),
                 ),
@@ -154,7 +154,7 @@ class DashboardFormIntroCard extends StatelessWidget {
                   subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: ThemeColors.textSecondary,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     height: 1.2,
                   ),
                 ),
@@ -241,7 +241,7 @@ class DashboardDatePickerTile extends StatelessWidget {
                   Text(
                     title,
                     style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       height: 1.1,
                     ),
                   ),
@@ -250,7 +250,7 @@ class DashboardDatePickerTile extends StatelessWidget {
                     value,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: scheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

@@ -72,7 +72,7 @@ class _SplashViewState extends State<SplashView>
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             color: Colors.white,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                           ),
                     ),
                     const SizedBox(height: 4),
@@ -80,7 +80,7 @@ class _SplashViewState extends State<SplashView>
                       'Expense Tracker',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.78),
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 28),

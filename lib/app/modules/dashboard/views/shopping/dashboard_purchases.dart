@@ -171,8 +171,8 @@ class _ShoppingHero extends StatelessWidget {
                 'Shopping',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                   letterSpacing: 0,
                 ),
               ),
@@ -183,9 +183,9 @@ class _ShoppingHero extends StatelessWidget {
                   'Manage purchases, stay on budget',
                   style: TextStyle(
                     color: Color(0xFFF7C859),
-                    fontSize: 12,
+                    fontSize: 11,
                     height: 1.2,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -402,15 +402,15 @@ class _PurchaseSearchField extends StatelessWidget {
       cursorColor: ThemeColors.primary,
       style: const TextStyle(
         color: ThemeColors.logoDeep,
-        fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         hintText: 'Search items, vendors, categories...',
         hintStyle: TextStyle(
           color: ThemeColors.logoDeep.withValues(alpha: 0.36),
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
         prefixIcon: Icon(
           CupertinoIcons.search,
@@ -515,8 +515,8 @@ class _PurchaseFilterChip extends StatelessWidget {
                   label,
                   style: TextStyle(
                     color: selected ? Colors.white : ThemeColors.primary,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -526,7 +526,7 @@ class _PurchaseFilterChip extends StatelessWidget {
                     color: selected
                         ? Colors.white
                         : ThemeColors.logoDeep.withValues(alpha: 0.28),
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     fontSize: 11,
                   ),
                 ),
@@ -586,8 +586,8 @@ class _WishlistCallout extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 4),
@@ -597,9 +597,9 @@ class _WishlistCallout extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Color(0xFF78656A),
-                    fontSize: 12,
+                    fontSize: 11,
                     height: 1.25,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -650,8 +650,8 @@ class _AddWishlistButton extends StatelessWidget {
                 'Add Wishlist',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -676,8 +676,8 @@ class _ShoppingListHeader extends StatelessWidget {
             'Shopping List',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -713,7 +713,7 @@ class _ShoppingEmptyState extends StatelessWidget {
             title,
             style: const TextStyle(
               color: ThemeColors.logoDeep,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
@@ -783,8 +783,8 @@ class _PurchaseListCard extends GetView<DashboardController> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: ThemeColors.logoDeep,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -808,8 +808,8 @@ class _PurchaseListCard extends GetView<DashboardController> {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Color(0xFF60464C),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -829,8 +829,8 @@ class _PurchaseListCard extends GetView<DashboardController> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: ThemeColors.primary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 7),
@@ -871,7 +871,7 @@ class _CategoryPill extends StatelessWidget {
         style: TextStyle(
           color: ThemeColors.primary,
           fontSize: 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w600,
           height: 1,
         ),
       ),
@@ -917,7 +917,7 @@ class _ShoppingStatusPill extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontSize: 11,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
                 height: 1,
               ),
             ),

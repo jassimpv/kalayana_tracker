@@ -202,18 +202,18 @@ class _DashboardHeroHeader extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 27,
-                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
                                 height: 1.04,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             Text(
                               "Let's plan your perfect day",
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.94),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
                           ],
@@ -420,8 +420,8 @@ class _WeddingIdentityCard extends StatelessWidget {
                   'Your Wedding',
                   style: TextStyle(
                     color: Color(0xFFB87A25),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Row(
@@ -433,8 +433,8 @@ class _WeddingIdentityCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Color(0xFF421018),
-                          fontSize: 18.5,
-                          fontWeight: FontWeight.w900,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -506,8 +506,8 @@ class _WeddingMetaChip extends StatelessWidget {
           text,
           style: const TextStyle(
             color: Color(0xFF9D1740),
-            fontSize: 12,
-            fontWeight: FontWeight.w900,
+            fontSize: 10.5,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -574,8 +574,8 @@ class _BudgetHeroCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                           height: 1.16,
                         ),
                       ),
@@ -589,8 +589,8 @@ class _BudgetHeroCard extends StatelessWidget {
                       '${AppConfig.appCurrency}${formatMoney(total)}',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: compact ? 38 : 42,
-                        fontWeight: FontWeight.w900,
+                        fontSize: compact ? 30 : 34,
+                        fontWeight: FontWeight.w600,
                         height: 0.95,
                       ),
                     ),
@@ -602,8 +602,8 @@ class _BudgetHeroCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.70),
-                      fontSize: compact ? 13 : 14,
-                      fontWeight: FontWeight.w800,
+                      fontSize: compact ? 11 : 12,
+                      fontWeight: FontWeight.w400,
                       height: 1.38,
                     ),
                   ),
@@ -629,8 +629,8 @@ class _BudgetHeroCard extends StatelessWidget {
                             '${(progress * 100).round()}%',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: compact ? 18 : 25,
-                              fontWeight: FontWeight.w900,
+                              fontSize: compact ? 16 : 20,
+                              fontWeight: FontWeight.w600,
                               height: 0.94,
                             ),
                           ),
@@ -638,8 +638,8 @@ class _BudgetHeroCard extends StatelessWidget {
                             'paid',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -911,7 +911,7 @@ class _MetricTile extends StatelessWidget {
           spec.label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+          style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 5),
         FittedBox(
@@ -920,8 +920,8 @@ class _MetricTile extends StatelessWidget {
             spec.value,
             style: TextStyle(
               color: spec.color,
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -1006,7 +1006,8 @@ class _PaymentPulseCard extends StatelessWidget {
                       'Payment Pulse',
                       style: TextStyle(
                         color: Color(0xFFB87A25),
-                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 5),
@@ -1016,8 +1017,8 @@ class _PaymentPulseCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: const Color(0xFF421018),
-                        fontSize: narrow ? 22 : 24,
-                        fontWeight: FontWeight.w900,
+                        fontSize: narrow ? 18 : 20,
+                        fontWeight: FontWeight.w600,
                         height: 1.05,
                       ),
                     ),
@@ -1028,8 +1029,8 @@ class _PaymentPulseCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Color(0xFF421018),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w400,
                         height: 1.22,
                       ),
                     ),
@@ -1115,21 +1116,9 @@ class _OverviewQuickActions extends StatelessWidget {
                 'Quick Actions',
                 style: TextStyle(
                   color: Color(0xFF421018),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                 ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(foregroundColor: ThemeColors.primary),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('View all'),
-                  SizedBox(width: 4),
-                  Icon(CupertinoIcons.chevron_right),
-                ],
               ),
             ),
           ],
@@ -1189,7 +1178,7 @@ class _ActionCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 11.5,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 3),
@@ -1199,8 +1188,8 @@ class _ActionCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.outline,
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
@@ -1250,8 +1239,8 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                   'Budget Analytics',
                   style: TextStyle(
                     color: Color(0xFF421018),
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -1275,16 +1264,16 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                       '${(progress * 100).round()}%',
                       style: const TextStyle(
                         color: Color(0xFF421018),
-                        fontSize: 22,
-                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const Text(
                       'paid',
                       style: TextStyle(
                         color: Color(0xFF421018),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -1300,7 +1289,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                         const Expanded(
                           child: Text(
                             'Top Spending Categories',
-                            style: TextStyle(fontWeight: FontWeight.w900),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
                         TextButton(
@@ -1317,8 +1306,8 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                               Text(
                                 'View Report',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               SizedBox(width: 2),
@@ -1384,8 +1373,8 @@ class _CategorySpendEmptyState extends StatelessWidget {
               'No spending categories yet',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.outline,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -1436,8 +1425,8 @@ class _CategorySpendRow extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -1445,7 +1434,7 @@ class _CategorySpendRow extends StatelessWidget {
                       '${AppConfig.appCurrency}${formatMoney(value)}',
                       style: const TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1454,7 +1443,7 @@ class _CategorySpendRow extends StatelessWidget {
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -1639,7 +1628,7 @@ class _OverviewGreetingCard extends StatelessWidget {
                       'Good evening',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1649,7 +1638,7 @@ class _OverviewGreetingCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                             height: 1.02,
                             letterSpacing: 0,
                           ),
@@ -1661,8 +1650,8 @@ class _OverviewGreetingCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: ThemeColors.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -1709,7 +1698,7 @@ class _OverviewBudgetCard extends StatelessWidget {
                 'Wedding budget',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.76),
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 10),
@@ -1725,7 +1714,7 @@ class _OverviewBudgetCard extends StatelessWidget {
                     maxLines: 1,
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                       height: 0.95,
                       letterSpacing: 0,
                     ),
@@ -1739,7 +1728,7 @@ class _OverviewBudgetCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.68),
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1783,14 +1772,14 @@ class _OverviewPulseCard extends StatelessWidget {
               children: [
                 Text(
                   '${(progress * 100).round()}%',
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   'paid',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
                     fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -1807,7 +1796,7 @@ class _OverviewPulseCard extends StatelessWidget {
                     Text(
                       displayDays,
                       style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w900, height: 0.95),
+                          ?.copyWith(fontWeight: FontWeight.w600, height: 0.95),
                     ),
                     const SizedBox(width: 5),
                     Padding(
@@ -1816,7 +1805,7 @@ class _OverviewPulseCard extends StatelessWidget {
                         weddingDate == null ? 'days' : 'days left',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.outline,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -1827,7 +1816,7 @@ class _OverviewPulseCard extends StatelessWidget {
                   'Payment pulse',
                   style: TextStyle(
                     color: ThemeColors.logoDeep,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
@@ -1836,8 +1825,8 @@ class _OverviewPulseCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1962,8 +1951,8 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -2028,7 +2017,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                     Text(
                       '${(progress * 100).round()}%',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
@@ -2036,7 +2025,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                       style: TextStyle(
                         color: scheme.outline,
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -2054,7 +2043,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(
                             color: ThemeColors.logoDeep,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                           ),
                     ),
                     const SizedBox(height: 4),
@@ -2064,7 +2053,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: scheme.outline,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         height: 1.25,
                       ),
                     ),
@@ -2155,8 +2144,8 @@ class _AnalyticsStatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -2166,7 +2155,7 @@ class _AnalyticsStatCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: ThemeColors.logoDeep,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -2267,7 +2256,7 @@ class _FocusRow extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -2276,8 +2265,8 @@ class _FocusRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -2319,7 +2308,7 @@ class _UpcomingEventsCarousel extends StatelessWidget {
                 child: Text(
                   'Upcoming moments',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -2329,7 +2318,7 @@ class _UpcomingEventsCarousel extends StatelessWidget {
                 label: const Text('Add'),
                 style: TextButton.styleFrom(
                   foregroundColor: theme.colorScheme.primary,
-                  textStyle: const TextStyle(fontWeight: FontWeight.w900),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -2422,8 +2411,8 @@ class _NextMomentCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.outline,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -2435,7 +2424,7 @@ class _NextMomentCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                         decoration: item.isDone
                             ? TextDecoration.lineThrough
                             : null,
@@ -2453,8 +2442,8 @@ class _NextMomentCard extends StatelessWidget {
                     textAlign: TextAlign.end,
                     style: TextStyle(
                       color: doneColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                       height: 1,
                     ),
                   ),
@@ -2464,7 +2453,7 @@ class _NextMomentCard extends StatelessWidget {
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.outline,
                       fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -2536,7 +2525,7 @@ class _UpcomingMomentRow extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                           decoration: item.isDone
                               ? TextDecoration.lineThrough
                               : null,
@@ -2549,8 +2538,8 @@ class _UpcomingMomentRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.outline,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -2564,7 +2553,7 @@ class _UpcomingMomentRow extends StatelessWidget {
                       item.isDone ? 'Done' : _momentDayLabel(days),
                       style: TextStyle(
                         color: effectiveColor,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
@@ -2572,7 +2561,7 @@ class _UpcomingMomentRow extends StatelessWidget {
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -2707,15 +2696,15 @@ class _PaymentTimeline extends StatelessWidget {
                             item.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w900),
+                            style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             item.status,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.outline,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -2723,7 +2712,7 @@ class _PaymentTimeline extends StatelessWidget {
                     ),
                     Text(
                       'AppConfig.appCurrency${formatMoney(item.pendingForSummary)}',
-                      style: const TextStyle(fontWeight: FontWeight.w900),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
@@ -2771,8 +2760,8 @@ class CoupleCollaborationCard extends StatelessWidget {
                       ? 'Invite your partner into the planning rhythm.'
                       : '$coupleName are planning with shared clarity.',
                   style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                     height: 1.15,
                   ),
                 ),
@@ -2803,7 +2792,7 @@ class CoupleCollaborationCard extends StatelessWidget {
             '$done completed moments | $open open decisions',
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],

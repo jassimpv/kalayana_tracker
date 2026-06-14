@@ -241,8 +241,8 @@ class ThemeColors {
       centerTitle: false,
       titleTextStyle: TextStyle(
         fontFamily: _fontFamily,
-        fontSize: 24,
-        fontWeight: FontWeight.w700,
+        fontSize: 18,
+        fontWeight: FontWeight.w500,
         color: whiteColor,
       ),
     ),
@@ -298,7 +298,7 @@ class ThemeColors {
         minimumSize: const Size(64, 52),
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
@@ -308,7 +308,7 @@ class ThemeColors {
         elevation: 0,
         minimumSize: const Size(64, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -317,14 +317,14 @@ class ThemeColors {
         minimumSize: const Size(64, 52),
         side: BorderSide(color: _lightPrimary.withValues(alpha: 0.18)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: _lightPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(fontWeight: FontWeight.w500),
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -343,9 +343,9 @@ class ThemeColors {
           color: states.contains(WidgetState.selected)
               ? whiteColor
               : _lightOnSurfaceSecondary,
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: states.contains(WidgetState.selected)
-              ? FontWeight.w800
+              ? FontWeight.w600
               : FontWeight.w600,
         ),
       ),
@@ -433,7 +433,7 @@ class ThemeColors {
         foregroundColor: whiteColor,
         minimumSize: const Size(64, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        textStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(

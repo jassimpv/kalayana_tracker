@@ -176,8 +176,8 @@ class _ExpensesHero extends StatelessWidget {
                 'Expenses',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
                   color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                   letterSpacing: 0,
                 ),
               ),
@@ -186,8 +186,8 @@ class _ExpensesHero extends StatelessWidget {
                 'Track every expense, stay on budget',
                 style: TextStyle(
                   color: Color(0xFFF7C859),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -264,15 +264,15 @@ class _ExpenseSearchField extends StatelessWidget {
       cursorColor: ThemeColors.primary,
       style: const TextStyle(
         color: ThemeColors.logoDeep,
-        fontSize: 14,
-        fontWeight: FontWeight.w800,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         hintText: 'Search by bill, category, payer...',
         hintStyle: TextStyle(
           color: ThemeColors.logoDeep.withValues(alpha: 0.40),
-          fontSize: 14,
-          fontWeight: FontWeight.w800,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
         prefixIcon: Icon(
           Icons.search_rounded,
@@ -314,8 +314,8 @@ class _ExpenseTaskHeader extends StatelessWidget {
             'Expense List',
             style: TextStyle(
               color: ThemeColors.logoDeep,
-              fontSize: 17,
-              fontWeight: FontWeight.w900,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -393,8 +393,8 @@ class _ExpenseFilterChip extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: selected ? Colors.white : ThemeColors.logoDeep,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
                   ),
                 ),
                 const SizedBox(width: 9),
@@ -404,8 +404,8 @@ class _ExpenseFilterChip extends StatelessWidget {
                     color: selected
                         ? Colors.white.withValues(alpha: 0.86)
                         : ThemeColors.logoDeep.withValues(alpha: 0.45),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -481,7 +481,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
                     '$billCount wedding bills',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.74),
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -491,7 +491,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                       height: 0.96,
                       letterSpacing: 0,
                     ),
@@ -505,7 +505,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.72),
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -582,7 +582,7 @@ class _ExpenseEmptyLedger extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: ThemeColors.logoDeep,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
@@ -591,7 +591,7 @@ class _ExpenseEmptyLedger extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(
               color: Color(0xFF78656A),
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 10),
@@ -651,13 +651,13 @@ class _ExpenseExportCard extends StatelessWidget {
                   children: [
                     const Text(
                       'Export expenses',
-                      style: TextStyle(fontWeight: FontWeight.w900),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
                       'Copy CSV or generate a PDF report',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -792,7 +792,7 @@ Future<Uint8List> _buildExpensePdf(
                   pw.Text(
                     'Kalyana Expense Report',
                     style: pw.TextStyle(
-                      fontSize: 22,
+                      fontSize: 18,
                       fontWeight: pw.FontWeight.bold,
                     ),
                   ),
@@ -1022,7 +1022,7 @@ class _ExpenseSummaryCard extends StatelessWidget {
             stroke: 10,
             center: Text(
               '${(progress * 100).round()}%',
-              style: const TextStyle(fontWeight: FontWeight.w900),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           );
           final details = Column(
@@ -1033,14 +1033,14 @@ class _ExpenseSummaryCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               Text(
                 'total bill value',
                 style: TextStyle(
                   color: scheme.outline,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 14),
@@ -1185,13 +1185,13 @@ class _PendingPaymentReminderCard extends StatelessWidget {
                   children: [
                     const Text(
                       'Pending payment reminders',
-                      style: TextStyle(fontWeight: FontWeight.w900),
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
                       'Upcoming balances and repayment deadlines',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -1238,7 +1238,7 @@ class _PendingPaymentRow extends StatelessWidget {
               item.name.isEmpty ? 'Untitled bill' : item.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
           const SizedBox(width: 10),
@@ -1247,14 +1247,14 @@ class _PendingPaymentRow extends StatelessWidget {
             children: [
               Text(
                 moneyOrDash(item.pendingForSummary),
-                style: const TextStyle(fontWeight: FontWeight.w900),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               Text(
                 dueLabel,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.outline,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -1300,7 +1300,7 @@ class _MiniExpenseMetric extends StatelessWidget {
                   value,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w900),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   label,
@@ -1308,8 +1308,8 @@ class _MiniExpenseMetric extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -1386,8 +1386,8 @@ class _ExpenseBillCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: ThemeColors.logoDeep,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
                             height: 1.12,
                           ),
                         ),
@@ -1504,8 +1504,8 @@ class _ExpenseBillCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: ThemeColors.logoDeep,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -1559,7 +1559,7 @@ class _ExpenseCardChip extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontSize: 11,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
                 height: 1,
               ),
             ),
@@ -1637,8 +1637,8 @@ class _PaymentProgressBar extends StatelessWidget {
                 '${(progress * 100).round()}% paid',
                 style: const TextStyle(
                   color: ThemeColors.logoDeep,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -1646,8 +1646,8 @@ class _PaymentProgressBar extends StatelessWidget {
               '${moneyOrDash(item.pendingForSummary)} remaining',
               style: const TextStyle(
                 color: Color(0xFFD18A00),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -1679,7 +1679,7 @@ class _ExpenseAmountBlock extends StatelessWidget {
           style: const TextStyle(
             color: Color(0xFF8E6D5D),
             fontSize: 11,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 4),
@@ -1689,8 +1689,8 @@ class _ExpenseAmountBlock extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
             color: valueColor,
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],

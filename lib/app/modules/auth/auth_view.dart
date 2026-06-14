@@ -28,9 +28,10 @@ class AuthView extends GetView<AuthController> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final topInset = MediaQuery.paddingOf(context).top;
+            final safeTopInset = topInset == 0 ? 52.0 : topInset;
             final compact = constraints.maxHeight < 740;
             final heroHeight = compact ? 318.0 : 398.0;
-            final sheetLift = compact ? -42.0 : -60.0;
+            final sheetLift = compact ? -42.0 : -80.0;
 
             return DecoratedBox(
               decoration: const BoxDecoration(
@@ -52,7 +53,7 @@ class AuthView extends GetView<AuthController> {
                       children: [
                         _HeroSection(
                           height: heroHeight,
-                          topInset: topInset,
+                          topInset: safeTopInset,
                           compact: compact,
                         ),
                         Transform.translate(
@@ -60,11 +61,7 @@ class AuthView extends GetView<AuthController> {
                           child: Column(
                             children: [
                               _AuthForm(formKey: _formKey, compact: compact),
-                              SizedBox(height: compact ? 16 : 24),
-                              _WeddingQuote(compact: compact),
-                              SizedBox(height: compact ? 12 : 22),
-                              _AccountSwitch(compact: compact),
-                              SizedBox(height: compact ? 12 : 24),
+                              SizedBox(height: compact ? 8 : 12),
                               const _LegalFooter(),
                             ],
                           ),
@@ -105,7 +102,6 @@ class _HeroSection extends StatelessWidget {
             Image.asset(
               'assets/images/auth_wedding_hero.png',
               fit: BoxFit.cover,
-              alignment: const Alignment(0.62, -0.08),
               filterQuality: FilterQuality.high,
             ),
             const DecoratedBox(
@@ -142,7 +138,7 @@ class _HeroSection extends StatelessWidget {
             Positioned(
               left: 30,
               right: 24,
-              bottom: compact ? 56 : 92,
+              bottom: compact ? 56 : 100,
               child: _HeroCopy(compact: compact),
             ),
           ],
@@ -168,7 +164,7 @@ class _HeroBrand extends StatelessWidget {
           'Kalyana',
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             height: 0.96,
             fontSize: compact ? 22 : 26,
           ),
@@ -178,7 +174,7 @@ class _HeroBrand extends StatelessWidget {
           'Expense Tracker',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: const Color(0xFFFFD783),
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             fontSize: compact ? 13 : 15,
           ),
         ),
@@ -205,8 +201,8 @@ class _HeroCopy extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontFamily: 'Outfit',
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
               height: 1.08,
             ).copyWith(fontSize: compact ? 20 : 22),
           ),
@@ -217,7 +213,7 @@ class _HeroCopy extends StatelessWidget {
                 : 'Plan your forever beautifully',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Colors.white,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w400,
               height: 1.2,
               fontSize: compact ? 12 : 14,
             ),
@@ -237,7 +233,7 @@ class _AuthForm extends GetView<AuthController> {
   @override
   Widget build(BuildContext context) {
     final sidePadding = compact ? 16.0 : 18.0;
-    final gap = compact ? 10.0 : 16.0;
+    final gap = compact ? 10.0 : 8.0;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 28),
@@ -318,10 +314,7 @@ class _AuthForm extends GetView<AuthController> {
                     ),
                     validator: _required,
                   ),
-                  if (!controller.isCreate.value) ...[
-                    SizedBox(height: compact ? 8 : 12),
-                    const _LoginOptionsRow(),
-                  ],
+
                   if (controller.isCreate.value) ...[
                     SizedBox(height: gap),
                     const _FieldLabel('Wedding date'),
@@ -361,12 +354,14 @@ class _AuthForm extends GetView<AuthController> {
                       ],
                     ),
                   ],
-                  SizedBox(height: compact ? 18 : 26),
+                  SizedBox(height: compact ? 18 : 16),
                   _PrimaryActionButton(formKey: formKey, compact: compact),
                   SizedBox(height: compact ? 16 : 24),
                   const _DividerLabel(),
                   SizedBox(height: compact ? 14 : 20),
                   _GoogleButton(compact: compact),
+                  SizedBox(height: compact ? 12 : 20),
+                  _AccountSwitch(compact: compact),
                 ],
               ),
             ),
@@ -450,85 +445,6 @@ class _InputIcon extends StatelessWidget {
   }
 }
 
-class _LoginOptionsRow extends GetView<AuthController> {
-  const _LoginOptionsRow();
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Expanded(child: _RememberMeControl()),
-        Obx(
-          () => TextButton(
-            onPressed: controller.loading.value
-                ? null
-                : controller.resetPassword,
-            style: TextButton.styleFrom(
-              foregroundColor: _authGoldDeep,
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(48, 34),
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: const Text(
-              'Forgot Password?',
-              style: TextStyle(fontWeight: FontWeight.w900),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _RememberMeControl extends StatefulWidget {
-  const _RememberMeControl();
-
-  @override
-  State<_RememberMeControl> createState() => _RememberMeControlState();
-}
-
-class _RememberMeControlState extends State<_RememberMeControl> {
-  bool _remember = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: () => setState(() => _remember = !_remember),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: _remember ? _authPrimary : Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: _authPrimary, width: 1.6),
-            ),
-            child: _remember
-                ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
-                : null,
-          ),
-          const SizedBox(width: 10),
-          const Flexible(
-            child: Text(
-              'Remember me',
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: _authInk,
-                fontWeight: FontWeight.w800,
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PrimaryActionButton extends GetView<AuthController> {
   const _PrimaryActionButton({required this.formKey, required this.compact});
 
@@ -539,7 +455,7 @@ class _PrimaryActionButton extends GetView<AuthController> {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: _authPrimary.withValues(alpha: 0.34),
@@ -550,18 +466,18 @@ class _PrimaryActionButton extends GetView<AuthController> {
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(20),
         child: Ink(
           height: compact ? 52 : 58,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
               colors: [Color(0xFF9A0D38), Color(0xFFE00C5B)],
             ),
           ),
           child: Obx(
             () => InkWell(
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(20),
               onTap: controller.loading.value
                   ? null
                   : () => controller.submit(formKey),
@@ -581,18 +497,12 @@ class _PrimaryActionButton extends GetView<AuthController> {
                           Text(
                             controller.isCreate.value
                                 ? 'Create account'
-                                : 'Continue',
+                                : 'Login',
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ),
-                          const SizedBox(width: 22),
-                          const Icon(
-                            Icons.arrow_forward_rounded,
-                            color: Colors.white,
-                            size: 28,
                           ),
                         ],
                       ),
@@ -637,7 +547,7 @@ class _GoogleButton extends GetView<AuthController> {
               child: Text(
                 'Continue with Google',
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -666,7 +576,7 @@ class _AccountSwitch extends GetView<AuthController> {
             style: TextStyle(
               color: _authInk,
               fontSize: compact ? 15 : 16,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w400,
             ),
           ),
           InkWell(
@@ -679,94 +589,12 @@ class _AccountSwitch extends GetView<AuthController> {
                 style: TextStyle(
                   color: _authGoldDeep,
                   fontSize: compact ? 15 : 16,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _WeddingQuote extends StatelessWidget {
-  const _WeddingQuote({required this.compact});
-
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: compact ? 34 : 42),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Divider(color: _authGold.withValues(alpha: 0.42)),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14),
-                child: Text(
-                  '♥',
-                  style: TextStyle(color: _authGold, fontSize: 20),
-                ),
-              ),
-              Expanded(
-                child: Divider(color: _authGold.withValues(alpha: 0.42)),
-              ),
-            ],
-          ),
-          SizedBox(height: compact ? 8 : 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (!compact) const _LeafSprig(flipped: false),
-              if (!compact) const SizedBox(width: 16),
-              Flexible(
-                child: Text(
-                  'Every beautiful wedding\nstarts with perfect planning.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: _authPrimary,
-                    fontFamily: 'Outfit',
-                    fontSize: compact ? 16 : 20,
-                    fontStyle: FontStyle.italic,
-                    fontWeight: FontWeight.w600,
-                    height: 1.34,
-                    shadows: [
-                      Shadow(
-                        color: Colors.white.withValues(alpha: 0.76),
-                        offset: const Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              if (!compact) const SizedBox(width: 16),
-              if (!compact) const _LeafSprig(flipped: true),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LeafSprig extends StatelessWidget {
-  const _LeafSprig({required this.flipped});
-
-  final bool flipped;
-
-  @override
-  Widget build(BuildContext context) {
-    return Transform(
-      alignment: Alignment.center,
-      transform: Matrix4.diagonal3Values(flipped ? -1.0 : 1.0, 1.0, 1.0),
-      child: CustomPaint(
-        size: const Size(28, 58),
-        painter: _LeafSprigPainter(),
       ),
     );
   }
@@ -782,19 +610,17 @@ class _LegalFooter extends StatelessWidget {
       child: Wrap(
         alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 16,
+        spacing: 18,
         runSpacing: 8,
         children: [
           _FooterLink(
             label: 'Privacy Policy',
             onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
           ),
-          const _FooterDivider(),
           _FooterLink(
             label: 'Terms & Conditions',
             onTap: () => Get.toNamed(AppRoutes.termsConditions),
           ),
-          const _FooterDivider(),
           _FooterLink(
             label: 'Delete Account',
             onTap: () => Get.toNamed(AppRoutes.deleteAccount),
@@ -823,24 +649,9 @@ class _FooterLink extends StatelessWidget {
           style: const TextStyle(
             color: _authInk,
             fontSize: 12,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w400,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FooterDivider extends StatelessWidget {
-  const _FooterDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      '|',
-      style: TextStyle(
-        color: _authGoldDeep.withValues(alpha: 0.48),
-        fontWeight: FontWeight.w700,
       ),
     );
   }
@@ -854,13 +665,13 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, bottom: 8),
+      padding: const EdgeInsets.only(left: 2, bottom: 2),
       child: Text(
         text,
         style: const TextStyle(
           color: _authInk,
-          fontSize: 14,
-          fontWeight: FontWeight.w900,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
@@ -881,8 +692,8 @@ class _DividerLabel extends StatelessWidget {
             'or continue with',
             style: TextStyle(
               color: _authGoldDeep,
-              fontSize: 13,
-              fontWeight: FontWeight.w900,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
             ),
           ),
         ),
@@ -1043,43 +854,4 @@ class _WeddingRingPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _WeddingRingPainter oldDelegate) =>
       oldDelegate.light != light;
-}
-
-class _LeafSprigPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = _authGold
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
-      ..strokeCap = StrokeCap.round;
-    final leaf = Paint()
-      ..color = _authGold
-      ..style = PaintingStyle.fill;
-
-    final stem = Path()
-      ..moveTo(size.width * 0.78, size.height * 0.92)
-      ..quadraticBezierTo(
-        size.width * 0.18,
-        size.height * 0.52,
-        size.width * 0.54,
-        size.height * 0.08,
-      );
-    canvas.drawPath(stem, paint);
-
-    for (var i = 0; i < 6; i++) {
-      final t = (i + 1) / 7;
-      final x = size.width * (0.70 - t * 0.42);
-      final y = size.height * (0.86 - t * 0.70);
-      final leafPath = Path()
-        ..moveTo(x, y)
-        ..quadraticBezierTo(x - 13, y - 3, x - 13, y - 16)
-        ..quadraticBezierTo(x + 1, y - 12, x, y)
-        ..close();
-      canvas.drawPath(leafPath, leaf);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -27,8 +27,8 @@ class ExpenseDetailTimeline extends StatelessWidget {
                 'Payment Timeline',
                 style: TextStyle(
                   color: ThemeColors.logoDeep,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 16),
@@ -123,8 +123,8 @@ class _ExpenseTimelineRow extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.outline,
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -141,8 +141,8 @@ class _ExpenseTimelineRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: ThemeColors.logoDeep,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -152,8 +152,8 @@ class _ExpenseTimelineRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.outline,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
