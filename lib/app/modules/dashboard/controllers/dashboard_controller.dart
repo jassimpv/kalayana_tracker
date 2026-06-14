@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
@@ -628,6 +629,7 @@ class DashboardController extends GetxController {
     required String groom,
     required String bride,
     required DateTime? weddingDate,
+    CurrencyOption? currency,
   }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -637,8 +639,13 @@ class DashboardController extends GetxController {
       'groomName': groomValue,
       'brideName': brideValue,
       'marriageDate': weddingDate?.toIso8601String(),
+      if (currency != null) ...{
+        'currencyCode': currency.code,
+        'currencySymbol': currency.symbol,
+      },
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+    if (currency != null) CurrencySymbolApi.applyToAppConfig(currency);
     await _updateCurrentMember();
   }
 
@@ -756,6 +763,7 @@ class DashboardController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           profile.value = snapshot.data() ?? {};
+          CurrencySymbolApi.applyToAppConfig(profileCurrency(profile));
           final nextWorkspaceId = profile['workspaceId']?.toString();
           if (nextWorkspaceId != null &&
               nextWorkspaceId.isNotEmpty &&

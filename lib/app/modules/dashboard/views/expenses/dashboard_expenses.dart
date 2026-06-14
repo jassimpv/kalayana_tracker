@@ -941,7 +941,8 @@ List<pw.Widget> _paymentHistoryWidgets(ExpenseItem item) {
   ];
 }
 
-String _pdfMoney(double value) => '\u20B9 ${formatMoney(value)}';
+String _pdfMoney(double value) =>
+    '${AppConfig.appCurrency} ${formatMoney(value)}';
 
 Future<void> _copyExpenseCsv(
   BuildContext context,
@@ -1029,7 +1030,7 @@ class _ExpenseSummaryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'AppConfig.appCurrency${formatMoney(total)}',
+                '${AppConfig.appCurrency}${formatMoney(total)}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -1047,13 +1048,13 @@ class _ExpenseSummaryCard extends StatelessWidget {
               _LegendRow(
                 color: ThemeColors.weddingTeal,
                 label: 'Paid',
-                value: 'AppConfig.appCurrency${formatMoney(paid)}',
+                value: '${AppConfig.appCurrency}${formatMoney(paid)}',
               ),
               const SizedBox(height: 8),
               _LegendRow(
                 color: ThemeColors.logoGold,
                 label: 'Pending',
-                value: 'AppConfig.appCurrency${formatMoney(pending)}',
+                value: '${AppConfig.appCurrency}${formatMoney(pending)}',
               ),
               if (repayment > 0) ...[
                 const SizedBox(height: 8),

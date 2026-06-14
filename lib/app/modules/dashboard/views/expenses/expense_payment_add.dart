@@ -109,7 +109,7 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
                     TextFormField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Payment amount',
                         prefixIcon: Icon(AppConfig.appCurrencyIcon),
                       ),

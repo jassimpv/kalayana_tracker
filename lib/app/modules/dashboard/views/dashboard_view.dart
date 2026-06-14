@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';

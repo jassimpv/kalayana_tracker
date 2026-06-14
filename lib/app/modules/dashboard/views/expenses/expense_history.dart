@@ -1099,7 +1099,7 @@ Future<void> _showEditSplitGroupDialog(
                         TextFormField(
                           controller: amountController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Paid amount',
                             prefixIcon: Icon(AppConfig.appCurrencyIcon),
                           ),

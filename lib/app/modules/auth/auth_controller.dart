@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
 const _webGoogleClientId =
@@ -71,6 +72,8 @@ class AuthController extends GetxController {
           'groomName': groomValue.isEmpty ? null : groomValue,
           'brideName': brideValue.isEmpty ? null : brideValue,
           'marriageDate': weddingDate.value?.toIso8601String(),
+          'currencyCode': CurrencySymbolApi.defaultOption.code,
+          'currencySymbol': CurrencySymbolApi.defaultOption.symbol,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
@@ -180,7 +181,7 @@ Future<void> showExpenseDialog(
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: repayAmount,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Repay amount',
                     prefixIcon: Icon(AppConfig.appCurrencyIcon),
                   ),
@@ -395,7 +396,7 @@ Future<void> showAddExpensePaymentDialog(
             children: [
               TextFormField(
                 controller: amount,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Payment amount',
                   prefixIcon: Icon(AppConfig.appCurrencyIcon),
                 ),
@@ -742,7 +743,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: total,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Bill amount',
                   prefixIcon: Icon(AppConfig.appCurrencyIcon),
                 ),
@@ -800,6 +801,7 @@ Future<void> showProfileDialog(BuildContext context) async {
   final groom = TextEditingController(text: profileGroom(controller.profile));
   final bride = TextEditingController(text: profileBride(controller.profile));
   var weddingDate = profileMarriageDate(controller.profile);
+  var currency = profileCurrency(controller.profile);
 
   await showDialog<void>(
     context: context,
@@ -819,6 +821,7 @@ Future<void> showProfileDialog(BuildContext context) async {
                 groom: groom.text,
                 bride: bride.text,
                 weddingDate: weddingDate,
+                currency: currency,
               );
               if (context.mounted) Navigator.pop(context);
             },
@@ -827,27 +830,44 @@ Future<void> showProfileDialog(BuildContext context) async {
         ],
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextFormField(
-              controller: groom,
-              decoration: const InputDecoration(
-                labelText: 'Groom',
-                prefixIcon: Icon(Icons.person_rounded),
-              ),
+            _dialogLabel('Couple names'),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: groom,
+                    decoration: const InputDecoration(
+                      hintText: 'Groom',
+                      prefixIcon: Icon(Icons.person_rounded),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextFormField(
+                    controller: bride,
+                    decoration: const InputDecoration(
+                      hintText: 'Bride',
+                      prefixIcon: Icon(Icons.person_2_rounded),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
-            TextFormField(
-              controller: bride,
-              decoration: const InputDecoration(
-                labelText: 'Bride',
-                prefixIcon: Icon(Icons.person_2_rounded),
-              ),
-            ),
-            const SizedBox(height: 14),
+            _dialogLabel('Wedding date'),
+            const SizedBox(height: 6),
             _DatePickerTile(
               icon: Icons.calendar_month_rounded,
-              title: 'Wedding date',
-              value: weddingDate == null ? 'Not set' : formatDate(weddingDate!),
+              title: weddingDate == null
+                  ? 'Select date'
+                  : formatDate(weddingDate!),
+              value: weddingDate == null
+                  ? 'Tap to set your wedding date'
+                  : 'Tap to change',
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
@@ -858,9 +878,105 @@ Future<void> showProfileDialog(BuildContext context) async {
                 if (picked != null) setState(() => weddingDate = picked);
               },
             ),
+            const SizedBox(height: 14),
+            _dialogLabel('Currency'),
+            const SizedBox(height: 6),
+            _DatePickerTile(
+              icon: AppConfig.appCurrencyIcon,
+              title: '${currency.code}  ${currency.symbol}  ${currency.name}',
+              value: 'Tap to change currency',
+              onTap: () async {
+                final selected = await showCurrencySelectionDialog(
+                  context,
+                  selectedCode: currency.code,
+                );
+                if (selected != null) setState(() => currency = selected);
+              },
+            ),
           ],
         ),
       ),
+    ),
+  );
+}
+
+Future<CurrencyOption?> showCurrencySelectionDialog(
+  BuildContext context, {
+  required String selectedCode,
+}) async {
+  final search = TextEditingController();
+  var results = CurrencySymbolApi.options;
+
+  final selected = await showDialog<CurrencyOption>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        title: const Text('Select currency'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 420,
+          child: Column(
+            children: [
+              TextField(
+                controller: search,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Search currency',
+                  hintText: 'USD, Euro, ₹',
+                  prefixIcon: Icon(Icons.search_rounded),
+                ),
+                onChanged: (value) {
+                  setState(() => results = CurrencySymbolApi.search(value));
+                },
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: results.length,
+                  itemBuilder: (context, index) {
+                    final option = results[index];
+                    final selected = option.code == selectedCode;
+                    return ListTile(
+                      dense: true,
+                      leading: Text(
+                        option.symbol,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      title: Text('${option.code}  ${option.name}'),
+                      trailing: selected
+                          ? Icon(
+                              Icons.check_circle_rounded,
+                              color: ThemeColors.primary,
+                            )
+                          : null,
+                      onTap: () => Navigator.pop(context, option),
+                    );
+                  },
+                  separatorBuilder: (_, _) => const Divider(height: 1),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    ),
+  );
+  return selected;
+}
+
+Widget _dialogLabel(String text) {
+  return Text(
+    text,
+    style: TextStyle(
+      color: ThemeColors.onSurfaceSecondary,
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
     ),
   );
 }

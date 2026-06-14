@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/app_bar.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
 const _webGoogleClientId =
@@ -350,18 +351,9 @@ class _LegalScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ThemeColors.scaffoldColor,
-      appBar: AppBar(
-        title: Text(title),
-        actions: [
-          TextButton(
-            onPressed: () => Get.toNamed(AppRoutes.privacyPolicy),
-            child: const Text('Privacy'),
-          ),
-          TextButton(
-            onPressed: () => Get.toNamed(AppRoutes.deleteAccount),
-            child: const Text('Delete account'),
-          ),
-        ],
+      appBar: CustomAppBar(
+        title: title,
+        onBack: () => Get.back(),
       ),
       body: DecoratedBox(
         decoration: BoxDecoration(gradient: ThemeColors.surfaceGradient),

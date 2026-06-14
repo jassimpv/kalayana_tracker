@@ -1159,7 +1159,7 @@ class _ActionCard extends StatelessWidget {
         onTap: spec.onTap,
         borderRadius: BorderRadius.circular(14),
         child: Container(
-          height: 86,
+          constraints: const BoxConstraints(minHeight: 86),
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
@@ -1169,6 +1169,7 @@ class _ActionCard extends StatelessWidget {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(spec.icon, color: ThemeColors.primary, size: 27),
               const SizedBox(height: 6),
@@ -1710,7 +1711,7 @@ class _OverviewBudgetCard extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'AppConfig.appCurrency${formatMoney(value)}',
+                    '${AppConfig.appCurrency}${formatMoney(value)}',
                     maxLines: 1,
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
@@ -1987,13 +1988,13 @@ class _BudgetAnalyticsCard extends StatelessWidget {
           final statCards = [
             _AnalyticsStatCard(
               label: 'Paid amount',
-              value: 'AppConfig.appCurrency${formatMoney(paid)}',
+              value: '${AppConfig.appCurrency}${formatMoney(paid)}',
               icon: Icons.verified_rounded,
               color: ThemeColors.primary,
             ),
             _AnalyticsStatCard(
               label: 'Pending',
-              value: 'AppConfig.appCurrency${formatMoney(pending)}',
+              value: '${AppConfig.appCurrency}${formatMoney(pending)}',
               icon: Icons.hourglass_top_rounded,
               color: ThemeColors.logoGold,
             ),
@@ -2711,7 +2712,7 @@ class _PaymentTimeline extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'AppConfig.appCurrency${formatMoney(item.pendingForSummary)}',
+                      '${AppConfig.appCurrency}${formatMoney(item.pendingForSummary)}',
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ],

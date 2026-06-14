@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 
 double? numberFromJson(dynamic value) {
   if (value == null) return null;
@@ -38,6 +39,10 @@ DateTime? profileMarriageDate(Map<String, dynamic> profile) {
   return dateFromJson(profile['marriageDate']);
 }
 
+CurrencyOption profileCurrency(Map<String, dynamic> profile) {
+  return CurrencySymbolApi.fromProfile(profile);
+}
+
 int? daysUntilDate(DateTime? date, {DateTime? from}) {
   if (date == null) return null;
   final todaySource = from ?? DateTime.now();
@@ -56,6 +61,10 @@ String moneyText(double? value) => value == null ? '' : formatMoney(value);
 
 String moneyOrDash(double? value) =>
     value == null ? '-' : '${AppConfig.appCurrency} ${formatMoney(value)}';
+
+String moneyWithCurrency(double value, {String? symbol}) {
+  return '${symbol ?? AppConfig.appCurrency} ${formatMoney(value)}';
+}
 
 String formatMoney(double value) {
   final rounded = value.round();

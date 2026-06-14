@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
@@ -141,9 +142,9 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Total amount',
-                        prefixIcon: Icon(Icons.currency_rupee_rounded),
+                        prefixIcon: Icon(AppConfig.appCurrencyIcon),
                       ),
                       validator: _required,
                     ),

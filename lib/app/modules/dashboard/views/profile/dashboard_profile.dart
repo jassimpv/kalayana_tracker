@@ -9,6 +9,7 @@ class ProfilePanel extends GetView<DashboardController> {
     final profile = controller.profile;
     final name = _profileDisplayName(user, profile);
     final email = user?.email ?? 'Shared planning space';
+    final currency = profileCurrency(profile);
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -46,8 +47,9 @@ class ProfilePanel extends GetView<DashboardController> {
                 _ProfileMenuRow(
                   icon: AppConfig.appCurrencyIcon,
                   label: 'Currency',
-                  value: AppConfig.appCurrency,
-                  onTap: () => _showProfileSnack('Currency is set to INR.'),
+                  value: '${currency.code} ${currency.symbol}',
+                  trailingIcon: Icons.keyboard_arrow_down_rounded,
+                  onTap: () => _showCurrencyPicker(context, controller),
                 ),
                 ValueListenableBuilder<ThemeMode>(
                   valueListenable: ThemeService.themeModeNotifier,
@@ -329,7 +331,7 @@ class ReportsPanel extends GetView<DashboardController> {
                               (sum, item) => sum + item.repaymentAmount,
                             ),
                           ),
-                          Icons.currency_rupee_rounded,
+                          AppConfig.appCurrencyIcon,
                           ThemeColors.primary,
                         ),
                         _ReportInfoSpec(
@@ -1035,8 +1037,7 @@ class _ProfileMenuRow extends StatelessWidget {
 }
 
 Color _profileIconColor(IconData icon) {
-  if (icon == Icons.currency_rupee_rounded ||
-      icon == Icons.light_mode_outlined) {
+  if (icon == AppConfig.appCurrencyIcon || icon == Icons.light_mode_outlined) {
     return ThemeColors.logoGold;
   }
   if (icon == Icons.bar_chart_rounded || icon == Icons.group_add_outlined) {
@@ -1838,6 +1839,114 @@ Future<void> _showJoinWorkspaceDialog(BuildContext context) async {
     },
   );
   codeController.dispose();
+}
+
+Future<void> _showCurrencyPicker(
+  BuildContext context,
+  DashboardController controller,
+) async {
+  final search = TextEditingController();
+  var results = CurrencySymbolApi.options;
+  final current = profileCurrency(controller.profile);
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.74,
+          minChildSize: 0.45,
+          maxChildSize: 0.92,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFFBF7),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: ThemeColors.primary.withValues(alpha: 0.20),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                    child: TextField(
+                      controller: search,
+                      autofocus: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Search currency',
+                        hintText: 'USD, Euro, ₹',
+                        prefixIcon: Icon(Icons.search_rounded),
+                      ),
+                      onChanged: (value) {
+                        setState(
+                          () => results = CurrencySymbolApi.search(value),
+                        );
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 18),
+                      itemBuilder: (context, index) {
+                        final option = results[index];
+                        final selected = option.code == current.code;
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: ThemeColors.primary.withValues(
+                              alpha: selected ? 0.18 : 0.08,
+                            ),
+                            child: Text(
+                              option.symbol,
+                              style: TextStyle(
+                                color: ThemeColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          title: Text('${option.code}  ${option.name}'),
+                          subtitle: Text('Symbol: ${option.symbol}'),
+                          trailing: selected
+                              ? Icon(
+                                  Icons.check_circle_rounded,
+                                  color: ThemeColors.primary,
+                                )
+                              : null,
+                          onTap: () async {
+                            await controller.saveProfile(
+                              groom: profileGroom(controller.profile),
+                              bride: profileBride(controller.profile),
+                              weddingDate: profileMarriageDate(
+                                controller.profile,
+                              ),
+                              currency: option,
+                            );
+                            if (context.mounted) Navigator.pop(context);
+                          },
+                        );
+                      },
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemCount: results.length,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    ),
+  );
+  search.dispose();
 }
 
 void _showProfileSnack(String message) {
