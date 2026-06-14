@@ -1845,108 +1845,128 @@ Future<void> _showCurrencyPicker(
   BuildContext context,
   DashboardController controller,
 ) async {
-  final search = TextEditingController();
-  var results = CurrencySymbolApi.options;
-  final current = profileCurrency(controller.profile);
-
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.74,
-          minChildSize: 0.45,
-          maxChildSize: 0.92,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFFBF7),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    builder: (context) => _CurrencyPickerSheet(controller: controller),
+  );
+}
+
+class _CurrencyPickerSheet extends StatefulWidget {
+  const _CurrencyPickerSheet({required this.controller});
+  final DashboardController controller;
+
+  @override
+  State<_CurrencyPickerSheet> createState() => _CurrencyPickerSheetState();
+}
+
+class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
+  late final TextEditingController _search;
+  late List<CurrencyOption> _results;
+
+  @override
+  void initState() {
+    super.initState();
+    _search = TextEditingController();
+    _results = CurrencySymbolApi.options;
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final current = profileCurrency(widget.controller.profile);
+    return DraggableScrollableSheet(
+      initialChildSize: 0.74,
+      minChildSize: 0.45,
+      maxChildSize: 0.92,
+      builder: (context, scrollController) {
+        return Material(
+          color: const Color(0xFFFFFBF7),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: ThemeColors.primary.withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(99),
+                ),
               ),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Container(
-                    width: 42,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: ThemeColors.primary.withValues(alpha: 0.20),
-                      borderRadius: BorderRadius.circular(99),
-                    ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                child: TextField(
+                  controller: _search,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Search currency',
+                    hintText: 'USD, Euro, ₹',
+                    prefixIcon: Icon(Icons.search_rounded),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
-                    child: TextField(
-                      controller: search,
-                      autofocus: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Search currency',
-                        hintText: 'USD, Euro, ₹',
-                        prefixIcon: Icon(Icons.search_rounded),
-                      ),
-                      onChanged: (value) {
-                        setState(
-                          () => results = CurrencySymbolApi.search(value),
-                        );
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 18),
-                      itemBuilder: (context, index) {
-                        final option = results[index];
-                        final selected = option.code == current.code;
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: ThemeColors.primary.withValues(
-                              alpha: selected ? 0.18 : 0.08,
-                            ),
-                            child: Text(
-                              option.symbol,
-                              style: TextStyle(
-                                color: ThemeColors.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                  onChanged: (value) {
+                    setState(() => _results = CurrencySymbolApi.search(value));
+                  },
+                ),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 18),
+                  itemBuilder: (context, index) {
+                    final option = _results[index];
+                    final selected = option.code == current.code;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: ThemeColors.primary.withValues(
+                          alpha: selected ? 0.18 : 0.08,
+                        ),
+                        child: Text(
+                          option.symbol,
+                          style: TextStyle(
+                            color: ThemeColors.primary,
+                            fontWeight: FontWeight.w600,
                           ),
-                          title: Text('${option.code}  ${option.name}'),
-                          subtitle: Text('Symbol: ${option.symbol}'),
-                          trailing: selected
-                              ? Icon(
-                                  Icons.check_circle_rounded,
-                                  color: ThemeColors.primary,
-                                )
-                              : null,
-                          onTap: () async {
-                            await controller.saveProfile(
-                              groom: profileGroom(controller.profile),
-                              bride: profileBride(controller.profile),
-                              weddingDate: profileMarriageDate(
-                                controller.profile,
-                              ),
-                              currency: option,
-                            );
-                            if (context.mounted) Navigator.pop(context);
-                          },
+                        ),
+                      ),
+                      title: Text('${option.code}  ${option.name}'),
+                      subtitle: Text('Symbol: ${option.symbol}'),
+                      trailing: selected
+                          ? Icon(
+                              Icons.check_circle_rounded,
+                              color: ThemeColors.primary,
+                            )
+                          : null,
+                      onTap: () async {
+                        await widget.controller.saveProfile(
+                          groom: profileGroom(widget.controller.profile),
+                          bride: profileBride(widget.controller.profile),
+                          weddingDate: profileMarriageDate(
+                            widget.controller.profile,
+                          ),
+                          currency: option,
                         );
+                        if (context.mounted) Navigator.pop(context);
                       },
-                      separatorBuilder: (_, _) => const Divider(height: 1),
-                      itemCount: results.length,
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  itemCount: _results.length,
+                ),
               ),
-            );
-          },
+            ],
+          ),
         );
       },
-    ),
-  );
-  search.dispose();
+    );
+  }
 }
 
 void _showProfileSnack(String message) {

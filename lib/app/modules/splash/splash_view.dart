@@ -52,53 +52,110 @@ class _SplashViewState extends State<SplashView>
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF06373B),
+      backgroundColor: const Color(0xFF7A1230),
       body: DecoratedBox(
-        decoration: BoxDecoration(gradient: ThemeColors.appBarGradient),
-        child: SafeArea(
-          child: Center(
-            child: FadeTransition(
-              opacity: _fade,
-              child: ScaleTransition(
-                scale: _scale,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const AppLogo(size: 96, padding: 9),
-                    const SizedBox(height: 22),
-                    Text(
-                      'Kalyana',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Expense Tracker',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.78),
-                        fontWeight: FontWeight.w500,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: ThemeColors.appBarGradient.colors,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Decorative glass orbs
+            Positioned(
+              right: -60,
+              top: 60,
+              child: _GlassOrb(size: 200, alpha: 0.07),
+            ),
+            Positioned(
+              left: -50,
+              bottom: 140,
+              child: _GlassOrb(size: 160, alpha: 0.05),
+            ),
+
+            // Centered branding
+            Center(
+              child: FadeTransition(
+                opacity: _fade,
+                child: ScaleTransition(
+                  scale: _scale,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const AppLogo(size: 120, padding: 11),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Kalyana',
+                        style: Theme.of(context).textTheme.displaySmall
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
                       ),
-                    ),
-                    const SizedBox(height: 28),
-                    SizedBox(
-                      width: 34,
-                      height: 34,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        color: Colors.white,
-                        backgroundColor: Colors.white.withValues(alpha: 0.18),
+                      const SizedBox(height: 8),
+                      Text(
+                        'EXPENSE TRACKER',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.70),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 3.5,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
+
+            // Spinner pinned to bottom
+            Positioned(
+              bottom: bottomInset + 52,
+              left: 0,
+              right: 0,
+              child: FadeTransition(
+                opacity: _fade,
+                child: Center(
+                  child: SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white.withValues(alpha: 0.80),
+                      backgroundColor: Colors.white.withValues(alpha: 0.18),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _GlassOrb extends StatelessWidget {
+  const _GlassOrb({required this.size, required this.alpha});
+
+  final double size;
+  final double alpha;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: alpha),
+        border: Border.all(color: Colors.white.withValues(alpha: alpha * 1.4)),
       ),
     );
   }
