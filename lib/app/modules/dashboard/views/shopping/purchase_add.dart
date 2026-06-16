@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_form_widgets.dart';
 
@@ -14,6 +15,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
   final controller = Get.find<DashboardController>();
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _amountController = TextEditingController();
   final _noteController = TextEditingController();
 
   String _category = purchaseCategories.first;
@@ -23,6 +25,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
   @override
   void dispose() {
     _nameController.dispose();
+    _amountController.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -34,6 +37,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
       buildPurchase(
         name: _nameController.text,
         category: _category,
+        amount: _amountController.text,
         status: _status,
         note: _noteController.text,
       ),
@@ -103,6 +107,15 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                       if (value == null) return;
                       setState(() => _category = value);
                     },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _amountController,
+                    decoration: InputDecoration(
+                      labelText: 'Amount',
+                      prefixIcon: Icon(AppConfig.appCurrencyIcon),
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(

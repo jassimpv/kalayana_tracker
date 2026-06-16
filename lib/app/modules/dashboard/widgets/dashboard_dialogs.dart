@@ -557,6 +557,11 @@ Future<void> showPurchaseDialog(
   var category = purchaseCategories.contains(savedCategory)
       ? savedCategory!
       : purchaseCategories.first;
+  final amount = TextEditingController(
+    text: purchase != null && purchase.amount > 0
+        ? moneyText(purchase.amount)
+        : '',
+  );
   final note = TextEditingController(text: purchase?.note ?? '');
   var status = purchase?.status ?? purchaseStatuses.first;
   final formKey = GlobalKey<FormState>();
@@ -580,6 +585,7 @@ Future<void> showPurchaseDialog(
                 existing: purchase,
                 name: name.text,
                 category: category,
+                amount: amount.text,
                 status: status,
                 note: note.text,
               ),
@@ -597,7 +603,7 @@ Future<void> showPurchaseDialog(
             const _DialogIntroCard(
               icon: Icons.shopping_bag_rounded,
               title: 'Shopping item',
-              subtitle: 'Add the item, category, status, and note.',
+              subtitle: 'Add the item, category, amount, status, and note.',
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -622,6 +628,15 @@ Future<void> showPurchaseDialog(
                   )
                   .toList(),
               onChanged: (value) => category = value ?? category,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: amount,
+              decoration: InputDecoration(
+                labelText: 'Amount',
+                prefixIcon: Icon(AppConfig.appCurrencyIcon),
+              ),
+              keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
@@ -650,6 +665,62 @@ Future<void> showPurchaseDialog(
               maxLines: 3,
             ),
           ],
+        ),
+      ),
+    ),
+  );
+}
+
+Future<void> showMarkPurchasedDialog(
+  BuildContext context, {
+  required PurchaseItem purchase,
+}) async {
+  final controller = Get.find<DashboardController>();
+  final amount = TextEditingController(
+    text: purchase.amount > 0 ? moneyText(purchase.amount) : '',
+  );
+  final formKey = GlobalKey<FormState>();
+
+  await showDialog<void>(
+    context: context,
+    builder: (context) => _PlannerDialog(
+      icon: Icons.check_circle_rounded,
+      title: 'Mark as purchased',
+      subtitle: purchase.name.isEmpty ? 'Shopping item' : purchase.name,
+      actions: [
+        TextButton(
+          onPressed: Navigator.of(context).pop,
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () async {
+            if (!formKey.currentState!.validate()) return;
+            await controller.markPurchased(
+              purchase,
+              amount: moneyFromText(amount.text) ?? 0,
+            );
+            if (context.mounted) Navigator.pop(context);
+          },
+          child: const Text('Confirm'),
+        ),
+      ],
+      child: Form(
+        key: formKey,
+        child: TextFormField(
+          controller: amount,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: 'Amount paid',
+            prefixIcon: Icon(AppConfig.appCurrencyIcon),
+          ),
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            final requiredError = _required(value);
+            if (requiredError != null) return requiredError;
+            final parsed = moneyFromText(value ?? '') ?? 0;
+            if (parsed <= 0) return 'Enter an amount above zero';
+            return null;
+          },
         ),
       ),
     ),

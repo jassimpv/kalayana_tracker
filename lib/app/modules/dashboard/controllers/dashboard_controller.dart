@@ -623,6 +623,17 @@ class DashboardController extends GetxController {
     await _save(data.value.copyWith(purchases: items));
   }
 
+  Future<void> markPurchased(PurchaseItem item, {required double amount}) async {
+    final items = data.value.purchases
+        .map(
+          (entry) => entry.id == item.id
+              ? entry.copyWith(status: 'Purchased', amount: amount)
+              : entry,
+        )
+        .toList();
+    await _save(data.value.copyWith(purchases: items));
+  }
+
   Future<void> convertPurchaseToExpense({
     required PurchaseItem purchase,
     required ExpenseItem expense,
@@ -1066,6 +1077,7 @@ PurchaseItem buildPurchase({
   PurchaseItem? existing,
   required String name,
   required String category,
+  String? amount,
   required String status,
   required String note,
 }) {
@@ -1076,7 +1088,9 @@ PurchaseItem buildPurchase({
     id: existing?.id ?? newId(),
     name: name.trim(),
     category: categoryValue,
-    amount: existing?.amount ?? 0,
+    amount: amount == null
+        ? existing?.amount ?? 0
+        : moneyFromText(amount) ?? existing?.amount ?? 0,
     status: status,
     note: note.trim(),
   );
