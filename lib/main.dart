@@ -11,6 +11,7 @@ import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   try {
     await AppBootstrap.load();
     runApp(const KalyanaApp());

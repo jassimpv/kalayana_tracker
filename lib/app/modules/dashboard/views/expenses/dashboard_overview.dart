@@ -1002,15 +1002,6 @@ class _PaymentPulseCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Payment Pulse',
-                      style: TextStyle(
-                        color: Color(0xFFB87A25),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
                     Text(
                       '$days days left',
                       maxLines: narrow ? 2 : 1,

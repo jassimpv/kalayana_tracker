@@ -13,18 +13,15 @@ class RemindersPanel extends GetView<DashboardController> {
         if (a.isDone != b.isDone) return a.isDone ? 1 : -1;
         return a.dueDate.compareTo(b.dueDate);
       });
-    final paymentReminders = sorted
-        .where((item) => item.category == 'Payment' && !item.isDone)
-        .toList();
-    final dueTodayPayments = paymentReminders
+
+    final dueTodayPayments = sorted
         .where((item) => daysUntilDate(item.dueDate, from: today) == 0)
         .toList();
-    final upcomingPayments = paymentReminders
+    final upcomingPaymentsCount = sorted
         .where((item) => (daysUntilDate(item.dueDate, from: today) ?? 0) > 0)
-        .toList();
-    final taskReminders = sorted
-        .where((item) => item.category != 'Payment')
-        .toList();
+        .toList()
+        .length;
+    final taskReminders = sorted.toList();
     final completedCount = reminders.where((item) => item.isDone).length;
 
     return DecoratedBox(
@@ -54,7 +51,7 @@ class RemindersPanel extends GetView<DashboardController> {
                   ),
                   _ReminderStat(
                     icon: CupertinoIcons.calendar_badge_plus,
-                    value: upcomingPayments.length,
+                    value: upcomingPaymentsCount,
                     label: 'Upcoming',
                     color: const Color(0xFFF28B18),
                     tint: const Color(0xFFFFF0E0),

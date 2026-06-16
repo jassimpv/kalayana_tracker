@@ -1,0 +1,72 @@
+name: Deploy to Play Store
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Deploy lane to run"
+        required: true
+        default: "deploy_internal"
+        type: choice
+        options:
+          - deploy_internal
+          - promote_alpha
+          - promote_production
+
+jobs:
+  deploy:
+    name: Build & Upload to Play Store
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.x"
+          channel: stable
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Set up Ruby & Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+          working-directory: android
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/fueltech.jks
+
+      - name: Write key.properties
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=fueltech.jks
+          EOF
+
+      - name: Write Play Store service account key
+        run: |
+          echo "${{ secrets.PLAY_STORE_JSON_KEY }}" > android/fastlane/play-store-key.json
+
+      - name: Deploy to Play Store
+        env:
+          PLAY_STORE_JSON_KEY_PATH: fastlane/play-store-key.json
+        run: bundle exec fastlane ${{ github.event.inputs.track || 'deploy_internal' }}
+        working-directory: android

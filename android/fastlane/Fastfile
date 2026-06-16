@@ -1,0 +1,53 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build release AAB"
+  lane :build do
+    Dir.chdir("../..") do
+      sh("flutter", "build", "appbundle", "--release")
+    end
+  end
+
+  desc "Upload to Play Store internal track"
+  lane :deploy_internal do
+    build
+    upload_to_play_store(
+      track: "internal",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      release_status: "draft",
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc "Promote internal to alpha"
+  lane :promote_alpha do
+    upload_to_play_store(
+      track: "internal",
+      track_promote_to: "alpha",
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+
+  desc "Promote alpha to production"
+  lane :promote_production do
+    upload_to_play_store(
+      track: "alpha",
+      track_promote_to: "production",
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_metadata: true,
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end

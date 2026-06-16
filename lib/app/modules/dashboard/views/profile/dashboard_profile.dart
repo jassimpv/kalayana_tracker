@@ -51,19 +51,19 @@ class ProfilePanel extends GetView<DashboardController> {
                   trailingIcon: Icons.keyboard_arrow_down_rounded,
                   onTap: () => _showCurrencyPicker(context, controller),
                 ),
-                ValueListenableBuilder<ThemeMode>(
-                  valueListenable: ThemeService.themeModeNotifier,
-                  builder: (context, mode, child) {
-                    final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
-                    return _ProfileMenuRow(
-                      icon: Icons.light_mode_outlined,
-                      label: 'Theme',
-                      value: label,
-                      trailingIcon: Icons.keyboard_arrow_down_rounded,
-                      // onTap: () => ThemeService.toggleTheme(),
-                    );
-                  },
-                ),
+                // ValueListenableBuilder<ThemeMode>(
+                //   valueListenable: ThemeService.themeModeNotifier,
+                //   builder: (context, mode, child) {
+                //     final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
+                //     return _ProfileMenuRow(
+                //       icon: Icons.light_mode_outlined,
+                //       label: 'Theme',
+                //       value: label,
+                //       trailingIcon: Icons.keyboard_arrow_down_rounded,
+                //       // onTap: () => ThemeService.toggleTheme(),
+                //     );
+                //   },
+                // ),
                 _ProfileMenuRow(
                   icon: Icons.notifications_none_rounded,
                   label: 'Notification Settings',
