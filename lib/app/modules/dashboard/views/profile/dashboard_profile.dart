@@ -430,9 +430,8 @@ class ReportsPanel extends GetView<DashboardController> {
               Row(
                 children: [
                   Expanded(
-                    child: FilledButton(
-                      onPressed: () =>
-                          _printExpensePdf(context, data.expenses),
+                    child: FilledButton.icon(
+                      onPressed: () => _printExpensePdf(context, data.expenses),
                       style: FilledButton.styleFrom(
                         backgroundColor: ThemeColors.primary,
                         foregroundColor: Colors.white,
@@ -441,11 +440,35 @@ class ReportsPanel extends GetView<DashboardController> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: const Text(
-                        'Export Pdf',
+                      icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                      label: const Text(
+                        'Expenses',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () =>
+                          _printExpensePaymentsPdf(context, data.expenses),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: ThemeColors.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: const Icon(Icons.payments_rounded, size: 18),
+                      label: const Text(
+                        'Payment Expenses',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
                         ),
                       ),
                     ),

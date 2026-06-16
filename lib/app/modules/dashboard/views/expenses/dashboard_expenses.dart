@@ -723,6 +723,83 @@ Future<void> _printExpensePdf(
   }
 }
 
+Future<void> _printExpensePaymentsPdf(
+  BuildContext context,
+  List<ExpenseItem> expenses,
+) async {
+  try {
+    await Printing.layoutPdf(
+      name: 'kalyana-expense-payments.pdf',
+      onLayout: (format) => _buildExpensePaymentsPdf(expenses, format),
+    );
+  } catch (error) {
+    if (!context.mounted) return;
+    Get.snackbar(
+      'PDF export failed',
+      error.toString(),
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+}
+
+pw.TextStyle _pdfLabelStyle() => pw.TextStyle(
+  color: PdfColors.grey700,
+  fontSize: 9,
+  fontWeight: pw.FontWeight.bold,
+);
+
+pw.Widget _pdfSummaryBox(String label, String value) {
+  return pw.Expanded(
+    child: pw.Container(
+      padding: const pw.EdgeInsets.all(10),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        borderRadius: pw.BorderRadius.circular(6),
+        border: pw.Border.all(color: PdfColors.grey300),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(label, style: _pdfLabelStyle()),
+          pw.SizedBox(height: 4),
+          pw.Text(
+            value,
+            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+pw.Widget _pdfReportHeader(String title, String countLabel) {
+  return pw.Row(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      pw.Expanded(
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              title,
+              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.SizedBox(height: 4),
+            pw.Text(
+              'Generated on ${formatDate(DateTime.now())}',
+              style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+      pw.Text(
+        countLabel,
+        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+      ),
+    ],
+  );
+}
+
 Future<Uint8List> _buildExpensePdf(
   List<ExpenseItem> expenses,
   PdfPageFormat format,
@@ -747,82 +824,22 @@ Future<Uint8List> _buildExpensePdf(
     theme: pw.ThemeData.withFont(base: font, bold: boldFont),
   );
 
-  pw.TextStyle labelStyle() => pw.TextStyle(
-    color: PdfColors.grey700,
-    fontSize: 9,
-    fontWeight: pw.FontWeight.bold,
-  );
-
-  pw.Widget summaryBox(String label, String value) {
-    return pw.Expanded(
-      child: pw.Container(
-        padding: const pw.EdgeInsets.all(10),
-        decoration: pw.BoxDecoration(
-          color: PdfColors.grey100,
-          borderRadius: pw.BorderRadius.circular(6),
-          border: pw.Border.all(color: PdfColors.grey300),
-        ),
-        child: pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(label, style: labelStyle()),
-            pw.SizedBox(height: 4),
-            pw.Text(
-              value,
-              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   doc.addPage(
     pw.MultiPage(
       pageFormat: format,
       margin: const pw.EdgeInsets.all(28),
       build: (context) => [
-        pw.Row(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Expanded(
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    'Kalyana Expense Report',
-                    style: pw.TextStyle(
-                      fontSize: 18,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
-                  pw.SizedBox(height: 4),
-                  pw.Text(
-                    'Generated on ${formatDate(DateTime.now())}',
-                    style: const pw.TextStyle(
-                      color: PdfColors.grey700,
-                      fontSize: 10,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            pw.Text(
-              '${expenses.length} bills',
-              style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
-            ),
-          ],
-        ),
+        _pdfReportHeader('Kalyana Expense Report', '${expenses.length} bills'),
         pw.SizedBox(height: 18),
         pw.Row(
           children: [
-            summaryBox('Total', _pdfMoney(total)),
+            _pdfSummaryBox('Total', _pdfMoney(total)),
             pw.SizedBox(width: 8),
-            summaryBox('Paid', _pdfMoney(paid)),
+            _pdfSummaryBox('Paid', _pdfMoney(paid)),
             pw.SizedBox(width: 8),
-            summaryBox('Pending', _pdfMoney(pending)),
+            _pdfSummaryBox('Pending', _pdfMoney(pending)),
             pw.SizedBox(width: 8),
-            summaryBox('Repay', _pdfMoney(repayment)),
+            _pdfSummaryBox('Repay', _pdfMoney(repayment)),
           ],
         ),
         pw.SizedBox(height: 18),
@@ -871,6 +888,59 @@ Future<Uint8List> _buildExpensePdf(
                 ],
               )
               .toList(),
+        ),
+      ],
+    ),
+  );
+
+  return doc.save();
+}
+
+Future<Uint8List> _buildExpensePaymentsPdf(
+  List<ExpenseItem> expenses,
+  PdfPageFormat format,
+) async {
+  final font = await PdfGoogleFonts.notoSansRegular();
+  final boldFont = await PdfGoogleFonts.notoSansBold();
+  final paid = expenses.fold<double>(
+    0,
+    (sum, item) => sum + item.paidForSummary,
+  );
+  final pending = expenses.fold<double>(
+    0,
+    (sum, item) => sum + item.pendingForSummary,
+  );
+  final repayment = expenses.fold<double>(
+    0,
+    (sum, item) => sum + item.repaymentPending,
+  );
+  final paymentCount = expenses.fold<int>(
+    0,
+    (sum, item) => sum + item.paymentSplit.length,
+  );
+  final doc = pw.Document(
+    title: 'Kalyana Payment Expenses Report',
+    theme: pw.ThemeData.withFont(base: font, bold: boldFont),
+  );
+
+  doc.addPage(
+    pw.MultiPage(
+      pageFormat: format,
+      margin: const pw.EdgeInsets.all(28),
+      build: (context) => [
+        _pdfReportHeader(
+          'Kalyana Payment Expenses Report',
+          '$paymentCount payments',
+        ),
+        pw.SizedBox(height: 18),
+        pw.Row(
+          children: [
+            _pdfSummaryBox('Paid', _pdfMoney(paid)),
+            pw.SizedBox(width: 8),
+            _pdfSummaryBox('Pending', _pdfMoney(pending)),
+            pw.SizedBox(width: 8),
+            _pdfSummaryBox('Repay', _pdfMoney(repayment)),
+          ],
         ),
         pw.SizedBox(height: 18),
         pw.Text(
