@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kalayanaexpresstracker/app/core/services/device_info_service.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
@@ -77,11 +79,13 @@ class AuthController extends GetxController {
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
+        unawaited(DeviceInfoService.instance.initDeviceInfo());
       } else {
         await _auth.signInWithEmailAndPassword(
           email: email.text.trim(),
           password: password.text.trim(),
         );
+        unawaited(DeviceInfoService.instance.initDeviceInfo());
       }
     } on FirebaseAuthException catch (error) {
       _showError(error.message ?? error.code);
@@ -104,7 +108,9 @@ class AuthController extends GetxController {
       final googleAuth = await googleUser.authentication;
       final idToken = googleAuth.idToken;
       if (idToken == null) {
-        _showError('Google sign-in failed: could not retrieve ID token. Check Firebase SHA fingerprint configuration.');
+        _showError(
+          'Google sign-in failed: could not retrieve ID token. Check Firebase SHA fingerprint configuration.',
+        );
         return;
       }
       final credential = GoogleAuthProvider.credential(
@@ -118,6 +124,7 @@ class AuthController extends GetxController {
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
       });
+      unawaited(DeviceInfoService.instance.initDeviceInfo());
     } on FirebaseAuthException catch (error) {
       _showError(error.message ?? error.code);
     } catch (error) {

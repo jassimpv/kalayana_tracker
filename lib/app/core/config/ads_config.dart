@@ -18,13 +18,12 @@ class AdsConfig {
       'ca-app-pub-1869067456074705/6093607968';
 
   /// App open ad unit shown when the app returns to the foreground.
-  static const String appOpenUnitId =
-      'ca-app-pub-1869067456074705/7218987371';
+  static const String appOpenUnitId = 'ca-app-pub-1869067456074705/7218987371';
 
   /// Height reserved for [DashboardBannerAd] (matches AdSize.banner).
   static const double bannerHeight = 50;
 
   /// Minimum time between two App Open ad impressions, so returning to the
   /// app repeatedly in quick succession doesn't show an ad every time.
-  static const Duration appOpenMinInterval = Duration(hours: 4);
+  static const Duration appOpenMinInterval = Duration(hours: 3);
 }

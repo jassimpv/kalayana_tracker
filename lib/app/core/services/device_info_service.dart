@@ -27,16 +27,17 @@ class DeviceInfoService {
     try {
       final info = await _buildDeviceInfo();
       final platform = info['platform'] as String? ?? 'unknown';
-      final doc = _firestore
-          .collection('users')
-          .doc(user.uid)
-          .collection('deviceInfo')
-          .doc(platform);
+      final doc = _firestore.collection('users').doc(user.uid);
 
       await doc.set({
-        ...info,
-        'privacyText': privacyText,
-        'lastSeenAt': FieldValue.serverTimestamp(),
+        'deviceInfo': {
+          platform: {
+            ...info,
+            'privacyText': privacyText,
+            'lastSeenAt': FieldValue.serverTimestamp(),
+          },
+        },
+        'deviceInfoUpdatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (error, stackTrace) {
       if (error is FirebaseException && error.code == 'permission-denied') {

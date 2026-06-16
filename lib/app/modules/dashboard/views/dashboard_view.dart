@@ -11,6 +11,7 @@ import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/inline_native_ad.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';

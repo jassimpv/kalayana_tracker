@@ -128,6 +128,8 @@ class _DashboardOverviewScreen extends StatelessWidget {
                   onPurchase: onPurchase,
                 ),
                 const SizedBox(height: 18),
+                const InlineNativeAdCard(),
+                const SizedBox(height: 18),
                 _OverviewBudgetAnalytics(
                   progress: progress,
                   categoryTotals: data.categoryTotals,
