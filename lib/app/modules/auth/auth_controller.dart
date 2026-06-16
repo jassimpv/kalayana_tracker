@@ -99,26 +99,33 @@ class AuthController extends GetxController {
   Future<void> signInWithGoogle() async {
     loading.value = true;
     try {
-      final googleUser = await GoogleSignIn(
-        clientId: kIsWeb ? _webGoogleClientId : null,
-        // serverClientId is required on Android/iOS to receive an idToken
-        serverClientId: kIsWeb ? null : _webGoogleClientId,
-      ).signIn();
-      if (googleUser == null) return;
-      final googleAuth = await googleUser.authentication;
-      final idToken = googleAuth.idToken;
-      if (idToken == null) {
-        _showError(
-          'Google sign-in failed: could not retrieve ID token. Check Firebase SHA fingerprint configuration.',
+      final UserCredential userCredential;
+      if (kIsWeb) {
+        // The legacy google_sign_in popup flow doesn't reliably return an ID
+        // token on web (Google deprecated it in favor of Identity Services).
+        // Firebase's own popup flow is the supported path on web/desktop.
+        userCredential = await _auth.signInWithPopup(GoogleAuthProvider());
+      } else {
+        // serverClientId is required on Android/iOS to receive an idToken.
+        final googleUser = await GoogleSignIn(
+          serverClientId: _webGoogleClientId,
+        ).signIn();
+        if (googleUser == null) return;
+        final googleAuth = await googleUser.authentication;
+        final idToken = googleAuth.idToken;
+        if (idToken == null) {
+          _showError(
+            'Google sign-in failed: could not retrieve ID token. Check Firebase SHA fingerprint configuration.',
+          );
+          return;
+        }
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: idToken,
         );
-        return;
+        userCredential = await _auth.signInWithCredential(credential);
       }
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: idToken,
-      );
-      await _auth.signInWithCredential(credential);
-      final user = _auth.currentUser!;
+      final user = userCredential.user ?? _auth.currentUser!;
       await _saveUserProfile({
         'fullName': user.displayName,
         'email': user.email,
