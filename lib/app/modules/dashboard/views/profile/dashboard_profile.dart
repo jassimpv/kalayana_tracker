@@ -429,21 +429,24 @@ class ReportsPanel extends GetView<DashboardController> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  FilledButton(
-                    onPressed: () => _printExpensePdf(context, data.expenses),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: ThemeColors.primary,
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size.fromHeight(48),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () =>
+                          _printExpensePdf(context, data.expenses),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: ThemeColors.primary,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size.fromHeight(48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      'Export Pdf',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                      child: const Text(
+                        'Export Pdf',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),

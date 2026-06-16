@@ -66,47 +66,50 @@ class DashboardView extends GetView<DashboardController> {
         },
         child: Scaffold(
           extendBody: true,
-          body: Stack(
-            children: [
-              Positioned.fill(
-                child: Column(
-                  children: [
-                    if (controller.isDashboardSubPage)
-                      CustomAppBar(
-                        title: _dashboardPageTitle(
-                          controller.dashboardPage.value,
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle.light,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Column(
+                    children: [
+                      if (controller.isDashboardSubPage)
+                        CustomAppBar(
+                          title: _dashboardPageTitle(
+                            controller.dashboardPage.value,
+                          ),
+                          showGreeting: false,
+                          onBack: controller.closeDashboardSubPage,
                         ),
-                        showGreeting: false,
-                        onBack: controller.closeDashboardSubPage,
-                      ),
-                    Expanded(child: _DashboardBody(controller: controller)),
-                  ],
+                      Expanded(child: _DashboardBody(controller: controller)),
+                    ],
+                  ),
                 ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: IgnorePointer(
-                  ignoring: controller.isDashboardSubPage,
-                  child: AnimatedSlide(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    offset: controller.isDashboardSubPage
-                        ? const Offset(0, 1.25)
-                        : Offset.zero,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 180),
-                      opacity: controller.isDashboardSubPage ? 0 : 1,
-                      child: BottomNav(
-                        controller: controller,
-                        onItemClick: controller.openDashboardTab,
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    ignoring: controller.isDashboardSubPage,
+                    child: AnimatedSlide(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      offset: controller.isDashboardSubPage
+                          ? const Offset(0, 1.25)
+                          : Offset.zero,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 180),
+                        opacity: controller.isDashboardSubPage ? 0 : 1,
+                        child: BottomNav(
+                          controller: controller,
+                          onItemClick: controller.openDashboardTab,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: Obx(

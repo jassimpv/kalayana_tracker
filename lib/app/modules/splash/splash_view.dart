@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/services/android_in_app_update_service.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -56,89 +57,92 @@ class _SplashViewState extends State<SplashView>
 
     return Scaffold(
       backgroundColor: const Color(0xFF7A1230),
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topRight,
-            end: Alignment.bottomLeft,
-            colors: ThemeColors.appBarGradient.colors,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.bottomLeft,
+              colors: ThemeColors.appBarGradient.colors,
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            // Decorative glass orbs
-            Positioned(
-              right: -20,
-              top: 80,
-              child: _GlassOrb(size: 100, alpha: 0.05),
-            ),
-            Positioned(
-              left: -24,
-              bottom: 180,
-              child: _GlassOrb(size: 80, alpha: 0.04),
-            ),
-
-            // Centered branding
-            Center(
-              child: FadeTransition(
-                opacity: _fade,
-                child: ScaleTransition(
-                  scale: _scale,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const AppLogo(
-                        size: 150,
-                        padding: 14,
-                        showBackground: false,
-                      ),
-                      const SizedBox(height: 28),
-                      Text(
-                        'Kalyana',
-                        style: Theme.of(context).textTheme.displaySmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'EXPENSE TRACKER',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.70),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          letterSpacing: 3.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+          child: Stack(
+            children: [
+              // Decorative glass orbs
+              Positioned(
+                right: -20,
+                top: 80,
+                child: _GlassOrb(size: 100, alpha: 0.05),
               ),
-            ),
+              Positioned(
+                left: -24,
+                bottom: 180,
+                child: _GlassOrb(size: 80, alpha: 0.04),
+              ),
 
-            // Spinner pinned to bottom
-            Positioned(
-              bottom: bottomInset + 52,
-              left: 0,
-              right: 0,
-              child: FadeTransition(
-                opacity: _fade,
-                child: Center(
-                  child: SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.white.withValues(alpha: 0.80),
-                      backgroundColor: Colors.white.withValues(alpha: 0.18),
+              // Centered branding
+              Center(
+                child: FadeTransition(
+                  opacity: _fade,
+                  child: ScaleTransition(
+                    scale: _scale,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AppLogo(
+                          size: 150,
+                          padding: 14,
+                          showBackground: false,
+                        ),
+                        const SizedBox(height: 28),
+                        Text(
+                          'Kalyana',
+                          style: Theme.of(context).textTheme.displaySmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.5,
+                              ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'EXPENSE TRACKER',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.70),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 3.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+
+              // Spinner pinned to bottom
+              Positioned(
+                bottom: bottomInset + 52,
+                left: 0,
+                right: 0,
+                child: FadeTransition(
+                  opacity: _fade,
+                  child: Center(
+                    child: SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white.withValues(alpha: 0.80),
+                        backgroundColor: Colors.white.withValues(alpha: 0.18),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
