@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_overview.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_timeline.dart';
@@ -38,48 +39,51 @@ class ExpenseDetailPage extends GetView<DashboardController> {
             length: 2,
             child: Column(
               children: [
-                Container(
-                  margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: TabBar(
-                    labelPadding: EdgeInsets.zero,
-                    indicatorPadding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 4,
+                ResponsivePageContainer(
+                  maxWidth: 900,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    indicatorSize: TabBarIndicatorSize.tab,
-                    overlayColor: WidgetStateProperty.all(Colors.transparent),
-                    dividerColor: Colors.transparent,
-                    dividerHeight: 0,
-                    indicator: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: ThemeColors.primary,
-                    ),
-                    labelColor: Colors.white,
-                    unselectedLabelColor: ThemeColors.logoDeep.withValues(
-                      alpha: 0.74,
-                    ),
-                    tabs: const [
-                      SizedBox(
-                        height: 40,
-                        child: Center(child: Text('Overview')),
+                    child: TabBar(
+                      labelPadding: EdgeInsets.zero,
+                      indicatorPadding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
                       ),
-                      SizedBox(
-                        height: 40,
-                        child: Center(child: Text('Timeline')),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      overlayColor: WidgetStateProperty.all(Colors.transparent),
+                      dividerColor: Colors.transparent,
+                      dividerHeight: 0,
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: ThemeColors.primary,
                       ),
-                    ],
+                      labelColor: Colors.white,
+                      unselectedLabelColor: ThemeColors.logoDeep.withValues(
+                        alpha: 0.74,
+                      ),
+                      tabs: const [
+                        SizedBox(
+                          height: 40,
+                          child: Center(child: Text('Overview')),
+                        ),
+                        SizedBox(
+                          height: 40,
+                          child: Center(child: Text('Timeline')),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 Expanded(
@@ -96,11 +100,17 @@ class ExpenseDetailPage extends GetView<DashboardController> {
                           children: [
                             SingleChildScrollView(
                               padding: const EdgeInsets.fromLTRB(12, 6, 12, 96),
-                              child: ExpenseDetailOverview(item: item),
+                              child: ResponsivePageContainer(
+                                maxWidth: 900,
+                                child: ExpenseDetailOverview(item: item),
+                              ),
                             ),
                             SingleChildScrollView(
                               padding: const EdgeInsets.fromLTRB(12, 6, 12, 96),
-                              child: ExpenseDetailTimeline(item: item),
+                              child: ResponsivePageContainer(
+                                maxWidth: 900,
+                                child: ExpenseDetailTimeline(item: item),
+                              ),
                             ),
                           ],
                         ),

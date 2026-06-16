@@ -46,6 +46,8 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
         if (aDone != bDone) return aDone ? 1 : -1;
         return a.name.compareTo(b.name);
       });
+    final mobile = isMobile(context);
+    final desktop = isDesktop(context);
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -58,11 +60,18 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _ShoppingHero(),
+          // The desktop shell already shows a "Shopping" title bar above
+          // this panel, so skip the mobile-style gradient hero there.
+          if (!desktop) const _ShoppingHero(),
           Transform.translate(
-            offset: const Offset(0, -20),
+            offset: desktop ? Offset.zero : const Offset(0, -20),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              padding: EdgeInsets.fromLTRB(
+                mobile ? 18 : 24,
+                desktop ? 24 : 0,
+                mobile ? 18 : 24,
+                0,
+              ),
               child: _ShoppingSearchPanel(
                 controller: _searchController,
                 selectedFilter: _selectedFilter,
@@ -79,23 +88,26 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
             child: _WishlistCallout(onTap: controller.openPurchaseAdd),
           ),
           const SizedBox(height: 14),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
             child: _ShoppingListHeader(count: visible.length),
           ),
           const SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
             child: visible.isEmpty
                 ? _ShoppingEmptyState(
                     filter: _selectedFilter,
                     onTap: controller.openPurchaseAdd,
                   )
-                : Column(
+                : ResponsiveCardGrid(
+                    desktopCount: 2,
+                    spacing: 14,
+                    runSpacing: 4,
                     children: visible
                         .map((item) => _PurchaseListCard(item: item))
                         .toList(),

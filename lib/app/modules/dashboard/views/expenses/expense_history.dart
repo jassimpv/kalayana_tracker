@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
@@ -54,7 +55,10 @@ class ExpensePaymentHistoryPage extends GetView<DashboardController> {
                       )
                     : SingleChildScrollView(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 110),
-                        child: _ExpensePaymentHistoryContent(item: item),
+                        child: ResponsivePageContainer(
+                          maxWidth: 900,
+                          child: _ExpensePaymentHistoryContent(item: item),
+                        ),
                       ),
               ),
             ],

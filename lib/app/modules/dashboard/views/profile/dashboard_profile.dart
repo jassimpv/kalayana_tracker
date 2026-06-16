@@ -20,91 +20,95 @@ class ProfilePanel extends GetView<DashboardController> {
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 108),
-        child: Column(
-          children: [
-            Builder(
-              builder: (context) {
-                final topInset = MediaQuery.paddingOf(context).top;
-                return SizedBox(
-                  height: topInset + 238,
-                  child: _ProfileHeader(
-                    name: name,
-                    email: email,
-                    photoUrl: user?.photoURL,
+        child: ResponsivePageContainer(
+          maxWidth: 900,
+          child: Column(
+            children: [
+              Builder(
+                builder: (context) {
+                  final topInset = MediaQuery.paddingOf(context).top;
+                  return SizedBox(
+                    height: topInset + 238,
+                    child: _ProfileHeader(
+                      name: name,
+                      email: email,
+                      photoUrl: user?.photoURL,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _ProfileMenuCard(
+                children: [
+                  _ProfileMenuRow(
+                    icon: Icons.account_box_outlined,
+                    label: 'Profile Details',
+                    subtitle: 'View and edit your profile',
+                    onTap: () => showProfileDialog(context),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            _ProfileMenuCard(
-              children: [
-                _ProfileMenuRow(
-                  icon: Icons.account_box_outlined,
-                  label: 'Profile Details',
-                  subtitle: 'View and edit your profile',
-                  onTap: () => showProfileDialog(context),
-                ),
-                _ProfileMenuRow(
-                  icon: AppConfig.appCurrencyIcon,
-                  label: 'Currency',
-                  value: '${currency.code} ${currency.symbol}',
-                  trailingIcon: Icons.keyboard_arrow_down_rounded,
-                  onTap: () => _showCurrencyPicker(context, controller),
-                ),
-                // ValueListenableBuilder<ThemeMode>(
-                //   valueListenable: ThemeService.themeModeNotifier,
-                //   builder: (context, mode, child) {
-                //     final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
-                //     return _ProfileMenuRow(
-                //       icon: Icons.light_mode_outlined,
-                //       label: 'Theme',
-                //       value: label,
-                //       trailingIcon: Icons.keyboard_arrow_down_rounded,
-                //       // onTap: () => ThemeService.toggleTheme(),
-                //     );
-                //   },
-                // ),
-                _ProfileMenuRow(
-                  icon: Icons.notifications_none_rounded,
-                  label: 'Notification Settings',
-                  subtitle: 'Manage your alerts',
-                  onTap: () => _showProfileSnack('Notification settings soon.'),
-                ),
-                _ProfileMenuRow(
-                  icon: Icons.bar_chart_rounded,
-                  label: 'Reports',
-                  subtitle: 'View insights and analytics',
-                  onTap: controller.openReports,
-                ),
+                  _ProfileMenuRow(
+                    icon: AppConfig.appCurrencyIcon,
+                    label: 'Currency',
+                    value: '${currency.code} ${currency.symbol}',
+                    trailingIcon: Icons.keyboard_arrow_down_rounded,
+                    onTap: () => _showCurrencyPicker(context, controller),
+                  ),
+                  // ValueListenableBuilder<ThemeMode>(
+                  //   valueListenable: ThemeService.themeModeNotifier,
+                  //   builder: (context, mode, child) {
+                  //     final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
+                  //     return _ProfileMenuRow(
+                  //       icon: Icons.light_mode_outlined,
+                  //       label: 'Theme',
+                  //       value: label,
+                  //       trailingIcon: Icons.keyboard_arrow_down_rounded,
+                  //       // onTap: () => ThemeService.toggleTheme(),
+                  //     );
+                  //   },
+                  // ),
+                  _ProfileMenuRow(
+                    icon: Icons.notifications_none_rounded,
+                    label: 'Notification Settings',
+                    subtitle: 'Manage your alerts',
+                    onTap: () =>
+                        _showProfileSnack('Notification settings soon.'),
+                  ),
+                  _ProfileMenuRow(
+                    icon: Icons.bar_chart_rounded,
+                    label: 'Reports',
+                    subtitle: 'View insights and analytics',
+                    onTap: controller.openReports,
+                  ),
 
-                _ProfileMenuRow(
-                  icon: Icons.group_add_outlined,
-                  label: 'Collaborators',
-                  subtitle: 'Invite and manage members',
-                  onTap: controller.openCollaborators,
-                ),
-                _ProfileMenuRow(
-                  icon: Icons.help_outline_rounded,
-                  label: 'Help & Support',
-                  subtitle: 'FAQs and contact support',
-                  onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            _ProfileMenuCard(
-              children: [
-                _ProfileMenuRow(
-                  icon: Icons.logout_rounded,
-                  label: 'Logout',
-                  subtitle: 'Sign out from your account',
-                  destructive: true,
-                  showDivider: false,
-                  onTap: () => _confirmLogout(context, controller),
-                ),
-              ],
-            ),
-          ],
+                  _ProfileMenuRow(
+                    icon: Icons.group_add_outlined,
+                    label: 'Collaborators',
+                    subtitle: 'Invite and manage members',
+                    onTap: controller.openCollaborators,
+                  ),
+                  _ProfileMenuRow(
+                    icon: Icons.help_outline_rounded,
+                    label: 'Help & Support',
+                    subtitle: 'FAQs and contact support',
+                    onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _ProfileMenuCard(
+                children: [
+                  _ProfileMenuRow(
+                    icon: Icons.logout_rounded,
+                    label: 'Logout',
+                    subtitle: 'Sign out from your account',
+                    destructive: true,
+                    showDivider: false,
+                    onTap: () => _confirmLogout(context, controller),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -167,359 +171,365 @@ class ReportsPanel extends GetView<DashboardController> {
         child: DashboardAdaptiveScroll(
           overflowTolerance: 8,
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _ReportHeroCard(
-                total: total,
-                paid: paid,
-                pending: pending,
-                repayment: repaymentPending,
-                paidRatio: paidRatio,
-              ),
-              const SizedBox(height: 14),
-              _ReportSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _ReportTitle(
-                      'Expense by Category',
-                      icon: Icons.pie_chart_rounded,
-                      color: ThemeColors.logoGold,
-                    ),
-                    const SizedBox(height: 12),
-                    if (categoryEntries.isEmpty)
-                      const PremiumEmptyState(
-                        icon: Icons.pie_chart_outline_rounded,
-                        title: 'No expenses yet',
-                        subtitle: 'Add expenses to see category insights.',
-                      )
-                    else
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 124,
-                            height: 124,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                CustomPaint(
-                                  size: const Size(124, 124),
-                                  painter: _CategoryDonutPainter(
-                                    categoryEntries,
+          child: ResponsivePageContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _ReportHeroCard(
+                  total: total,
+                  paid: paid,
+                  pending: pending,
+                  repayment: repaymentPending,
+                  paidRatio: paidRatio,
+                ),
+                const SizedBox(height: 14),
+                _ReportSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ReportTitle(
+                        'Expense by Category',
+                        icon: Icons.pie_chart_rounded,
+                        color: ThemeColors.logoGold,
+                      ),
+                      const SizedBox(height: 12),
+                      if (categoryEntries.isEmpty)
+                        const PremiumEmptyState(
+                          icon: Icons.pie_chart_outline_rounded,
+                          title: 'No expenses yet',
+                          subtitle: 'Add expenses to see category insights.',
+                        )
+                      else
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 124,
+                              height: 124,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  CustomPaint(
+                                    size: const Size(124, 124),
+                                    painter: _CategoryDonutPainter(
+                                      categoryEntries,
+                                    ),
                                   ),
-                                ),
-                                SizedBox(
-                                  width: 68,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          moneyOrDash(total),
-                                          maxLines: 1,
-                                          style: const TextStyle(
-                                            color: ThemeColors.logoDeep,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
+                                  SizedBox(
+                                    width: 68,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        FittedBox(
+                                          fit: BoxFit.scaleDown,
+                                          child: Text(
+                                            moneyOrDash(total),
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                              color: ThemeColors.logoDeep,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      Text(
-                                        'Total',
-                                        style: TextStyle(
-                                          color: ThemeColors.logoDeep
-                                              .withValues(alpha: 0.56),
-                                          fontSize: 9.5,
-                                          fontWeight: FontWeight.w600,
+                                        Text(
+                                          'Total',
+                                          style: TextStyle(
+                                            color: ThemeColors.logoDeep
+                                                .withValues(alpha: 0.56),
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: _CategoryLegend(entries: categoryEntries),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              _ReportSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ReportTitle(
-                      'Total Expense Report',
-                      icon: Icons.summarize_rounded,
-                      color: ThemeColors.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    _ReportInfoGrid(
-                      items: [
-                        _ReportInfoSpec(
-                          'Total expense',
-                          moneyOrDash(total),
-                          Icons.receipt_long_rounded,
-                          ThemeColors.logoGold,
-                        ),
-                        _ReportInfoSpec(
-                          'Total paid',
-                          moneyOrDash(paid),
-                          Icons.check_circle_outline_rounded,
-                          const Color(0xFF209B4B),
-                        ),
-                        _ReportInfoSpec(
-                          'Pending amount',
-                          moneyOrDash(pending),
-                          Icons.schedule_rounded,
-                          const Color(0xFFFF6824),
-                        ),
-                        _ReportInfoSpec(
-                          'Repayment pending',
-                          moneyOrDash(repaymentPending),
-                          Icons.assignment_return_rounded,
-                          ThemeColors.primary,
-                        ),
-                        _ReportInfoSpec(
-                          'Completed bills',
-                          '${data.completedExpenses}',
-                          Icons.task_alt_rounded,
-                          const Color(0xFF209B4B),
-                        ),
-                        _ReportInfoSpec(
-                          'Pending bills',
-                          '${data.pendingExpenses}',
-                          Icons.pending_actions_rounded,
-                          const Color(0xFFFF6824),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              _ReportSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _ReportTitle(
-                      'Detailed Expense Report',
-                      icon: Icons.receipt_long_rounded,
-                      color: ThemeColors.logoGold,
-                    ),
-                    const SizedBox(height: 12),
-                    if (data.expenses.isEmpty)
-                      const PremiumEmptyState(
-                        icon: Icons.receipt_long_rounded,
-                        title: 'No expense details yet',
-                        subtitle: 'Add expenses to build a detailed report.',
-                      )
-                    else
-                      _DetailedExpenseReport(expenses: data.expenses),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              _ReportSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ReportTitle(
-                      'Repayment Report',
-                      icon: Icons.assignment_return_rounded,
-                      color: ThemeColors.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    _ReportInfoGrid(
-                      items: [
-                        _ReportInfoSpec(
-                          'Total repayment',
-                          moneyOrDash(
-                            repaymentExpenses.fold<double>(
-                              0,
-                              (sum, item) => sum + item.repaymentAmount,
-                            ),
-                          ),
-                          AppConfig.appCurrencyIcon,
-                          ThemeColors.primary,
-                        ),
-                        _ReportInfoSpec(
-                          'Pending to repay',
-                          moneyOrDash(repaymentPending),
-                          Icons.assignment_return_rounded,
-                          const Color(0xFFFF6824),
-                        ),
-                        _ReportInfoSpec(
-                          'Active repayments',
-                          '${repaymentExpenses.where((item) => item.repaymentPending > 0).length}',
-                          Icons.pending_actions_rounded,
-                          ThemeColors.primary,
-                        ),
-                        _ReportInfoSpec(
-                          'Completed repayments',
-                          '${repaymentExpenses.where((item) => item.repaymentPending == 0).length}',
-                          Icons.task_alt_rounded,
-                          const Color(0xFF209B4B),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (repaymentPeople.isNotEmpty) ...[
-                      _PersonRepaymentReportList(entries: repaymentPeople),
-                      const SizedBox(height: 12),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              _ReportSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ReportTitle(
-                      'Paid By Report',
-                      icon: Icons.group_rounded,
-                      color: ThemeColors.primary,
-                    ),
-                    const SizedBox(height: 12),
-                    if (paymentPeople.isEmpty)
-                      const PremiumEmptyState(
-                        icon: Icons.group_outlined,
-                        title: 'No payment people yet',
-                        subtitle: 'Payment payer totals will appear here.',
-                      )
-                    else
-                      _PersonPaymentReportList(entries: paymentPeople),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              _ReportSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _ReportTitle(
-                      'Paid vs Pending',
-                      icon: Icons.insights_rounded,
-                      color: Color(0xFF209B4B),
-                    ),
-                    const SizedBox(height: 16),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: SizedBox(
-                        height: 14,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: total <= 0
-                                  ? 1
-                                  : (paidRatio * 1000).round().clamp(1, 999),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFF2DA052),
-                                      Color(0xFF4FC97A),
-                                    ],
-                                  ),
-                                ),
+                                ],
                               ),
                             ),
+                            const SizedBox(width: 14),
                             Expanded(
-                              flex: total <= 0
-                                  ? 1
-                                  : (pendingRatio * 1000).round().clamp(1, 999),
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Color(0xFFFF6824),
-                                      Color(0xFFFFA15C),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              child: _CategoryLegend(entries: categoryEntries),
                             ),
                           ],
                         ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _ReportSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ReportTitle(
+                        'Total Expense Report',
+                        icon: Icons.summarize_rounded,
+                        color: ThemeColors.primary,
+                      ),
+                      const SizedBox(height: 12),
+                      _ReportInfoGrid(
+                        items: [
+                          _ReportInfoSpec(
+                            'Total expense',
+                            moneyOrDash(total),
+                            Icons.receipt_long_rounded,
+                            ThemeColors.logoGold,
+                          ),
+                          _ReportInfoSpec(
+                            'Total paid',
+                            moneyOrDash(paid),
+                            Icons.check_circle_outline_rounded,
+                            const Color(0xFF209B4B),
+                          ),
+                          _ReportInfoSpec(
+                            'Pending amount',
+                            moneyOrDash(pending),
+                            Icons.schedule_rounded,
+                            const Color(0xFFFF6824),
+                          ),
+                          _ReportInfoSpec(
+                            'Repayment pending',
+                            moneyOrDash(repaymentPending),
+                            Icons.assignment_return_rounded,
+                            ThemeColors.primary,
+                          ),
+                          _ReportInfoSpec(
+                            'Completed bills',
+                            '${data.completedExpenses}',
+                            Icons.task_alt_rounded,
+                            const Color(0xFF209B4B),
+                          ),
+                          _ReportInfoSpec(
+                            'Pending bills',
+                            '${data.pendingExpenses}',
+                            Icons.pending_actions_rounded,
+                            const Color(0xFFFF6824),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _ReportSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ReportTitle(
+                        'Detailed Expense Report',
+                        icon: Icons.receipt_long_rounded,
+                        color: ThemeColors.logoGold,
+                      ),
+                      const SizedBox(height: 12),
+                      if (data.expenses.isEmpty)
+                        const PremiumEmptyState(
+                          icon: Icons.receipt_long_rounded,
+                          title: 'No expense details yet',
+                          subtitle: 'Add expenses to build a detailed report.',
+                        )
+                      else
+                        _DetailedExpenseReport(expenses: data.expenses),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _ReportSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ReportTitle(
+                        'Repayment Report',
+                        icon: Icons.assignment_return_rounded,
+                        color: ThemeColors.primary,
+                      ),
+                      const SizedBox(height: 12),
+                      _ReportInfoGrid(
+                        items: [
+                          _ReportInfoSpec(
+                            'Total repayment',
+                            moneyOrDash(
+                              repaymentExpenses.fold<double>(
+                                0,
+                                (sum, item) => sum + item.repaymentAmount,
+                              ),
+                            ),
+                            AppConfig.appCurrencyIcon,
+                            ThemeColors.primary,
+                          ),
+                          _ReportInfoSpec(
+                            'Pending to repay',
+                            moneyOrDash(repaymentPending),
+                            Icons.assignment_return_rounded,
+                            const Color(0xFFFF6824),
+                          ),
+                          _ReportInfoSpec(
+                            'Active repayments',
+                            '${repaymentExpenses.where((item) => item.repaymentPending > 0).length}',
+                            Icons.pending_actions_rounded,
+                            ThemeColors.primary,
+                          ),
+                          _ReportInfoSpec(
+                            'Completed repayments',
+                            '${repaymentExpenses.where((item) => item.repaymentPending == 0).length}',
+                            Icons.task_alt_rounded,
+                            const Color(0xFF209B4B),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      if (repaymentPeople.isNotEmpty) ...[
+                        _PersonRepaymentReportList(entries: repaymentPeople),
+                        const SizedBox(height: 12),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _ReportSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _ReportTitle(
+                        'Paid By Report',
+                        icon: Icons.group_rounded,
+                        color: ThemeColors.primary,
+                      ),
+                      const SizedBox(height: 12),
+                      if (paymentPeople.isEmpty)
+                        const PremiumEmptyState(
+                          icon: Icons.group_outlined,
+                          title: 'No payment people yet',
+                          subtitle: 'Payment payer totals will appear here.',
+                        )
+                      else
+                        _PersonPaymentReportList(entries: paymentPeople),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                _ReportSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ReportTitle(
+                        'Paid vs Pending',
+                        icon: Icons.insights_rounded,
+                        color: Color(0xFF209B4B),
+                      ),
+                      const SizedBox(height: 16),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: SizedBox(
+                          height: 14,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: total <= 0
+                                    ? 1
+                                    : (paidRatio * 1000).round().clamp(1, 999),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF2DA052),
+                                        Color(0xFF4FC97A),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: total <= 0
+                                    ? 1
+                                    : (pendingRatio * 1000).round().clamp(
+                                        1,
+                                        999,
+                                      ),
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFFFF6824),
+                                        Color(0xFFFFA15C),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          _ReportPercentLabel(
+                            label: 'Paid',
+                            value: '${(paidRatio * 100).round()}%',
+                            color: const Color(0xFF209B4B),
+                          ),
+                          const SizedBox(width: 10),
+                          _ReportPercentLabel(
+                            label: 'Pending',
+                            value: '${(pendingRatio * 100).round()}%',
+                            color: const Color(0xFFFF6824),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () =>
+                            _printExpensePdf(context, data.expenses),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: ThemeColors.primary,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                        label: const Text(
+                          'Expenses',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        _ReportPercentLabel(
-                          label: 'Paid',
-                          value: '${(paidRatio * 100).round()}%',
-                          color: const Color(0xFF209B4B),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () =>
+                            _printExpensePaymentsPdf(context, data.expenses),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: ThemeColors.primary,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
-                        const SizedBox(width: 10),
-                        _ReportPercentLabel(
-                          label: 'Pending',
-                          value: '${(pendingRatio * 100).round()}%',
-                          color: const Color(0xFFFF6824),
+                        icon: const Icon(Icons.payments_rounded, size: 18),
+                        label: const Text(
+                          'Payment Expenses',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
                         ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () => _printExpensePdf(context, data.expenses),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: ThemeColors.primary,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      icon: const Icon(Icons.receipt_long_rounded, size: 18),
-                      label: const Text(
-                        'Expenses',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: () =>
-                          _printExpensePaymentsPdf(context, data.expenses),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: ThemeColors.primary,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(48),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      icon: const Icon(Icons.payments_rounded, size: 18),
-                      label: const Text(
-                        'Payment Expenses',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -557,128 +567,130 @@ class CollaboratorsPanel extends GetView<DashboardController> {
         ),
         child: DashboardAdaptiveScroll(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _ReportSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const _ReportTitle(
-                      'Your Join Key',
-                      icon: Icons.vpn_key_rounded,
-                      color: ThemeColors.logoGold,
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
+          child: ResponsivePageContainer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _ReportSurface(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _ReportTitle(
+                        'Your Join Key',
+                        icon: Icons.vpn_key_rounded,
+                        color: ThemeColors.logoGold,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.66),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFEDE2D5)),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.66),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFEDE2D5)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                joinKey,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: controller.joinCode.value == null
+                                  ? null
+                                  : () => _copyJoinKey(joinKey),
+                              icon: const Icon(Icons.copy_rounded),
+                              color: ThemeColors.logoDeep,
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
+                      const SizedBox(height: 8),
+                      Text(
+                        'Share this key with family or friends to sync one wedding plan.',
+                        style: TextStyle(
+                          color: ThemeColors.logoDeep.withValues(alpha: 0.72),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      Row(
                         children: [
                           Expanded(
-                            child: Text(
-                              joinKey,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1.2,
+                            child: FilledButton.icon(
+                              onPressed: controller.joinCode.value == null
+                                  ? null
+                                  : () => _copyJoinKey(joinKey),
+                              icon: const Icon(Icons.ios_share_rounded),
+                              label: const Text('Share'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: ThemeColors.primary,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size.fromHeight(46),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
-                          IconButton(
-                            onPressed: controller.joinCode.value == null
-                                ? null
-                                : () => _copyJoinKey(joinKey),
-                            icon: const Icon(Icons.copy_rounded),
-                            color: ThemeColors.logoDeep,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: controller.collaborationLoading.value
+                                  ? null
+                                  : () => _showJoinWorkspaceDialog(context),
+                              icon: const Icon(Icons.group_add_outlined),
+                              label: const Text('Join'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: ThemeColors.primary,
+                                minimumSize: const Size.fromHeight(46),
+                                side: BorderSide(color: ThemeColors.primary),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Share this key with family or friends to sync one wedding plan.',
-                      style: TextStyle(
-                        color: ThemeColors.logoDeep.withValues(alpha: 0.72),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 22),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: controller.joinCode.value == null
-                                ? null
-                                : () => _copyJoinKey(joinKey),
-                            icon: const Icon(Icons.ios_share_rounded),
-                            label: const Text('Share'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: ThemeColors.primary,
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size.fromHeight(46),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: controller.collaborationLoading.value
-                                ? null
-                                : () => _showJoinWorkspaceDialog(context),
-                            icon: const Icon(Icons.group_add_outlined),
-                            label: const Text('Join'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: ThemeColors.primary,
-                              minimumSize: const Size.fromHeight(46),
-                              side: BorderSide(color: ThemeColors.primary),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-              _ReportTitle(
-                'Collaborators',
-                icon: Icons.group_rounded,
-                color: ThemeColors.primary,
-              ),
-              const SizedBox(height: 12),
-              _CollaboratorList(collaborators: collaborators),
-              const SizedBox(height: 40),
-              FilledButton(
-                onPressed: () =>
-                    _showProfileSnack('Activity logs coming soon.'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: ThemeColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(54),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    ],
                   ),
                 ),
-                child: const Text(
-                  'View Activity Logs',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                const SizedBox(height: 28),
+                _ReportTitle(
+                  'Collaborators',
+                  icon: Icons.group_rounded,
+                  color: ThemeColors.primary,
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                _CollaboratorList(collaborators: collaborators),
+                const SizedBox(height: 40),
+                FilledButton(
+                  onPressed: () =>
+                      _showProfileSnack('Activity logs coming soon.'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: ThemeColors.primary,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(54),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'View Activity Logs',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -700,13 +712,21 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
+    // On mobile this banner bleeds edge-to-edge under the status bar, so
+    // only the bottom corners are rounded. On tablet/desktop it's rendered
+    // as a centered, margined card (see ResponsivePageContainer), so it
+    // needs all four corners rounded or the flat top reads as clipped.
+    final radius = const Radius.circular(24);
+    final borderRadius = isMobile(context)
+        ? BorderRadius.vertical(bottom: radius)
+        : BorderRadius.all(radius);
     return Container(
       height: topInset + 238,
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-        gradient: RadialGradient(
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        gradient: const RadialGradient(
           center: Alignment.topLeft,
           radius: 1.18,
           colors: [Color(0xFFC50B50), Color(0xFF9D073E), Color(0xFF75062E)],

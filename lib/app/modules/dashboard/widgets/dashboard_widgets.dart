@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
@@ -89,43 +90,6 @@ class PageTitle extends StatelessWidget {
   }
 }
 
-class SyncBadge extends StatelessWidget {
-  const SyncBadge({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 38,
-      padding: const EdgeInsets.symmetric(horizontal: 11),
-      decoration: BoxDecoration(
-        color: ThemeColors.whiteColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: ThemeColors.whiteColor.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.cloud_done_outlined,
-            size: 18,
-            color: ThemeColors.whiteColor,
-          ),
-          const SizedBox(width: 6),
-          const Text(
-            'Live sync',
-            style: TextStyle(
-              color: ThemeColors.whiteColor,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class MetricData {
   const MetricData(this.label, this.value, this.icon, this.color);
   final String label;
@@ -141,26 +105,18 @@ class MetricGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 1000
-            ? 4
-            : constraints.maxWidth >= 620
-            ? 2
-            : 1;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: metrics.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: columns == 1 ? 3.2 : 2.1,
-          ),
-          itemBuilder: (context, index) => _MetricTile(data: metrics[index]),
-        );
-      },
+    final columns = responsiveGridCount(context, desktopCount: 4);
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: metrics.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: columns == 1 ? 3.2 : 2.1,
+      ),
+      itemBuilder: (context, index) => _MetricTile(data: metrics[index]),
     );
   }
 }
@@ -541,69 +497,60 @@ class PurchaseList extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 980
-            ? 3
-            : constraints.maxWidth >= 640
-            ? 2
-            : 1;
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: purchases.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 2.25,
-          ),
-          itemBuilder: (context, index) {
-            final item = purchases[index];
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    final columns = responsiveGridCount(context, desktopCount: 3);
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: purchases.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: columns,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 2.25,
+      ),
+      itemBuilder: (context, index) {
+        final item = purchases[index];
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () =>
-                              showPurchaseDialog(context, purchase: item),
-                          icon: const Icon(Icons.edit_outlined),
-                          tooltip: 'Edit',
-                        ),
-                        IconButton(
-                          onPressed: () =>
-                              _confirmDeletePurchase(context, item),
-                          icon: const Icon(Icons.delete_outline),
-                          tooltip: 'Delete',
-                        ),
-                      ],
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
                     ),
-                    const Spacer(),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        StatusPill(label: item.status),
-                        LabelPill(label: item.category),
-                      ],
+                    IconButton(
+                      onPressed: () =>
+                          showPurchaseDialog(context, purchase: item),
+                      icon: const Icon(Icons.edit_outlined),
+                      tooltip: 'Edit',
+                    ),
+                    IconButton(
+                      onPressed: () => _confirmDeletePurchase(context, item),
+                      icon: const Icon(Icons.delete_outline),
+                      tooltip: 'Delete',
                     ),
                   ],
                 ),
-              ),
-            );
-          },
+                const Spacer(),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    StatusPill(label: item.status),
+                    LabelPill(label: item.category),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

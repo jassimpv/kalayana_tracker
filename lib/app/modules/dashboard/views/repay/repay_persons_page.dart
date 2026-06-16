@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
@@ -59,10 +60,13 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
             if (controller.repayPersonsError.value != null) {
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
-                child: PremiumEmptyState(
-                  icon: Icons.error_outline_rounded,
-                  title: 'Could not load repay persons',
-                  subtitle: controller.repayPersonsError.value!,
+                child: ResponsivePageContainer(
+                  maxWidth: 900,
+                  child: PremiumEmptyState(
+                    icon: Icons.error_outline_rounded,
+                    title: 'Could not load repay persons',
+                    subtitle: controller.repayPersonsError.value!,
+                  ),
                 ),
               );
             }
@@ -84,25 +88,28 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
             if (people.isEmpty) {
               return SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
-                child: Column(
-                  children: [
-                    const PremiumEmptyState(
-                      icon: Icons.people_alt_rounded,
-                      title: 'No repay persons added yet',
-                      subtitle:
-                          'Add people who can be selected as payment payers.',
-                    ),
-                    const SizedBox(height: 14),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: FilledButton.icon(
-                        onPressed: () => _showRepayPersonDialog(context),
-                        icon: const Icon(Icons.person_add_alt_1_rounded),
-                        label: const Text('Add Person'),
+                child: ResponsivePageContainer(
+                  maxWidth: 900,
+                  child: Column(
+                    children: [
+                      const PremiumEmptyState(
+                        icon: Icons.people_alt_rounded,
+                        title: 'No repay persons added yet',
+                        subtitle:
+                            'Add people who can be selected as payment payers.',
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: FilledButton.icon(
+                          onPressed: () => _showRepayPersonDialog(context),
+                          icon: const Icon(Icons.person_add_alt_1_rounded),
+                          label: const Text('Add Person'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
@@ -111,9 +118,12 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
               itemBuilder: (context, index) {
                 final person = people[index];
-                return _RepayPersonTile(
-                  person: person,
-                  onTap: () => setState(() => _selectedPersonId = person.id),
+                return ResponsivePageContainer(
+                  maxWidth: 900,
+                  child: _RepayPersonTile(
+                    person: person,
+                    onTap: () => setState(() => _selectedPersonId = person.id),
+                  ),
                 );
               },
               separatorBuilder: (_, _) => const SizedBox(height: 10),
@@ -224,60 +234,63 @@ class _RepayPersonDetailView extends GetView<DashboardController> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _RepayPersonDetailHeader(
-            person: person,
-            pending: pending,
-            totalPaid: totalPaid,
-            onBack: onBack,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: controller.openExpenseAdd,
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text('Add'),
-                ),
-              ),
-              const SizedBox(width: 8),
-              _RepayPersonActionButton(
-                icon: Icons.edit_rounded,
-                tooltip: 'Edit person',
-                onPressed: () =>
-                    _showRepayPersonDialog(context, person: person),
-              ),
-              const SizedBox(width: 8),
-              _RepayPersonActionButton(
-                icon: Icons.delete_outline_rounded,
-                tooltip: 'Delete person',
-                destructive: true,
-                onPressed: () => _confirmDeleteRepayPerson(context, person),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Pay History',
-            style: TextStyle(
-              color: ThemeColors.logoDeep,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
+      child: ResponsivePageContainer(
+        maxWidth: 900,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _RepayPersonDetailHeader(
+              person: person,
+              pending: pending,
+              totalPaid: totalPaid,
+              onBack: onBack,
             ),
-          ),
-          const SizedBox(height: 10),
-          if (history.isEmpty)
-            const PremiumEmptyState(
-              icon: Icons.receipt_long_rounded,
-              title: 'No pay history yet',
-              subtitle: 'Expenses involving this person will appear here.',
-            )
-          else
-            ...history.map((item) => _RepayPersonHistoryTile(item: item)),
-        ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: controller.openExpenseAdd,
+                    icon: const Icon(Icons.add_rounded),
+                    label: const Text('Add'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _RepayPersonActionButton(
+                  icon: Icons.edit_rounded,
+                  tooltip: 'Edit person',
+                  onPressed: () =>
+                      _showRepayPersonDialog(context, person: person),
+                ),
+                const SizedBox(width: 8),
+                _RepayPersonActionButton(
+                  icon: Icons.delete_outline_rounded,
+                  tooltip: 'Delete person',
+                  destructive: true,
+                  onPressed: () => _confirmDeleteRepayPerson(context, person),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Pay History',
+              style: TextStyle(
+                color: ThemeColors.logoDeep,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 10),
+            if (history.isEmpty)
+              const PremiumEmptyState(
+                icon: Icons.receipt_long_rounded,
+                title: 'No pay history yet',
+                subtitle: 'Expenses involving this person will appear here.',
+              )
+            else
+              ...history.map((item) => _RepayPersonHistoryTile(item: item)),
+          ],
+        ),
       ),
     );
   }

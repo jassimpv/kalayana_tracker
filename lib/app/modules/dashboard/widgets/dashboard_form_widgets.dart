@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 
 class DashboardFormPage extends StatelessWidget {
-  const DashboardFormPage({
-    super.key,
-    required this.children,
-    this.footer,
-  });
+  const DashboardFormPage({super.key, required this.children, this.footer});
 
   final List<Widget> children;
   final Widget? footer;
@@ -15,6 +12,7 @@ class DashboardFormPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
     final bottomSafe = MediaQuery.paddingOf(context).bottom;
+    final mobile = isMobile(context);
 
     return Scaffold(
       backgroundColor: ThemeColors.primary,
@@ -32,34 +30,69 @@ class DashboardFormPage extends StatelessWidget {
           ),
         ),
         child: footer != null
-            ? Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: DashboardAdaptiveScroll(
-                      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: children,
+            ? Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: mobile ? double.infinity : 640,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: DashboardAdaptiveScroll(
+                          padding: mobile
+                              ? const EdgeInsets.fromLTRB(14, 14, 14, 12)
+                              : EdgeInsets.fromLTRB(
+                                  responsiveHorizontalPadding(context),
+                                  24,
+                                  responsiveHorizontalPadding(context),
+                                  16,
+                                ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: children,
+                          ),
+                        ),
                       ),
-                    ),
+                      Padding(
+                        padding: mobile
+                            ? EdgeInsets.fromLTRB(
+                                14,
+                                0,
+                                14,
+                                18 + bottomSafe + keyboardInset,
+                              )
+                            : EdgeInsets.fromLTRB(
+                                responsiveHorizontalPadding(context),
+                                0,
+                                responsiveHorizontalPadding(context),
+                                24 + bottomSafe + keyboardInset,
+                              ),
+                        child: footer,
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      14,
-                      0,
-                      14,
-                      18 + bottomSafe + keyboardInset,
-                    ),
-                    child: footer,
-                  ),
-                ],
+                ),
               )
-            : DashboardAdaptiveScroll(
-                padding: EdgeInsets.fromLTRB(14, 14, 14, 18 + keyboardInset),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: children,
+            : Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: mobile ? double.infinity : 640,
+                  ),
+                  child: DashboardAdaptiveScroll(
+                    padding: mobile
+                        ? EdgeInsets.fromLTRB(14, 14, 14, 18 + keyboardInset)
+                        : EdgeInsets.fromLTRB(
+                            responsiveHorizontalPadding(context),
+                            24,
+                            responsiveHorizontalPadding(context),
+                            24 + keyboardInset,
+                          ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: children,
+                    ),
+                  ),
                 ),
               ),
       ),

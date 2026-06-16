@@ -50,17 +50,27 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
         .where((item) => _matchesExpenseFilter(item, _selectedFilter))
         .where((item) => _matchesExpenseQuery(item, _query))
         .toList();
+    final mobile = isMobile(context);
+    final desktop = isDesktop(context);
 
     return DecoratedBox(
       decoration: const BoxDecoration(color: Colors.white),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _ExpensesHero(),
+          // The desktop shell already shows an "Expenses" title bar above
+          // this panel, so the mobile-style gradient hero would just repeat
+          // it — skip it on desktop instead of stacking two headers.
+          if (!desktop) const _ExpensesHero(),
           Transform.translate(
-            offset: const Offset(0, -15),
+            offset: desktop ? Offset.zero : const Offset(0, -15),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              padding: EdgeInsets.fromLTRB(
+                mobile ? 18 : 24,
+                desktop ? 24 : 0,
+                mobile ? 18 : 24,
+                0,
+              ),
               child: _ExpenseSearchPanel(
                 filters: filters,
                 selectedFilter: _selectedFilter,
@@ -72,12 +82,12 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: mobile ? 20 : 24),
             child: _ExpenseTaskHeader(),
           ),
           const SizedBox(height: 12),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
             child: widget.expenses.isEmpty
                 ? _ExpenseEmptyLedger(onTap: widget.onAdd)
                 : filteredExpenses.isEmpty
@@ -88,7 +98,10 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
                     subtitle: 'Try another search term or status filter.',
                     onTap: widget.onAdd,
                   )
-                : Column(
+                : ResponsiveCardGrid(
+                    desktopCount: 2,
+                    spacing: 14,
+                    runSpacing: 14,
                     children: filteredExpenses
                         .map((item) => _ExpenseBillCard(item: item))
                         .toList(),

@@ -80,6 +80,77 @@ class _DashboardOverviewScreen extends StatelessWidget {
     final repayment = data.repaymentPending;
     final remaining = math.max(data.totalBudget - paid - pending, 0.0);
 
+    final hero = _DashboardHeroHeader(
+      firstName: firstName == '-' ? 'Jassim' : firstName,
+      user: user,
+      coupleName: couple,
+      weddingDate: weddingDate,
+      daysLeft: daysLeft,
+      onReminderTap: onShowReminders,
+      onProfileTap: onShowProfile,
+      onEditWedding: onEditWedding,
+    );
+    final budget = _BudgetHeroCard(
+      total: data.totalBudget,
+      paid: paid,
+      pending: pending,
+      remaining: remaining,
+      progress: progress,
+    );
+    final metrics = _BudgetMetricStrip(
+      paid: paid,
+      pending: pending,
+      repayment: repayment,
+      remaining: remaining,
+      progress: progress,
+    );
+    final pulse = _PaymentPulseCard(daysLeft: daysLeft, onTap: onReminder);
+    final actions = _OverviewQuickActions(
+      onExpense: onExpense,
+      onReminder: onReminder,
+      onPurchase: onPurchase,
+    );
+    final analytics = _OverviewBudgetAnalytics(
+      progress: progress,
+      categoryTotals: data.categoryTotals,
+      onViewReports: onViewReports,
+    );
+
+    if (isMobile(context) || isTablet(context)) {
+      return DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFF3E4), Color(0xFFFFFCF7)],
+          ),
+        ),
+        child: Column(
+          children: [
+            hero,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Column(
+                children: [
+                  budget,
+                  const SizedBox(height: 12),
+                  metrics,
+                  const SizedBox(height: 18),
+                  pulse,
+                  const SizedBox(height: 20),
+                  actions,
+                  const SizedBox(height: 18),
+                  const InlineNativeAdCard(),
+                  const SizedBox(height: 18),
+                  analytics,
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -90,51 +161,24 @@ class _DashboardOverviewScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _DashboardHeroHeader(
-            firstName: firstName == '-' ? 'Jassim' : firstName,
-            user: user,
-            coupleName: couple,
-            weddingDate: weddingDate,
-            daysLeft: daysLeft,
-            onReminderTap: onShowReminders,
-            onProfileTap: onShowProfile,
-            onEditWedding: onEditWedding,
-          ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
             child: Column(
               children: [
-                _BudgetHeroCard(
-                  total: data.totalBudget,
-                  paid: paid,
-                  pending: pending,
-                  remaining: remaining,
-                  progress: progress,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(flex: 2, child: budget),
+                    const SizedBox(width: 16),
+                    Expanded(child: pulse),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                _BudgetMetricStrip(
-                  paid: paid,
-                  pending: pending,
-                  repayment: repayment,
-                  remaining: remaining,
-                  progress: progress,
-                ),
-                const SizedBox(height: 18),
-                _PaymentPulseCard(daysLeft: daysLeft, onTap: onReminder),
+                const SizedBox(height: 16),
+                metrics,
                 const SizedBox(height: 20),
-                _OverviewQuickActions(
-                  onExpense: onExpense,
-                  onReminder: onReminder,
-                  onPurchase: onPurchase,
-                ),
-                const SizedBox(height: 18),
-                const InlineNativeAdCard(),
-                const SizedBox(height: 18),
-                _OverviewBudgetAnalytics(
-                  progress: progress,
-                  categoryTotals: data.categoryTotals,
-                  onViewReports: onViewReports,
-                ),
+                actions,
+                const SizedBox(height: 20),
+                analytics,
               ],
             ),
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 import 'package:kalayanaexpresstracker/app/modules/auth/auth_controller.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
@@ -32,6 +33,7 @@ class AuthView extends GetView<AuthController> {
             final compact = constraints.maxHeight < 740;
             final heroHeight = compact ? 318.0 : 398.0;
             final sheetLift = compact ? -42.0 : -80.0;
+            final desktop = isDesktop(context);
 
             return DecoratedBox(
               decoration: const BoxDecoration(
@@ -41,40 +43,177 @@ class AuthView extends GetView<AuthController> {
                   colors: [Color(0xFFFFF2E2), Color(0xFFFFFBF5)],
                 ),
               ),
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                padding: EdgeInsets.only(
-                  bottom: 22 + MediaQuery.paddingOf(context).bottom,
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 430),
-                    child: Column(
-                      children: [
-                        _HeroSection(
-                          height: heroHeight,
-                          topInset: safeTopInset,
-                          compact: compact,
-                        ),
-                        Transform.translate(
-                          offset: Offset(0, sheetLift),
+              child: desktop
+                  ? _DesktopAuthLayout(formKey: _formKey, compact: compact)
+                  : SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      padding: EdgeInsets.only(
+                        bottom: 22 + MediaQuery.paddingOf(context).bottom,
+                      ),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 430),
                           child: Column(
                             children: [
-                              _AuthForm(formKey: _formKey, compact: compact),
-                              SizedBox(height: compact ? 8 : 12),
-                              const _LegalFooter(),
+                              _HeroSection(
+                                height: heroHeight,
+                                topInset: safeTopInset,
+                                compact: compact,
+                              ),
+                              Transform.translate(
+                                offset: Offset(0, sheetLift),
+                                child: Column(
+                                  children: [
+                                    _AuthForm(
+                                      formKey: _formKey,
+                                      compact: compact,
+                                    ),
+                                    SizedBox(height: compact ? 8 : 12),
+                                    const _LegalFooter(),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              ),
             );
           },
         ),
       ),
+    );
+  }
+}
+
+class _DesktopAuthLayout extends StatelessWidget {
+  const _DesktopAuthLayout({required this.formKey, required this.compact});
+
+  final GlobalKey<FormState> formKey;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+          36,
+          32,
+          36,
+          32 + MediaQuery.paddingOf(context).bottom,
+        ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1120),
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: _authCard.withValues(alpha: 0.94),
+              borderRadius: BorderRadius.circular(34),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.72)),
+              boxShadow: [
+                BoxShadow(
+                  color: _authPrimaryDark.withValues(alpha: 0.14),
+                  blurRadius: 46,
+                  offset: const Offset(0, 24),
+                ),
+              ],
+            ),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Expanded(flex: 6, child: _DesktopHeroPanel()),
+                  Expanded(
+                    flex: 5,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(44, 42, 44, 30),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _HeroCopy(compact: false),
+                          const SizedBox(height: 24),
+                          _AuthForm(
+                            formKey: formKey,
+                            compact: compact,
+                            margin: EdgeInsets.zero,
+                          ),
+                          const SizedBox(height: 18),
+                          const _LegalFooter(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DesktopHeroPanel extends StatelessWidget {
+  const _DesktopHeroPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.asset(
+          'assets/images/auth_wedding_hero.png',
+          fit: BoxFit.cover,
+          alignment: const Alignment(0.58, 0),
+          filterQuality: FilterQuality.high,
+        ),
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [Color(0xF25B071B), Color(0xB89D123F), Color(0x309D123F)],
+              stops: [0, 0.56, 1],
+            ),
+          ),
+        ),
+        Positioned(left: 44, top: 42, child: _HeroBrand(compact: false)),
+        Positioned(
+          left: 44,
+          right: 44,
+          bottom: 44,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Plan your wedding budget with clarity',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  height: 1.08,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Track expenses, reminders, shopping, and shared payments in one calm planning space.',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.86),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -231,10 +370,15 @@ class _HeroCopy extends StatelessWidget {
 }
 
 class _AuthForm extends GetView<AuthController> {
-  const _AuthForm({required this.formKey, required this.compact});
+  const _AuthForm({
+    required this.formKey,
+    required this.compact,
+    this.margin = const EdgeInsets.symmetric(horizontal: 28),
+  });
 
   final GlobalKey<FormState> formKey;
   final bool compact;
+  final EdgeInsetsGeometry margin;
 
   @override
   Widget build(BuildContext context) {
@@ -242,7 +386,7 @@ class _AuthForm extends GetView<AuthController> {
     final gap = compact ? 10.0 : 8.0;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 28),
+      margin: margin,
       decoration: BoxDecoration(
         color: _authCard.withValues(alpha: 0.96),
         borderRadius: BorderRadius.circular(28),
@@ -789,4 +933,3 @@ class _GoogleGlyphPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-

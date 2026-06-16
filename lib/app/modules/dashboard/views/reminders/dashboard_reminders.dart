@@ -23,6 +23,8 @@ class RemindersPanel extends GetView<DashboardController> {
         .length;
     final taskReminders = sorted.toList();
     final completedCount = reminders.where((item) => item.isDone).length;
+    final mobile = isMobile(context);
+    final desktop = isDesktop(context);
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -35,11 +37,18 @@ class RemindersPanel extends GetView<DashboardController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ReminderHero(),
+          // The desktop shell already shows a "Reminders" title bar above
+          // this panel, so skip the mobile-style gradient hero there.
+          if (!desktop) _ReminderHero(),
           Transform.translate(
-            offset: const Offset(0, -15),
+            offset: desktop ? Offset.zero : const Offset(0, -15),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.fromLTRB(
+                mobile ? 16.0 : 24.0,
+                desktop ? 24 : 0,
+                mobile ? 16.0 : 24.0,
+                0,
+              ),
               child: _ReminderStatsCard(
                 stats: [
                   _ReminderStat(
@@ -75,7 +84,12 @@ class RemindersPanel extends GetView<DashboardController> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+            padding: EdgeInsets.fromLTRB(
+              mobile ? 16 : 24,
+              0,
+              mobile ? 16 : 24,
+              0,
+            ),
             child: _PaymentEmptyCallout(
               hasDuePayments: dueTodayPayments.isNotEmpty,
               payment: dueTodayPayments.firstOrNull,
@@ -84,15 +98,18 @@ class RemindersPanel extends GetView<DashboardController> {
           ),
           const SizedBox(height: 14),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
             child: _ReminderTaskHeader(showingCompleted: false, onTap: () {}),
           ),
           const SizedBox(height: 8),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: mobile ? 16 : 24),
             child: taskReminders.isEmpty
                 ? _ReminderEmptyTasks(onTap: controller.openReminderAdd)
-                : Column(
+                : ResponsiveCardGrid(
+                    desktopCount: 2,
+                    spacing: 14,
+                    runSpacing: 4,
                     children: taskReminders
                         .map((item) => _WeddingTaskCard(item: item))
                         .toList(),
