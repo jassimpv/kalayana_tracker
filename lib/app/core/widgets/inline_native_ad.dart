@@ -32,7 +32,7 @@ class _InlineNativeAdCardState extends State<InlineNativeAdCard> {
   @override
   void initState() {
     super.initState();
-    if (isMobileAdsSupported) _loadAd();
+    if (shouldLoadMobileAds) _loadAd();
   }
 
   void _loadAd() {
@@ -71,7 +71,10 @@ class _InlineNativeAdCardState extends State<InlineNativeAdCard> {
     if (!_loaded || ad == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: SizedBox(height: _inlineNativeAdHeight, child: AdWidget(ad: ad)),
+      child: SizedBox(
+        height: _inlineNativeAdHeight,
+        child: AdWidget(ad: ad),
+      ),
     );
   }
 }

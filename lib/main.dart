@@ -15,16 +15,9 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (isMobileAdsSupported) {
-    unawaited(
-      MobileAds.instance.initialize().then(
-        (_) => AppOpenAdManager.instance.start(),
-      ),
-    );
-  }
-
   try {
     await AppBootstrap.load();
+    AppBootstrap.loadAds();
     runApp(const KalyanaApp());
   } catch (error, stackTrace) {
     debugPrint('Firebase startup failed: $error');
@@ -69,6 +62,16 @@ class AppBootstrap {
         unawaited(DeviceInfoService.instance.initDeviceInfo());
       }
     });
+  }
+
+  static void loadAds() {
+    if (!shouldLoadMobileAds) return;
+
+    unawaited(
+      MobileAds.instance.initialize().then(
+        (_) => AppOpenAdManager.instance.start(),
+      ),
+    );
   }
 }
 

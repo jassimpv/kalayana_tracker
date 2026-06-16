@@ -534,23 +534,38 @@ class _ShimmerState extends State<_Shimmer>
       animation: _controller,
       child: widget.child,
       builder: (context, child) {
-        return ShaderMask(
-          blendMode: BlendMode.srcATop,
-          shaderCallback: (bounds) {
-            final shimmerWidth = bounds.width <= 0 ? 1.0 : bounds.width;
-            final slide = (shimmerWidth * 2) * _controller.value;
-            return LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [base, highlight, base],
-              stops: const [0.25, 0.50, 0.75],
-              transform: _SlidingGradientTransform(slide - shimmerWidth),
-            ).createShader(bounds);
-          },
-          child: child,
+        return _ShimmerScope(
+          value: _controller.value,
+          baseColor: base,
+          highlightColor: highlight,
+          child: child!,
         );
       },
     );
+  }
+}
+
+class _ShimmerScope extends InheritedWidget {
+  const _ShimmerScope({
+    required this.value,
+    required this.baseColor,
+    required this.highlightColor,
+    required super.child,
+  });
+
+  final double value;
+  final Color baseColor;
+  final Color highlightColor;
+
+  static _ShimmerScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_ShimmerScope>();
+  }
+
+  @override
+  bool updateShouldNotify(_ShimmerScope oldWidget) {
+    return value != oldWidget.value ||
+        baseColor != oldWidget.baseColor ||
+        highlightColor != oldWidget.highlightColor;
   }
 }
 
@@ -578,13 +593,38 @@ class _SkeletonBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(radius),
-      ),
+    final shimmer = _ShimmerScope.maybeOf(context);
+    final base =
+        shimmer?.baseColor ??
+        Theme.of(context).colorScheme.primary.withValues(alpha: 0.08);
+    final highlight =
+        shimmer?.highlightColor ?? Colors.white.withValues(alpha: 0.70);
+    final value = shimmer?.value ?? 0;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final resolvedWidth = width.isFinite
+            ? width
+            : constraints.hasBoundedWidth
+            ? constraints.maxWidth
+            : 120.0;
+        final slide = (resolvedWidth * 2) * value;
+
+        return Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [base, highlight, base],
+              stops: const [0.20, 0.50, 0.80],
+              transform: _SlidingGradientTransform(slide - resolvedWidth),
+            ),
+          ),
+        );
+      },
     );
   }
 }

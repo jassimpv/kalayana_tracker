@@ -12,6 +12,10 @@ import 'package:kalayanaexpresstracker/app/core/config/ads_config.dart';
 bool get isMobileAdsSupported =>
     !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
+/// Ads are kept out of debug/emulator sessions because Google Play Services
+/// can restart the process while loading the ads Dynamite module.
+bool get shouldLoadMobileAds => kReleaseMode && isMobileAdsSupported;
+
 /// A banner ad anchored above the bottom navigation bar.
 ///
 /// Reserves [AdsConfig.bannerHeight] of layout space wherever it's placed so
@@ -34,7 +38,7 @@ class _DashboardBannerAdState extends State<DashboardBannerAd> {
   @override
   void initState() {
     super.initState();
-    if (isMobileAdsSupported) _loadAd();
+    if (shouldLoadMobileAds) _loadAd();
   }
 
   void _loadAd() {
@@ -86,7 +90,7 @@ class DashboardBannerAdSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isMobileAdsSupported) return const SizedBox.shrink();
+    if (!shouldLoadMobileAds) return const SizedBox.shrink();
     return SizedBox(
       height: AdsConfig.bannerHeight,
       width: double.infinity,
