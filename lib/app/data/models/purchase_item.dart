@@ -8,6 +8,7 @@ class PurchaseItem {
     required this.amount,
     required this.status,
     required this.note,
+    this.linkedExpenseId = '',
   });
 
   factory PurchaseItem.fromJson(Map<String, dynamic> json) {
@@ -18,6 +19,7 @@ class PurchaseItem {
       amount: numberFromJson(json['amount']) ?? 0,
       status: json['status'] as String? ?? 'Planned',
       note: json['note'] as String? ?? '',
+      linkedExpenseId: json['linkedExpenseId'] as String? ?? '',
     );
   }
 
@@ -27,6 +29,7 @@ class PurchaseItem {
   final double amount;
   final String status;
   final String note;
+  final String linkedExpenseId;
 
   PurchaseItem copyWith({
     String? name,
@@ -34,6 +37,7 @@ class PurchaseItem {
     double? amount,
     String? status,
     String? note,
+    String? linkedExpenseId,
   }) => PurchaseItem(
     id: id,
     name: name ?? this.name,
@@ -41,6 +45,7 @@ class PurchaseItem {
     amount: amount ?? this.amount,
     status: status ?? this.status,
     note: note ?? this.note,
+    linkedExpenseId: linkedExpenseId ?? this.linkedExpenseId,
   );
 
   Map<String, dynamic> toJson() => {
@@ -50,5 +55,6 @@ class PurchaseItem {
     'amount': amount,
     'status': status,
     'note': note,
+    'linkedExpenseId': linkedExpenseId,
   };
 }

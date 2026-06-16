@@ -20,6 +20,8 @@ class ExpenseItem {
   final bool needsRepayment;
   final bool isRepaymentCompleted;
   final List<PaymentSplit> paymentSplit;
+  final String sourceShoppingItemId;
+  final String sourceReminderId;
 
   ExpenseItem({
     this.id = '',
@@ -41,6 +43,8 @@ class ExpenseItem {
     this.needsRepayment = false,
     this.isRepaymentCompleted = false,
     this.paymentSplit = const [],
+    this.sourceShoppingItemId = '',
+    this.sourceReminderId = '',
   }) : createdDate = createdDate ?? DateTime.now(),
        updatedDate = updatedDate ?? createdDate ?? DateTime.now();
 
@@ -112,6 +116,8 @@ class ExpenseItem {
       needsRepayment: needsRepayment,
       isRepaymentCompleted: json['isRepaymentCompleted'] == true,
       paymentSplit: paymentSplit,
+      sourceShoppingItemId: json['sourceShoppingItemId']?.toString() ?? '',
+      sourceReminderId: json['sourceReminderId']?.toString() ?? '',
     );
   }
 
@@ -135,6 +141,8 @@ class ExpenseItem {
       'needsRepayment': needsRepayment,
       'isRepaymentCompleted': isRepaymentCompleted,
       'paymentSplit': paymentSplit.map((item) => item.toJson()).toList(),
+      'sourceShoppingItemId': sourceShoppingItemId,
+      'sourceReminderId': sourceReminderId,
     };
   }
 
@@ -255,6 +263,8 @@ class ExpenseItem {
     bool? needsRepayment,
     bool? isRepaymentCompleted,
     List<PaymentSplit>? paymentSplit,
+    String? sourceShoppingItemId,
+    String? sourceReminderId,
   }) {
     return ExpenseItem(
       id: id ?? this.id,
@@ -276,6 +286,8 @@ class ExpenseItem {
       needsRepayment: needsRepayment ?? this.needsRepayment,
       isRepaymentCompleted: isRepaymentCompleted ?? this.isRepaymentCompleted,
       paymentSplit: paymentSplit ?? this.paymentSplit,
+      sourceShoppingItemId: sourceShoppingItemId ?? this.sourceShoppingItemId,
+      sourceReminderId: sourceReminderId ?? this.sourceReminderId,
     );
   }
 }

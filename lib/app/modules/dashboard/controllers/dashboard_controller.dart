@@ -50,6 +50,7 @@ const expenseCategories = [
   'Food',
   'Jewelry',
   'Decor',
+  'Shopping',
 ];
 const reminderCategories = ['Date', 'Payment', 'Invite', 'Vendor'];
 const purchaseCategories = [
@@ -116,6 +117,18 @@ class DashboardController extends GetxController {
 
   void openExpenseAdd() =>
       _openDashboardSubPage(DashboardPageKind.expenseAdd, selectedTab: 1);
+
+  void openExpenseAddFromPurchase(String purchaseId) => _openDashboardSubPage(
+    DashboardPageKind.expenseAdd,
+    selectedTab: 1,
+    argument: 'purchase:$purchaseId',
+  );
+
+  void openExpenseAddFromReminder(String reminderId) => _openDashboardSubPage(
+    DashboardPageKind.expenseAdd,
+    selectedTab: 1,
+    argument: 'reminder:$reminderId',
+  );
 
   void openReminderAdd() =>
       _openDashboardSubPage(DashboardPageKind.reminderAdd, selectedTab: 2);
@@ -573,6 +586,20 @@ class DashboardController extends GetxController {
     await _save(data.value.copyWith(reminders: items));
   }
 
+  Future<void> linkReminderToExpense(
+    String reminderId,
+    String expenseId,
+  ) async {
+    final items = data.value.reminders
+        .map(
+          (entry) => entry.id == reminderId
+              ? entry.copyWith(linkedExpenseId: expenseId)
+              : entry,
+        )
+        .toList();
+    await _save(data.value.copyWith(reminders: items));
+  }
+
   Future<void> toggleReminder(EventReminder item) async {
     final items = data.value.reminders
         .map(
@@ -623,11 +650,14 @@ class DashboardController extends GetxController {
     await _save(data.value.copyWith(purchases: items));
   }
 
-  Future<void> markPurchased(PurchaseItem item, {required double amount}) async {
+  Future<void> linkPurchaseToExpense(
+    String purchaseId,
+    String expenseId,
+  ) async {
     final items = data.value.purchases
         .map(
-          (entry) => entry.id == item.id
-              ? entry.copyWith(status: 'Purchased', amount: amount)
+          (entry) => entry.id == purchaseId
+              ? entry.copyWith(linkedExpenseId: expenseId)
               : entry,
         )
         .toList();
@@ -1001,6 +1031,8 @@ ExpenseItem buildExpense({
   required String repayAmount,
   required DateTime? dueDate,
   required String notes,
+  String? sourceShoppingItemId,
+  String? sourceReminderId,
 }) {
   final now = DateTime.now();
   final totalAmount = moneyFromText(total) ?? 0;
@@ -1055,6 +1087,9 @@ ExpenseItem buildExpense({
     createdDate: existing?.createdDate ?? now,
     updatedDate: now,
     paymentSplit: paymentSplit,
+    sourceShoppingItemId:
+        sourceShoppingItemId ?? existing?.sourceShoppingItemId ?? '',
+    sourceReminderId: sourceReminderId ?? existing?.sourceReminderId ?? '',
   );
 }
 
@@ -1063,6 +1098,7 @@ EventReminder buildReminder({
   required String title,
   required String category,
   required DateTime dueDate,
+  String? amount,
 }) {
   return EventReminder(
     id: existing?.id ?? newId(),
@@ -1070,6 +1106,10 @@ EventReminder buildReminder({
     category: category,
     dueDate: dueDate,
     isDone: existing?.isDone ?? false,
+    amount: amount == null
+        ? existing?.amount ?? 0
+        : moneyFromText(amount) ?? existing?.amount ?? 0,
+    linkedExpenseId: existing?.linkedExpenseId ?? '',
   );
 }
 

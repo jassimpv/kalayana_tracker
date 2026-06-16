@@ -757,7 +757,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
         ),
         confirmDismiss: (direction) async {
           if (direction == DismissDirection.startToEnd) {
-            _handleTogglePurchase(context, item);
+            controller.togglePurchase(item);
             return false;
           }
           return _confirmDeletePurchase(context, item);
@@ -789,7 +789,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
             child: Row(
               children: [
                 InkWell(
-                  onTap: () => _handleTogglePurchase(context, item),
+                  onTap: () => controller.togglePurchase(item),
                   borderRadius: BorderRadius.circular(999),
                   child: Container(
                     width: 44,
@@ -1058,14 +1058,6 @@ class _ShoppingCategorySpec {
 
 bool _isPurchased(PurchaseItem item) => item.status == 'Purchased';
 
-void _handleTogglePurchase(BuildContext context, PurchaseItem item) {
-  if (_isPurchased(item)) {
-    Get.find<DashboardController>().togglePurchase(item);
-  } else {
-    showMarkPurchasedDialog(context, purchase: item);
-  }
-}
-
 Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
   final controller = Get.find<DashboardController>();
   final purchased = _isPurchased(item);
@@ -1116,9 +1108,21 @@ Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
               title: Text(purchased ? 'Mark as pending' : 'Mark as purchased'),
               onTap: () {
                 Navigator.pop(sheetContext);
-                _handleTogglePurchase(context, item);
+                controller.togglePurchase(item);
               },
             ),
+            if (purchased)
+              ListTile(
+                leading: Icon(
+                  Icons.receipt_long_rounded,
+                  color: ThemeColors.primary,
+                ),
+                title: const Text('Add to Expense'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  controller.openExpenseAddFromPurchase(item.id);
+                },
+              ),
             ListTile(
               leading: Icon(CupertinoIcons.pencil, color: ThemeColors.primary),
               title: const Text('Edit item'),

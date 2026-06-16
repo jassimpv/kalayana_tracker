@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_form_widgets.dart';
@@ -15,6 +16,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
   final controller = Get.find<DashboardController>();
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
+  final _amountController = TextEditingController();
 
   String _category = reminderCategories.first;
   DateTime _dueDate = DateTime.now();
@@ -23,6 +25,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
   @override
   void dispose() {
     _titleController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
@@ -46,6 +49,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
         title: _titleController.text,
         category: _category,
         dueDate: _dueDate,
+        amount: _amountController.text,
       ),
     );
     if (!mounted) return;
@@ -113,6 +117,15 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
                       if (value == null) return;
                       setState(() => _category = value);
                     },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _amountController,
+                    decoration: InputDecoration(
+                      labelText: 'Amount (optional)',
+                      prefixIcon: Icon(AppConfig.appCurrencyIcon),
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 12),
                   DashboardDatePickerTile(

@@ -7,6 +7,8 @@ class EventReminder {
     required this.category,
     required this.dueDate,
     required this.isDone,
+    this.amount = 0,
+    this.linkedExpenseId = '',
   });
 
   factory EventReminder.fromJson(Map<String, dynamic> json) {
@@ -16,6 +18,8 @@ class EventReminder {
       category: json['category'] as String? ?? 'Date',
       dueDate: dateFromJson(json['dueDate']) ?? DateTime.now(),
       isDone: json['isDone'] as bool? ?? false,
+      amount: numberFromJson(json['amount']) ?? 0,
+      linkedExpenseId: json['linkedExpenseId'] as String? ?? '',
     );
   }
 
@@ -24,6 +28,8 @@ class EventReminder {
   final String category;
   final DateTime dueDate;
   final bool isDone;
+  final double amount;
+  final String linkedExpenseId;
 
   bool isOverdue(DateTime now) {
     final today = DateTime(now.year, now.month, now.day);
@@ -31,12 +37,21 @@ class EventReminder {
     return !isDone && due.isBefore(today);
   }
 
-  EventReminder copyWith({bool? isDone}) => EventReminder(
+  EventReminder copyWith({
+    String? title,
+    String? category,
+    DateTime? dueDate,
+    bool? isDone,
+    double? amount,
+    String? linkedExpenseId,
+  }) => EventReminder(
     id: id,
-    title: title,
-    category: category,
-    dueDate: dueDate,
+    title: title ?? this.title,
+    category: category ?? this.category,
+    dueDate: dueDate ?? this.dueDate,
     isDone: isDone ?? this.isDone,
+    amount: amount ?? this.amount,
+    linkedExpenseId: linkedExpenseId ?? this.linkedExpenseId,
   );
 
   Map<String, dynamic> toJson() => {
@@ -45,5 +60,7 @@ class EventReminder {
     'category': category,
     'dueDate': dueDate.toIso8601String(),
     'isDone': isDone,
+    'amount': amount,
+    'linkedExpenseId': linkedExpenseId,
   };
 }

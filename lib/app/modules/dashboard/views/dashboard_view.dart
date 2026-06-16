@@ -179,8 +179,9 @@ class _DashboardBody extends StatelessWidget {
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
         child: switch (page) {
-          DashboardPageKind.expenseAdd => const ExpenseAddPage(
-            key: ValueKey('expense-add'),
+          DashboardPageKind.expenseAdd => ExpenseAddPage(
+            key: ValueKey('expense-add-$argument'),
+            sourceArgument: argument,
           ),
           DashboardPageKind.reminderAdd => const ReminderAddPage(
             key: ValueKey('reminder-add'),

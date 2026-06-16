@@ -8,7 +8,11 @@ import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_f
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/repay_person_picker.dart';
 
 class ExpenseAddPage extends StatefulWidget {
-  const ExpenseAddPage({super.key});
+  const ExpenseAddPage({super.key, this.sourceArgument});
+
+  /// Encodes the record this expense should be created from, in the form
+  /// `purchase:<id>` or `reminder:<id>`. Null for a plain, blank expense.
+  final String? sourceArgument;
 
   @override
   State<ExpenseAddPage> createState() => _ExpenseAddPageState();
@@ -27,6 +31,52 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
   RepayPerson? _paidByPerson;
   bool _needsRepayment = false;
   bool _isSaving = false;
+  String _sourceShoppingItemId = '';
+  String _sourceReminderId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _applySourcePrefill();
+  }
+
+  void _applySourcePrefill() {
+    final argument = widget.sourceArgument;
+    if (argument == null) return;
+    final separatorIndex = argument.indexOf(':');
+    if (separatorIndex == -1) return;
+    final sourceType = argument.substring(0, separatorIndex);
+    final sourceId = argument.substring(separatorIndex + 1);
+
+    if (sourceType == 'purchase') {
+      final purchase = controller.data.value.purchases.firstWhereOrNull(
+        (entry) => entry.id == sourceId,
+      );
+      if (purchase == null) return;
+      _nameController.text = purchase.name;
+      if (purchase.amount > 0) {
+        _totalController.text = moneyText(purchase.amount);
+      }
+      _category = expenseCategories.contains(purchase.category)
+          ? purchase.category
+          : 'Shopping';
+      _dueDate = DateTime.now();
+      _notesController.text = 'Created from shopping list item';
+      _sourceShoppingItemId = purchase.id;
+    } else if (sourceType == 'reminder') {
+      final reminder = controller.data.value.reminders.firstWhereOrNull(
+        (entry) => entry.id == sourceId,
+      );
+      if (reminder == null) return;
+      _nameController.text = reminder.title;
+      if (reminder.amount > 0) {
+        _totalController.text = moneyText(reminder.amount);
+      }
+      _dueDate = reminder.dueDate;
+      _notesController.text = 'Created from reminder';
+      _sourceReminderId = reminder.id;
+    }
+  }
 
   @override
   void dispose() {
@@ -70,9 +120,19 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
       repayAmount: '',
       dueDate: _dueDate,
       notes: _notesController.text,
+      sourceShoppingItemId: _sourceShoppingItemId,
+      sourceReminderId: _sourceReminderId,
     );
 
     await controller.saveExpense(expense);
+    if (_sourceShoppingItemId.isNotEmpty) {
+      await controller.linkPurchaseToExpense(
+        _sourceShoppingItemId,
+        expense.id,
+      );
+    } else if (_sourceReminderId.isNotEmpty) {
+      await controller.linkReminderToExpense(_sourceReminderId, expense.id);
+    }
     if (!mounted) return;
     setState(() => _isSaving = false);
     controller.closeDashboardSubPage();
@@ -113,10 +173,14 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
           ),
         ),
         children: [
-          const DashboardFormIntroCard(
+          DashboardFormIntroCard(
             icon: Icons.payments_rounded,
             title: 'Add Expense',
-            subtitle: 'Track totals, paid amount, due date, and repayments.',
+            subtitle: _sourceShoppingItemId.isNotEmpty
+                ? 'Review the prefilled details, then save to log this purchase as an expense.'
+                : _sourceReminderId.isNotEmpty
+                ? 'Review the prefilled details, then save to log this reminder as an expense.'
+                : 'Track totals, paid amount, due date, and repayments.',
           ),
           const SizedBox(height: 12),
           DashboardFormCard(

@@ -1014,6 +1014,18 @@ Future<void> _showReminderActions(BuildContext context, EventReminder item) {
                 controller.toggleReminder(item);
               },
             ),
+            if (item.category == 'Payment')
+              ListTile(
+                leading: Icon(
+                  Icons.receipt_long_rounded,
+                  color: ThemeColors.primary,
+                ),
+                title: const Text('Add to Expense'),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  controller.openExpenseAddFromReminder(item.id);
+                },
+              ),
             ListTile(
               leading: Icon(CupertinoIcons.pencil, color: ThemeColors.primary),
               title: const Text('Edit reminder'),
