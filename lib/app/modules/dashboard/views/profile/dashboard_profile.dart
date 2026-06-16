@@ -359,14 +359,6 @@ class ReportsPanel extends GetView<DashboardController> {
                       _PersonRepaymentReportList(entries: repaymentPeople),
                       const SizedBox(height: 12),
                     ],
-                    if (repaymentExpenses.isEmpty)
-                      const PremiumEmptyState(
-                        icon: Icons.assignment_return_rounded,
-                        title: 'No repayment records',
-                        subtitle: 'Repayment items will appear here.',
-                      )
-                    else
-                      _RepaymentExpenseReport(expenses: repaymentExpenses),
                   ],
                 ),
               ),
@@ -435,20 +427,27 @@ class ReportsPanel extends GetView<DashboardController> {
                 ),
               ),
               const SizedBox(height: 12),
-              FilledButton(
-                onPressed: () => _printExpensePdf(context, data.expenses),
-                style: FilledButton.styleFrom(
-                  backgroundColor: ThemeColors.primary,
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+              Row(
+                children: [
+                  FilledButton(
+                    onPressed: () => _printExpensePdf(context, data.expenses),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: ThemeColors.primary,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Export Pdf',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'View Detailed Report',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                ),
+                ],
               ),
             ],
           ),
@@ -1269,39 +1268,6 @@ class _DetailedExpenseReport extends StatelessWidget {
               trailingTitle: moneyOrDash(item.totalAmount),
               trailingSubtitle:
                   '${moneyOrDash(item.paidForSummary)} paid | ${moneyOrDash(item.pendingForSummary)} pending',
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _RepaymentExpenseReport extends StatelessWidget {
-  const _RepaymentExpenseReport({required this.expenses});
-
-  final List<ExpenseItem> expenses;
-
-  @override
-  Widget build(BuildContext context) {
-    final sorted = expenses.toList()
-      ..sort((a, b) => b.repaymentPending.compareTo(a.repaymentPending));
-    return Column(
-      children: sorted
-          .map(
-            (item) => _ReportListRow(
-              icon: item.repaymentPending > 0
-                  ? Icons.assignment_return_rounded
-                  : Icons.task_alt_rounded,
-              iconColor: item.repaymentPending > 0
-                  ? ThemeColors.primary
-                  : const Color(0xFF209B4B),
-              title: item.repayPerson.trim().isEmpty
-                  ? item.displayPaidBy
-                  : item.repayPerson,
-              subtitle:
-                  '${item.name.isEmpty ? 'Expense' : item.name} | ${item.isRepaymentCompleted ? 'Completed' : 'Pending'}',
-              trailingTitle: moneyOrDash(item.repaymentAmount),
-              trailingSubtitle: '${moneyOrDash(item.repaymentPending)} pending',
             ),
           )
           .toList(),
