@@ -170,56 +170,23 @@ class ReportsPanel extends GetView<DashboardController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: _ReportMetricCard(
-                      icon: Icons.account_balance_wallet_outlined,
-                      iconColor: ThemeColors.logoGold,
-                      label: 'Total Expense',
-                      value: '${AppConfig.appCurrency}${formatMoney(total)}',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ReportMetricCard(
-                      icon: Icons.task_alt_rounded,
-                      iconColor: const Color(0xFF209B4B),
-                      label: 'Total Paid',
-                      value: '${AppConfig.appCurrency}${formatMoney(paid)}',
-                    ),
-                  ),
-                ],
+              _ReportHeroCard(
+                total: total,
+                paid: paid,
+                pending: pending,
+                repayment: repaymentPending,
+                paidRatio: paidRatio,
               ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(
-                    child: _ReportMetricCard(
-                      icon: Icons.schedule_rounded,
-                      iconColor: const Color(0xFFFF6824),
-                      label: 'Pending',
-                      value: '${AppConfig.appCurrency}${formatMoney(pending)}',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ReportMetricCard(
-                      icon: Icons.assignment_return_rounded,
-                      iconColor: ThemeColors.primary,
-                      label: 'Repayment',
-                      value:
-                          '${AppConfig.appCurrency}${formatMoney(repaymentPending)}',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               _ReportSurface(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _ReportTitle('Expense by Category'),
+                    const _ReportTitle(
+                      'Expense by Category',
+                      icon: Icons.pie_chart_rounded,
+                      color: ThemeColors.logoGold,
+                    ),
                     const SizedBox(height: 12),
                     if (categoryEntries.isEmpty)
                       const PremiumEmptyState(
@@ -233,8 +200,45 @@ class ReportsPanel extends GetView<DashboardController> {
                           SizedBox(
                             width: 124,
                             height: 124,
-                            child: CustomPaint(
-                              painter: _CategoryDonutPainter(categoryEntries),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CustomPaint(
+                                  size: const Size(124, 124),
+                                  painter: _CategoryDonutPainter(
+                                    categoryEntries,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 68,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          moneyOrDash(total),
+                                          maxLines: 1,
+                                          style: const TextStyle(
+                                            color: ThemeColors.logoDeep,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        'Total',
+                                        style: TextStyle(
+                                          color: ThemeColors.logoDeep
+                                              .withValues(alpha: 0.56),
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(width: 14),
@@ -251,7 +255,11 @@ class ReportsPanel extends GetView<DashboardController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _ReportTitle('Total Expense Report'),
+                    _ReportTitle(
+                      'Total Expense Report',
+                      icon: Icons.summarize_rounded,
+                      color: ThemeColors.primary,
+                    ),
                     const SizedBox(height: 12),
                     _ReportInfoGrid(
                       items: [
@@ -301,7 +309,11 @@ class ReportsPanel extends GetView<DashboardController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _ReportTitle('Detailed Expense Report'),
+                    const _ReportTitle(
+                      'Detailed Expense Report',
+                      icon: Icons.receipt_long_rounded,
+                      color: ThemeColors.logoGold,
+                    ),
                     const SizedBox(height: 12),
                     if (data.expenses.isEmpty)
                       const PremiumEmptyState(
@@ -319,7 +331,11 @@ class ReportsPanel extends GetView<DashboardController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _ReportTitle('Repayment Report'),
+                    _ReportTitle(
+                      'Repayment Report',
+                      icon: Icons.assignment_return_rounded,
+                      color: ThemeColors.primary,
+                    ),
                     const SizedBox(height: 12),
                     _ReportInfoGrid(
                       items: [
@@ -367,7 +383,11 @@ class ReportsPanel extends GetView<DashboardController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _ReportTitle('Paid By Report'),
+                    _ReportTitle(
+                      'Paid By Report',
+                      icon: Icons.group_rounded,
+                      color: ThemeColors.primary,
+                    ),
                     const SizedBox(height: 12),
                     if (paymentPeople.isEmpty)
                       const PremiumEmptyState(
@@ -385,41 +405,65 @@ class ReportsPanel extends GetView<DashboardController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _ReportTitle('Paid vs Pending'),
-                    const SizedBox(height: 14),
+                    const _ReportTitle(
+                      'Paid vs Pending',
+                      icon: Icons.insights_rounded,
+                      color: Color(0xFF209B4B),
+                    ),
+                    const SizedBox(height: 16),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(999),
                       child: SizedBox(
-                        height: 30,
+                        height: 14,
                         child: Row(
                           children: [
                             Expanded(
                               flex: total <= 0
                                   ? 1
                                   : (paidRatio * 1000).round().clamp(1, 999),
-                              child: Container(color: const Color(0xFF2DA052)),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xFF2DA052),
+                                      Color(0xFF4FC97A),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                             Expanded(
                               flex: total <= 0
                                   ? 1
                                   : (pendingRatio * 1000).round().clamp(1, 999),
-                              child: Container(color: const Color(0xFFFF6824)),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xFFFF6824),
+                                      Color(0xFFFFA15C),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         _ReportPercentLabel(
                           label: 'Paid',
                           value: '${(paidRatio * 100).round()}%',
+                          color: const Color(0xFF209B4B),
                         ),
+                        const SizedBox(width: 10),
                         _ReportPercentLabel(
                           label: 'Pending',
                           value: '${(pendingRatio * 100).round()}%',
+                          color: const Color(0xFFFF6824),
                         ),
                       ],
                     ),
@@ -520,7 +564,11 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _ReportTitle('Your Join Key'),
+                    const _ReportTitle(
+                      'Your Join Key',
+                      icon: Icons.vpn_key_rounded,
+                      color: ThemeColors.logoGold,
+                    ),
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -606,7 +654,11 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                 ),
               ),
               const SizedBox(height: 28),
-              const _ReportTitle('Collaborators'),
+              _ReportTitle(
+                'Collaborators',
+                icon: Icons.group_rounded,
+                color: ThemeColors.primary,
+              ),
               const SizedBox(height: 12),
               _CollaboratorList(collaborators: collaborators),
               const SizedBox(height: 40),
@@ -1080,16 +1132,16 @@ class _ReportSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.82),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.13)),
+        color: Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+            color: ThemeColors.logoDeep.withValues(alpha: 0.05),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -1098,48 +1150,138 @@ class _ReportSurface extends StatelessWidget {
   }
 }
 
-class _ReportMetricCard extends StatelessWidget {
-  const _ReportMetricCard({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-    required this.value,
+class _ReportHeroCard extends StatelessWidget {
+  const _ReportHeroCard({
+    required this.total,
+    required this.paid,
+    required this.pending,
+    required this.repayment,
+    required this.paidRatio,
   });
 
-  final IconData icon;
-  final Color iconColor;
-  final String label;
-  final String value;
+  final double total;
+  final double paid;
+  final double pending;
+  final double repayment;
+  final double paidRatio;
 
   @override
   Widget build(BuildContext context) {
-    return _ReportSurface(
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 20),
+      decoration: BoxDecoration(
+        gradient: const RadialGradient(
+          center: Alignment.topLeft,
+          radius: 1.3,
+          colors: [Color(0xFFC71053), Color(0xFF8F1438), Color(0xFF5A0820)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.primary.withValues(alpha: 0.30),
+            blurRadius: 28,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: iconColor, size: 24),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+              ),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ThemeColors.logoDeep.withValues(alpha: 0.76),
-                    fontWeight: FontWeight.w600,
-                  ),
+              const Text(
+                'Total Budget',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
-            value,
+            '${AppConfig.appCurrency}${formatMoney(total)}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.w700,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: SizedBox(
+              height: 8,
+              child: Stack(
+                children: [
+                  Container(color: Colors.white.withValues(alpha: 0.18)),
+                  FractionallySizedBox(
+                    widthFactor: paidRatio.clamp(0.0, 1.0),
+                    child: const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFF7C859), Color(0xFFE8A64E)],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: _HeroStat(
+                  icon: Icons.task_alt_rounded,
+                  label: 'Paid',
+                  value: '${AppConfig.appCurrency}${formatMoney(paid)}',
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 34,
+                color: Colors.white.withValues(alpha: 0.18),
+              ),
+              Expanded(
+                child: _HeroStat(
+                  icon: Icons.schedule_rounded,
+                  label: 'Pending',
+                  value: '${AppConfig.appCurrency}${formatMoney(pending)}',
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 34,
+                color: Colors.white.withValues(alpha: 0.18),
+              ),
+              Expanded(
+                child: _HeroStat(
+                  icon: Icons.assignment_return_rounded,
+                  label: 'Repay',
+                  value: '${AppConfig.appCurrency}${formatMoney(repayment)}',
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1147,43 +1289,123 @@ class _ReportMetricCard extends StatelessWidget {
   }
 }
 
-class _ReportTitle extends StatelessWidget {
-  const _ReportTitle(this.text);
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-    );
-  }
-}
-
-class _ReportPercentLabel extends StatelessWidget {
-  const _ReportPercentLabel({required this.label, required this.value});
-
+  final IconData icon;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(
-          color: ThemeColors.logoDeep.withValues(alpha: 0.76),
-          fontWeight: FontWeight.w600,
-          fontFamily: DefaultTextStyle.of(context).style.fontFamily,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: Colors.white.withValues(alpha: 0.85), size: 13),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.78),
+                fontSize: 10.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReportTitle extends StatelessWidget {
+  const _ReportTitle(this.text, {this.icon, this.color});
+
+  final String text;
+  final IconData? icon;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = color ?? ThemeColors.primary;
+    return Row(
+      children: [
+        if (icon != null) ...[
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: accent.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: accent, size: 16),
+          ),
+          const SizedBox(width: 10),
+        ],
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: ThemeColors.logoDeep,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ReportPercentLabel extends StatelessWidget {
+  const _ReportPercentLabel({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          TextSpan(text: label),
-          const TextSpan(text: '   '),
-          TextSpan(
-            text: value,
-            style: const TextStyle(
-              color: ThemeColors.logoDeep,
-              fontWeight: FontWeight.w600,
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 7),
+          Text(
+            '$label  $value',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
             ),
           ),
         ],
@@ -1231,13 +1453,21 @@ class _ReportInfoTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: item.color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: item.color.withValues(alpha: 0.12)),
+        color: const Color(0xFFFFFBF5),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: item.color.withValues(alpha: 0.16)),
       ),
       child: Row(
         children: [
-          Icon(item.icon, color: item.color, size: 22),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: item.color.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(item.icon, color: item.color, size: 18),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -1261,7 +1491,7 @@ class _ReportInfoTile extends StatelessWidget {
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -1377,7 +1607,7 @@ class _ReportListRow extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBF5),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: ThemeColors.logoGold.withValues(alpha: 0.12)),
       ),
       child: Row(
@@ -1387,9 +1617,9 @@ class _ReportListRow extends StatelessWidget {
             height: 42,
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: iconColor),
+            child: Icon(icon, color: iconColor, size: 19),
           ),
           const SizedBox(width: 12),
           Expanded(
