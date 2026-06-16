@@ -697,104 +697,190 @@ class _WeddingTaskCard extends GetView<DashboardController> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
-        onTap: () => showReminderDialog(context, reminder: item),
-        borderRadius: BorderRadius.circular(18),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 78),
-          padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.84),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFF1D9D5)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              InkWell(
-                onTap: () => controller.toggleReminder(item),
-                borderRadius: BorderRadius.circular(999),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: ThemeColors.primary.withValues(alpha: 0.10),
-                    border: Border.all(
-                      color: item.isDone
-                          ? const Color(0xFF0D7A3A)
-                          : ThemeColors.primary.withValues(alpha: 0.18),
-                    ),
-                  ),
-                  child: Icon(
-                    item.isDone
-                        ? CupertinoIcons.check_mark_circled_solid
-                        : CupertinoIcons.calendar,
-                    color: item.isDone
-                        ? const Color(0xFF0D7A3A)
-                        : ThemeColors.primary,
-                    size: 21,
-                  ),
+      child: Dismissible(
+        key: ValueKey(item.id),
+        background: _SwipeActionBackground(
+          alignment: Alignment.centerLeft,
+          color: const Color(0xFF0D7A3A),
+          icon: item.isDone
+              ? CupertinoIcons.arrow_counterclockwise
+              : CupertinoIcons.check_mark_circled_solid,
+          label: item.isDone ? 'Mark not done' : 'Mark done',
+        ),
+        secondaryBackground: const _SwipeActionBackground(
+          alignment: Alignment.centerRight,
+          color: Color(0xFFC30B4A),
+          icon: CupertinoIcons.delete,
+          label: 'Delete',
+        ),
+        confirmDismiss: (direction) async {
+          if (direction == DismissDirection.startToEnd) {
+            controller.toggleReminder(item);
+            return false;
+          }
+          return _confirmDeleteReminder(context, item);
+        },
+        onDismissed: (direction) {
+          if (direction == DismissDirection.endToStart) {
+            controller.deleteReminder(item);
+          }
+        },
+        child: InkWell(
+          onTap: () => showReminderDialog(context, reminder: item),
+          onLongPress: () => _showReminderActions(context, item),
+          borderRadius: BorderRadius.circular(18),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 78),
+            padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.84),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFF1D9D5)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      item.title.isEmpty ? 'Untitled task' : item.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+              ],
+            ),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () => controller.toggleReminder(item),
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: item.isDone
+                          ? const Color(0xFF0D7A3A).withValues(alpha: 0.10)
+                          : ThemeColors.primary.withValues(alpha: 0.10),
+                      border: Border.all(
                         color: item.isDone
-                            ? const Color(0xFF78656A)
-                            : ThemeColors.logoDeep,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        decoration: item.isDone
-                            ? TextDecoration.lineThrough
-                            : null,
+                            ? const Color(0xFF0D7A3A)
+                            : ThemeColors.primary.withValues(alpha: 0.18),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(
-                          CupertinoIcons.calendar,
-                          color: ThemeColors.primary,
-                          size: 13,
+                    child: Icon(
+                      item.isDone
+                          ? CupertinoIcons.check_mark_circled_solid
+                          : CupertinoIcons.calendar,
+                      color: item.isDone
+                          ? const Color(0xFF0D7A3A)
+                          : ThemeColors.primary,
+                      size: 21,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        item.title.isEmpty ? 'Untitled task' : item.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: item.isDone
+                              ? const Color(0xFF78656A)
+                              : ThemeColors.logoDeep,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          decoration: item.isDone
+                              ? TextDecoration.lineThrough
+                              : null,
                         ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            formatDate(item.dueDate),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF726166),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            CupertinoIcons.calendar,
+                            color: ThemeColors.primary,
+                            size: 13,
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              formatDate(item.dueDate),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF726166),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              _DaysLeftPill(days: days, color: daysColor, done: item.isDone),
-            ],
+                const SizedBox(width: 8),
+                _DaysLeftPill(days: days, color: daysColor, done: item.isDone),
+                const SizedBox(width: 4),
+                InkWell(
+                  onTap: () => _showReminderActions(context, item),
+                  borderRadius: BorderRadius.circular(999),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(
+                      CupertinoIcons.ellipsis_vertical,
+                      color: Color(0xFF9C8389),
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SwipeActionBackground extends StatelessWidget {
+  const _SwipeActionBackground({
+    required this.alignment,
+    required this.color,
+    required this.icon,
+    required this.label,
+  });
+
+  final Alignment alignment;
+  final Color color;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 22),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -821,33 +907,42 @@ class _DaysLeftPill extends StatelessWidget {
         ? days!.abs().toString()
         : days.toString();
     final caption = done
-        ? ''
+        ? 'Done'
         : days != null && days! < 0
         ? 'overdue'
         : 'days left';
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF7F6),
+        color: done ? const Color(0xFFEAF3ED) : const Color(0xFFFFF7F6),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF0CCC8)),
+        border: Border.all(
+          color: done ? const Color(0xFFBFE3CB) : const Color(0xFFF0CCC8),
+        ),
       ),
       width: 50,
       height: 50,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+          if (done)
+            Icon(
+              CupertinoIcons.check_mark_circled_solid,
               color: color,
-              fontSize: done ? 12 : 17,
-              fontWeight: FontWeight.w600,
-              height: 1,
+              size: 20,
+            )
+          else
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                height: 1,
+              ),
             ),
-          ),
           if (caption.isNotEmpty) ...[
             const SizedBox(height: 3),
             Text(
@@ -865,4 +960,112 @@ class _DaysLeftPill extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _showReminderActions(BuildContext context, EventReminder item) {
+  final controller = Get.find<DashboardController>();
+  return showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6D6D2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  item.title.isEmpty ? 'Untitled task' : item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: ThemeColors.logoDeep,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(
+                item.isDone
+                    ? CupertinoIcons.arrow_counterclockwise
+                    : CupertinoIcons.check_mark_circled_solid,
+                color: const Color(0xFF0D7A3A),
+              ),
+              title: Text(item.isDone ? 'Mark as not done' : 'Mark as done'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                controller.toggleReminder(item);
+              },
+            ),
+            ListTile(
+              leading: Icon(CupertinoIcons.pencil, color: ThemeColors.primary),
+              title: const Text('Edit reminder'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                showReminderDialog(context, reminder: item);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                CupertinoIcons.delete,
+                color: Color(0xFFC30B4A),
+              ),
+              title: const Text('Delete reminder'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final confirmed = await _confirmDeleteReminder(context, item);
+                if (confirmed == true) {
+                  await controller.deleteReminder(item);
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<bool?> _confirmDeleteReminder(BuildContext context, EventReminder item) {
+  return showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete reminder'),
+      content: Text(
+        'Delete ${item.title.isEmpty ? 'this reminder' : item.title}? '
+        'This cannot be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFFC30B4A),
+          ),
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
 }

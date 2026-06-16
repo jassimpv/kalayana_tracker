@@ -611,6 +611,18 @@ class DashboardController extends GetxController {
     );
   }
 
+  Future<void> togglePurchase(PurchaseItem item) async {
+    final purchased = item.status == 'Purchased';
+    final items = data.value.purchases
+        .map(
+          (entry) => entry.id == item.id
+              ? entry.copyWith(status: purchased ? 'Planned' : 'Purchased')
+              : entry,
+        )
+        .toList();
+    await _save(data.value.copyWith(purchases: items));
+  }
+
   Future<void> convertPurchaseToExpense({
     required PurchaseItem purchase,
     required ExpenseItem expense,

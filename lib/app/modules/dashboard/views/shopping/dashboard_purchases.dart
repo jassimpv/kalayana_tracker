@@ -739,108 +739,159 @@ class _PurchaseListCard extends GetView<DashboardController> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: () => showPurchaseDialog(context, purchase: item),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 78),
-          padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.86),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFF1D9D5)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 18,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: ThemeColors.primary.withValues(alpha: 0.10),
+      child: Dismissible(
+        key: ValueKey(item.id),
+        background: _SwipeActionBackground(
+          alignment: Alignment.centerLeft,
+          color: const Color(0xFF0D7A3A),
+          icon: purchased
+              ? CupertinoIcons.arrow_counterclockwise
+              : CupertinoIcons.check_mark_circled_solid,
+          label: purchased ? 'Mark pending' : 'Mark purchased',
+        ),
+        secondaryBackground: const _SwipeActionBackground(
+          alignment: Alignment.centerRight,
+          color: Color(0xFFC30B4A),
+          icon: CupertinoIcons.delete,
+          label: 'Delete',
+        ),
+        confirmDismiss: (direction) async {
+          if (direction == DismissDirection.startToEnd) {
+            controller.togglePurchase(item);
+            return false;
+          }
+          return _confirmDeletePurchase(context, item);
+        },
+        onDismissed: (direction) {
+          if (direction == DismissDirection.endToStart) {
+            controller.deletePurchase(item);
+          }
+        },
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => showPurchaseDialog(context, purchase: item),
+          onLongPress: () => _showPurchaseActions(context, item),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 78),
+            padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.86),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFF1D9D5)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
                 ),
-                child: Icon(spec.icon, color: ThemeColors.primary, size: 23),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () => controller.togglePurchase(item),
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: ThemeColors.primary.withValues(alpha: 0.10),
+                    ),
+                    child: Icon(
+                      spec.icon,
+                      color: ThemeColors.primary,
+                      size: 23,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.name.isEmpty ? 'Untitled item' : item.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: ThemeColors.logoDeep,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          _CategoryPill(spec: spec, label: item.category),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.storefront_outlined,
+                            color: ThemeColors.primary,
+                            size: 13,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              vendor,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF60464C),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.name.isEmpty ? 'Untitled item' : item.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: ThemeColors.logoDeep,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        _CategoryPill(spec: spec, label: item.category),
-                      ],
+                    Text(
+                      '${AppConfig.appCurrency} ${formatMoney(item.amount)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ThemeColors.primary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.storefront_outlined,
-                          color: ThemeColors.primary,
-                          size: 13,
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            vendor,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF60464C),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 7),
+                    _ShoppingStatusPill(
+                      label: purchased ? 'Purchased' : 'Pending',
+                      purchased: purchased,
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '${AppConfig.appCurrency} ${formatMoney(item.amount)}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: ThemeColors.primary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                const SizedBox(width: 4),
+                InkWell(
+                  onTap: () => _showPurchaseActions(context, item),
+                  borderRadius: BorderRadius.circular(999),
+                  child: const Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(
+                      CupertinoIcons.ellipsis_vertical,
+                      color: Color(0xFF9C8389),
+                      size: 16,
                     ),
                   ),
-                  const SizedBox(height: 7),
-                  _ShoppingStatusPill(
-                    label: purchased ? 'Purchased' : 'Pending',
-                    purchased: purchased,
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1006,3 +1057,112 @@ class _ShoppingCategorySpec {
 }
 
 bool _isPurchased(PurchaseItem item) => item.status == 'Purchased';
+
+Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
+  final controller = Get.find<DashboardController>();
+  final purchased = _isPurchased(item);
+  return showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE6D6D2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  item.name.isEmpty ? 'Untitled item' : item.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: ThemeColors.logoDeep,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(
+                purchased
+                    ? CupertinoIcons.arrow_counterclockwise
+                    : CupertinoIcons.check_mark_circled_solid,
+                color: const Color(0xFF0D7A3A),
+              ),
+              title: Text(purchased ? 'Mark as pending' : 'Mark as purchased'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                controller.togglePurchase(item);
+              },
+            ),
+            ListTile(
+              leading: Icon(CupertinoIcons.pencil, color: ThemeColors.primary),
+              title: const Text('Edit item'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                showPurchaseDialog(context, purchase: item);
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                CupertinoIcons.delete,
+                color: Color(0xFFC30B4A),
+              ),
+              title: const Text('Delete item'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final confirmed = await _confirmDeletePurchase(context, item);
+                if (confirmed == true) {
+                  await controller.deletePurchase(item);
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+Future<bool?> _confirmDeletePurchase(BuildContext context, PurchaseItem item) {
+  return showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Delete item'),
+      content: Text(
+        'Delete ${item.name.isEmpty ? 'this item' : item.name}? '
+        'This cannot be undone.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFFC30B4A),
+          ),
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+}

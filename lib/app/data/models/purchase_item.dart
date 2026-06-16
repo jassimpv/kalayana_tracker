@@ -28,6 +28,21 @@ class PurchaseItem {
   final String status;
   final String note;
 
+  PurchaseItem copyWith({
+    String? name,
+    String? category,
+    double? amount,
+    String? status,
+    String? note,
+  }) => PurchaseItem(
+    id: id,
+    name: name ?? this.name,
+    category: category ?? this.category,
+    amount: amount ?? this.amount,
+    status: status ?? this.status,
+    note: note ?? this.note,
+  );
+
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
