@@ -5,10 +5,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:kalayanaexpresstracker/app/core/config/ads_config.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
@@ -100,9 +102,15 @@ class DashboardView extends GetView<DashboardController> {
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 180),
                         opacity: controller.isDashboardSubPage ? 0 : 1,
-                        child: BottomNav(
-                          controller: controller,
-                          onItemClick: controller.openDashboardTab,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const DashboardBannerAdSlot(),
+                            BottomNav(
+                              controller: controller,
+                              onItemClick: controller.openDashboardTab,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -119,7 +127,11 @@ class DashboardView extends GetView<DashboardController> {
                     controller.selectedIndex.value == 4
                 ? const SizedBox.shrink()
                 : Padding(
-                    padding: const EdgeInsets.only(bottom: 84),
+                    padding: EdgeInsets.only(
+                      bottom:
+                          84 +
+                          (isMobileAdsSupported ? AdsConfig.bannerHeight : 0),
+                    ),
                     child: FloatingActionButton(
                       onPressed: () =>
                           _handlePrimaryAction(controller.selectedIndex.value),
@@ -260,7 +272,8 @@ class _DashboardTabPage extends GetView<DashboardController> {
                             : 8,
                         bottom:
                             MediaQuery.paddingOf(context).bottom +
-                            (index == 0 ? 118 : 60),
+                            (index == 0 ? 118 : 60) +
+                            (isMobileAdsSupported ? AdsConfig.bannerHeight : 0),
                         left:
                             index == 0 ||
                                 index == 1 ||

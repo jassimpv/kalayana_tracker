@@ -46,6 +46,7 @@ dependencies:
   in_app_update: ^4.2.5
   device_info_plus: ^13.1.0
   package_info_plus: ^10.1.0
+  google_mobile_ads: ^6.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
