@@ -80,16 +80,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
     final repayment = data.repaymentPending;
     final remaining = math.max(data.totalBudget - paid - pending, 0.0);
 
-    final hero = _DashboardHeroHeader(
-      firstName: firstName == '-' ? 'Jassim' : firstName,
-      user: user,
-      coupleName: couple,
-      weddingDate: weddingDate,
-      daysLeft: daysLeft,
-      onReminderTap: onShowReminders,
-      onProfileTap: onShowProfile,
-      onEditWedding: onEditWedding,
-    );
+    final firstNameLabel = firstName == '-' ? 'Jassim' : firstName;
     final budget = _BudgetHeroCard(
       total: data.totalBudget,
       paid: paid,
@@ -116,40 +107,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
       onViewReports: onViewReports,
     );
 
-    if (isMobile(context) || isTablet(context)) {
-      return DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFF3E4), Color(0xFFFFFCF7)],
-          ),
-        ),
-        child: Column(
-          children: [
-            hero,
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Column(
-                children: [
-                  budget,
-                  const SizedBox(height: 12),
-                  metrics,
-                  const SizedBox(height: 18),
-                  pulse,
-                  const SizedBox(height: 20),
-                  actions,
-                  const SizedBox(height: 18),
-                  const InlineNativeAdCard(),
-                  const SizedBox(height: 18),
-                  analytics,
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    final compact = isMobile(context) || isTablet(context);
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -159,27 +117,62 @@ class _DashboardOverviewScreen extends StatelessWidget {
           colors: [Color(0xFFFFF3E4), Color(0xFFFFFCF7)],
         ),
       ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-            child: Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 2, child: budget),
-                    const SizedBox(width: 16),
-                    Expanded(child: pulse),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                metrics,
-                const SizedBox(height: 20),
-                actions,
-                const SizedBox(height: 20),
-                analytics,
-              ],
+      child: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
+        slivers: [
+          if (compact)
+            _OverviewHeroSliverAppBar(
+              firstName: firstNameLabel,
+              user: user,
+              coupleName: couple,
+              weddingDate: weddingDate,
+              daysLeft: daysLeft,
+              onReminderTap: onShowReminders,
+              onProfileTap: onShowProfile,
+              onEditWedding: onEditWedding,
+            ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              compact ? 16 : 24,
+              compact ? 12 : 24,
+              compact ? 16 : 24,
+              compact ? 24 : 32,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: compact
+                  ? Column(
+                      children: [
+                        budget,
+                        const SizedBox(height: 12),
+                        metrics,
+                        const SizedBox(height: 18),
+                        pulse,
+                        const SizedBox(height: 20),
+                        actions,
+                        const SizedBox(height: 18),
+                        const InlineNativeAdCard(),
+                        const SizedBox(height: 18),
+                        analytics,
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 2, child: budget),
+                            const SizedBox(width: 16),
+                            Expanded(child: pulse),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        metrics,
+                        const SizedBox(height: 20),
+                        actions,
+                        const SizedBox(height: 20),
+                        analytics,
+                      ],
+                    ),
             ),
           ),
         ],
@@ -188,8 +181,8 @@ class _DashboardOverviewScreen extends StatelessWidget {
   }
 }
 
-class _DashboardHeroHeader extends StatelessWidget {
-  const _DashboardHeroHeader({
+class _OverviewHeroSliverAppBar extends StatelessWidget {
+  const _OverviewHeroSliverAppBar({
     required this.firstName,
     required this.user,
     required this.coupleName,
@@ -212,32 +205,68 @@ class _DashboardHeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
-    final heroHeight = topInset + 98;
-    return SizedBox(
-      height: heroHeight + 100,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            height: heroHeight + 100,
-            decoration: const BoxDecoration(color: Color(0xFF8F1438)),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.asset(
-                    'assets/images/dashboard_figma_wedding_header.png',
-                    fit: BoxFit.cover,
-                    alignment: const Alignment(1.0, 0),
-                    filterQuality: FilterQuality.high,
+    final expandedHeight = topInset + 130;
+    final collapsedHeight = topInset + 70;
+
+    return SliverAppBar(
+      automaticallyImplyLeading: false,
+      pinned: true,
+      stretch: true,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      backgroundColor: const Color(0xFF8F1438),
+      toolbarHeight: 70,
+      collapsedHeight: collapsedHeight,
+      expandedHeight: expandedHeight,
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final settings = context
+              .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+          final currentExtent =
+              settings?.currentExtent ?? constraints.biggest.height;
+          final minExtent = settings?.minExtent ?? collapsedHeight;
+          final maxExtent = settings?.maxExtent ?? expandedHeight;
+          final expandProgress =
+              ((currentExtent - minExtent) / (maxExtent - minExtent)).clamp(
+                0.0,
+                1.0,
+              );
+          final bool isCollapsed = currentExtent <= minExtent + 1;
+
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: Image.asset(
+                  'assets/images/dashboard_figma_wedding_header.png',
+                  fit: BoxFit.cover,
+                  alignment: const Alignment(1.0, 0),
+                  filterQuality: FilterQuality.high,
+                ),
+              ),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFF5A0820).withValues(alpha: 0.42),
+                        const Color(0xFF8F1438).withValues(alpha: 0.18),
+                        const Color(0xFF8F1438).withValues(alpha: 0.34),
+                      ],
+                    ),
                   ),
                 ),
-                Positioned(
-                  top: topInset + 18,
-                  left: 22,
-                  right: 18,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+              ),
+              Positioned(
+                top: topInset + 14,
+                left: 22,
+                right: 18,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!isCollapsed)
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,6 +285,8 @@ class _DashboardHeroHeader extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               "Let's plan your perfect day",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.94),
                                 fontSize: 12,
@@ -264,65 +295,57 @@ class _DashboardHeroHeader extends StatelessWidget {
                             ),
                           ],
                         ),
+                      )
+                    else
+                      Expanded(
+                        child: _WeddingIdentityCard(
+                          coupleName: coupleName,
+                          weddingDate: weddingDate,
+                          daysLeft: daysLeft,
+                          onEdit: onEditWedding,
+                        ),
                       ),
-                      const SizedBox(width: 12),
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          _HeaderCircleButton(
-                            icon: CupertinoIcons.bell,
-                            onTap: onReminderTap,
-                          ),
-                          Positioned(
-                            right: 9,
-                            top: -2,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFE8B75C),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
-                        ],
+                    const SizedBox(width: 12),
+                    _ProfilePill(user: user, onTap: onProfileTap),
+                  ],
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: -1,
+                child: IgnorePointer(
+                  child: Opacity(
+                    opacity: expandProgress,
+                    child: ClipPath(
+                      clipper: _OverviewHeaderCardScoopClipper(),
+                      child: SizedBox(
+                        height: 54,
+                        child: ColoredBox(
+                          color: const Color(
+                            0xFFFFF3E4,
+                          ).withValues(alpha: 0.98),
+                        ),
                       ),
-                      const SizedBox(width: 10),
-                      _ProfilePill(user: user, onTap: onProfileTap),
-                    ],
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: heroHeight + 34,
-            child: ClipPath(
-              clipper: _OverviewHeaderCardScoopClipper(),
-              child: SizedBox(
-                height: 70,
-                child: ColoredBox(
-                  color: const Color(0xFFFFF3E4).withValues(alpha: 0.98),
+              ),
+              if (!isCollapsed)
+                Positioned(
+                  left: 16,
+                  right: 108,
+                  bottom: 14,
+                  child: _WeddingIdentityCard(
+                    coupleName: coupleName,
+                    weddingDate: weddingDate,
+                    daysLeft: daysLeft,
+                    onEdit: onEditWedding,
+                  ),
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 108,
-            top: heroHeight - 8,
-            child: SizedBox(
-              child: _WeddingIdentityCard(
-                coupleName: coupleName,
-                weddingDate: weddingDate,
-                daysLeft: daysLeft,
-                onEdit: onEditWedding,
-              ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

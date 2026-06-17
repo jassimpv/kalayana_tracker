@@ -557,58 +557,50 @@ class _DashboardTabPage extends GetView<DashboardController> {
                           topRight: Radius.circular(30),
                         ),
                 ),
-                child: CustomScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  primary: true,
-                  slivers: [
-                    SliverPadding(
-                      padding: EdgeInsets.only(
-                        top:
-                            index == 0 ||
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top:
+                        index == 0 ||
+                            index == 1 ||
+                            index == 2 ||
+                            index == 3 ||
+                            index == 4
+                        ? 0
+                        : 8,
+                    bottom: isDesktop(context)
+                        ? 32
+                        : MediaQuery.paddingOf(context).bottom +
+                              (index == 0 ? 0 : 60) +
+                              (isMobileAdsSupported
+                                  ? AdsConfig.bannerHeight
+                                  : 0),
+                    left:
+                        mobile &&
+                            (index == 0 ||
                                 index == 1 ||
                                 index == 2 ||
                                 index == 3 ||
-                                index == 4
-                            ? 0
-                            : 8,
-                        bottom: isDesktop(context)
-                            ? 32
-                            : MediaQuery.paddingOf(context).bottom +
-                                  (index == 0 ? 118 : 60) +
-                                  (isMobileAdsSupported
-                                      ? AdsConfig.bannerHeight
-                                      : 0),
-                        left:
-                            mobile &&
-                                (index == 0 ||
-                                    index == 1 ||
-                                    index == 2 ||
-                                    index == 3 ||
-                                    index == 4)
-                            ? 0
-                            : mobile
-                            ? 16
-                            : 0,
-                        right:
-                            mobile &&
-                                (index == 0 ||
-                                    index == 1 ||
-                                    index == 2 ||
-                                    index == 3 ||
-                                    index == 4)
-                            ? 0
-                            : mobile
-                            ? 16
-                            : 0,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: ResponsivePageContainer(
-                          padding: EdgeInsets.zero,
-                          child: _page(index, controller.data.value),
-                        ),
-                      ),
-                    ),
-                  ],
+                                index == 4)
+                        ? 0
+                        : mobile
+                        ? 16
+                        : 0,
+                    right:
+                        mobile &&
+                            (index == 0 ||
+                                index == 1 ||
+                                index == 2 ||
+                                index == 3 ||
+                                index == 4)
+                        ? 0
+                        : mobile
+                        ? 16
+                        : 0,
+                  ),
+                  child: ResponsivePageContainer(
+                    padding: EdgeInsets.zero,
+                    child: _page(index, controller.data.value),
+                  ),
                 ),
               ),
             ),
