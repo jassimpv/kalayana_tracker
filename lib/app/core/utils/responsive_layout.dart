@@ -92,7 +92,7 @@ class ResponsiveCardGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final count = responsiveGridCount(context, desktopCount: desktopCount);
     if (count == 1) {
-      return Column(children: children);
+      return SingleChildScrollView(child: Column(children: children));
     }
 
     return LayoutBuilder(
@@ -102,18 +102,20 @@ class ResponsiveCardGrid extends StatelessWidget {
         final itemHeight = childAspectRatio == null
             ? null
             : itemWidth / childAspectRatio!;
-        return Wrap(
-          spacing: spacing,
-          runSpacing: runSpacing,
-          children: children
-              .map(
-                (child) => SizedBox(
-                  width: itemWidth,
-                  height: itemHeight,
-                  child: child,
-                ),
-              )
-              .toList(),
+        return SingleChildScrollView(
+          child: Wrap(
+            spacing: spacing,
+            runSpacing: runSpacing,
+            children: children
+                .map(
+                  (child) => SizedBox(
+                    width: itemWidth,
+                    height: itemHeight,
+                    child: child,
+                  ),
+                )
+                .toList(),
+          ),
         );
       },
     );

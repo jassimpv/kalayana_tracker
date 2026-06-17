@@ -53,41 +53,39 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
     final mobile = isMobile(context);
     final desktop = isDesktop(context);
 
-    return SingleChildScrollView(
-      physics: ClampingScrollPhysics(),
-      padding: EdgeInsets.only(bottom: 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // The desktop shell already shows an "Expenses" title bar above
-          // this panel, so the mobile-style gradient hero would just repeat
-          // it — skip it on desktop instead of stacking two headers.
-          if (!desktop) const _ExpensesHero(),
-          Transform.translate(
-            offset: desktop ? Offset.zero : const Offset(0, -15),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                mobile ? 18 : 24,
-                desktop ? 24 : 0,
-                mobile ? 18 : 24,
-                0,
-              ),
-              child: _ExpenseSearchPanel(
-                filters: filters,
-                selectedFilter: _selectedFilter,
-                onQueryChanged: (value) => setState(() => _query = value),
-                onFilterChanged: (value) => setState(() {
-                  _selectedFilter = value;
-                }),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // The desktop shell already shows an "Expenses" title bar above
+        // this panel, so the mobile-style gradient hero would just repeat
+        // it — skip it on desktop instead of stacking two headers.
+        if (!desktop) const _ExpensesHero(),
+        Transform.translate(
+          offset: desktop ? Offset.zero : const Offset(0, -15),
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              mobile ? 18 : 24,
+              desktop ? 24 : 0,
+              mobile ? 18 : 24,
+              0,
+            ),
+            child: _ExpenseSearchPanel(
+              filters: filters,
+              selectedFilter: _selectedFilter,
+              onQueryChanged: (value) => setState(() => _query = value),
+              onFilterChanged: (value) => setState(() {
+                _selectedFilter = value;
+              }),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: mobile ? 20 : 24),
-            child: _ExpenseTaskHeader(),
-          ),
-          const SizedBox(height: 12),
-          Padding(
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: mobile ? 20 : 24),
+          child: _ExpenseTaskHeader(),
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: Padding(
             padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
             child: widget.expenses.isEmpty
                 ? _ExpenseEmptyLedger(onTap: widget.onAdd)
@@ -108,8 +106,8 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
                         .toList(),
                   ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
