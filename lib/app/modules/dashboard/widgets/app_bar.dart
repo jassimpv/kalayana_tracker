@@ -222,22 +222,11 @@ class _GlassOrb extends StatelessWidget {
 class _LuxuryAppBarClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    const topRadius = 34.0;
-
     return Path()
-      // top-left rounded corner
-      ..moveTo(0, topRadius)
-      ..quadraticBezierTo(0, 0, topRadius, 0)
-      // top line
-      ..lineTo(size.width - topRadius, 0)
-      // top-right rounded corner
-      ..quadraticBezierTo(size.width, 0, size.width, topRadius)
-      // right side down
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
       ..lineTo(size.width, size.height)
-      // bottom straight line
       ..lineTo(0, size.height)
-      // left side up
-      ..lineTo(0, topRadius)
       ..close();
   }
 

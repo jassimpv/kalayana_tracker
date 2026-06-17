@@ -48,6 +48,8 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
       });
     final mobile = isMobile(context);
     final desktop = isDesktop(context);
+    final horizontalPadding = mobile ? 18.0 : 24.0;
+    final sectionGap = desktop ? 18.0 : 14.0;
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -67,9 +69,9 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
             offset: desktop ? Offset.zero : const Offset(0, -20),
             child: Padding(
               padding: EdgeInsets.fromLTRB(
-                mobile ? 18 : 24,
+                horizontalPadding,
                 desktop ? 24 : 0,
-                mobile ? 18 : 24,
+                horizontalPadding,
                 0,
               ),
               child: _ShoppingSearchPanel(
@@ -87,18 +89,19 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
               ),
             ),
           ),
+          SizedBox(height: desktop ? 14 : 0),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: _WishlistCallout(onTap: controller.openPurchaseAdd),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: sectionGap),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: _ShoppingListHeader(count: visible.length),
           ),
           const SizedBox(height: 8),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: visible.isEmpty
                 ? _ShoppingEmptyState(
                     filter: _selectedFilter,
@@ -706,18 +709,23 @@ class _ShoppingEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final desktop = isDesktop(context);
     final title = filter == 'All'
         ? 'No shopping items yet'
         : 'No $filter items';
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.symmetric(
+        horizontal: desktop ? 24 : 22,
+        vertical: desktop ? 26 : 22,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.78),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFF0D7D2)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(CupertinoIcons.bag, color: ThemeColors.primary, size: 34),
           const SizedBox(height: 10),

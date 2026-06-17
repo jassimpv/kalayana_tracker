@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
 
 import '../controllers/dashboard_controller.dart';
 import 'dashboard_widgets.dart';
@@ -149,19 +150,7 @@ class DashboardSideMenu extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      gradient: ThemeColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const Icon(
-                      Icons.favorite_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
+                  const AppLogo(size: 48, padding: 4),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(

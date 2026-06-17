@@ -2087,6 +2087,33 @@ Future<void> _showCurrencyPicker(
   BuildContext context,
   DashboardController controller,
 ) async {
+  if (isDesktop(context)) {
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.46),
+      builder: (context) {
+        final height = math.min(MediaQuery.sizeOf(context).height - 96, 720.0);
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: 32,
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 620, maxHeight: height),
+            child: _CurrencyPickerPanel(
+              controller: controller,
+              borderRadius: BorderRadius.circular(26),
+              showHandle: false,
+            ),
+          ),
+        );
+      },
+    );
+    return;
+  }
+
   await showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -2095,15 +2122,46 @@ Future<void> _showCurrencyPicker(
   );
 }
 
-class _CurrencyPickerSheet extends StatefulWidget {
+class _CurrencyPickerSheet extends StatelessWidget {
   const _CurrencyPickerSheet({required this.controller});
   final DashboardController controller;
 
   @override
-  State<_CurrencyPickerSheet> createState() => _CurrencyPickerSheetState();
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.82,
+      minChildSize: 0.56,
+      maxChildSize: 0.92,
+      builder: (context, scrollController) {
+        return _CurrencyPickerPanel(
+          controller: controller,
+          scrollController: scrollController,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          showHandle: true,
+        );
+      },
+    );
+  }
 }
 
-class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
+class _CurrencyPickerPanel extends StatefulWidget {
+  const _CurrencyPickerPanel({
+    required this.controller,
+    required this.borderRadius,
+    required this.showHandle,
+    this.scrollController,
+  });
+
+  final DashboardController controller;
+  final BorderRadiusGeometry borderRadius;
+  final bool showHandle;
+  final ScrollController? scrollController;
+
+  @override
+  State<_CurrencyPickerPanel> createState() => _CurrencyPickerPanelState();
+}
+
+class _CurrencyPickerPanelState extends State<_CurrencyPickerPanel> {
   late final TextEditingController _search;
   late List<CurrencyOption> _results;
 
@@ -2123,90 +2181,403 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final current = profileCurrency(widget.controller.profile);
-    return DraggableScrollableSheet(
-      initialChildSize: 0.74,
-      minChildSize: 0.45,
-      maxChildSize: 0.92,
-      builder: (context, scrollController) {
-        return Material(
-          color: const Color(0xFFFFFBF7),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            children: [
-              const SizedBox(height: 10),
-              Container(
-                width: 42,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: ThemeColors.primary.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
-                child: TextField(
-                  controller: _search,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Search currency',
-                    hintText: 'USD, Euro, ₹',
-                    prefixIcon: Icon(Icons.search_rounded),
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+    return Material(
+      color: const Color(0xFFFFFBF7),
+      borderRadius: widget.borderRadius,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (widget.showHandle) ...[
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: ThemeColors.primary.withValues(alpha: 0.20),
+                    borderRadius: BorderRadius.circular(99),
                   ),
-                  onChanged: (value) {
-                    setState(() => _results = CurrencySymbolApi.search(value));
-                  },
                 ),
               ),
-              Expanded(
-                child: ListView.separated(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 18),
-                  itemBuilder: (context, index) {
-                    final option = _results[index];
-                    final selected = option.code == current.code;
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: ThemeColors.primary.withValues(
-                          alpha: selected ? 0.18 : 0.08,
-                        ),
-                        child: Text(
-                          option.symbol,
-                          style: TextStyle(
-                            color: ThemeColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      title: Text('${option.code}  ${option.name}'),
-                      subtitle: Text('Symbol: ${option.symbol}'),
-                      trailing: selected
-                          ? Icon(
-                              Icons.check_circle_rounded,
-                              color: ThemeColors.primary,
-                            )
-                          : null,
-                      onTap: () async {
-                        await widget.controller.saveProfile(
-                          groom: profileGroom(widget.controller.profile),
-                          bride: profileBride(widget.controller.profile),
-                          weddingDate: profileMarriageDate(
-                            widget.controller.profile,
-                          ),
-                          currency: option,
-                        );
-                        if (context.mounted) Navigator.pop(context);
-                      },
-                    );
-                  },
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemCount: _results.length,
+            ),
+          ] else
+            const SizedBox(height: 18),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 12),
+            child: _CurrencyPickerHeader(current: current),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 0, 18, 14),
+            child: _CurrencySearchField(
+              controller: _search,
+              onChanged: (value) {
+                setState(() => _results = CurrencySymbolApi.search(value));
+              },
+            ),
+          ),
+          Expanded(
+            child: _results.isEmpty
+                ? const _CurrencyEmptyState()
+                : ListView.separated(
+                    controller: widget.scrollController,
+                    padding: EdgeInsets.fromLTRB(18, 0, 18, 18 + bottomPadding),
+                    itemBuilder: (context, index) {
+                      final option = _results[index];
+                      return _CurrencyOptionTile(
+                        currency: option,
+                        selected: option.code == current.code,
+                        onTap: () async {
+                          await widget.controller.saveProfile(
+                            groom: profileGroom(widget.controller.profile),
+                            bride: profileBride(widget.controller.profile),
+                            weddingDate: profileMarriageDate(
+                              widget.controller.profile,
+                            ),
+                            currency: option,
+                          );
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                      );
+                    },
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemCount: _results.length,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CurrencyPickerHeader extends StatelessWidget {
+  const _CurrencyPickerHeader({required this.current});
+
+  final CurrencyOption current;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const RadialGradient(
+          center: Alignment.topLeft,
+          radius: 1.28,
+          colors: [Color(0xFFC71053), Color(0xFF9D1740), Color(0xFF751030)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: ThemeColors.primary.withValues(alpha: 0.22),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+            ),
+            child: Text(
+              current.symbol,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Choose currency',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.82),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
+                const SizedBox(height: 5),
+                Text(
+                  '${current.code}  ${current.name}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'Currently active across your budget',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: const Color(0xFFF7C859).withValues(alpha: 0.92),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CurrencySearchField extends StatelessWidget {
+  const _CurrencySearchField({
+    required this.controller,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      autofocus: true,
+      onChanged: onChanged,
+      cursorColor: ThemeColors.primary,
+      style: const TextStyle(
+        color: ThemeColors.logoDeep,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: InputDecoration(
+        hintText: 'Search code, name, or symbol',
+        hintStyle: TextStyle(
+          color: ThemeColors.logoDeep.withValues(alpha: 0.42),
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
+        prefixIcon: Icon(
+          Icons.search_rounded,
+          color: ThemeColors.primary.withValues(alpha: 0.72),
+        ),
+        suffixIcon: Icon(
+          Icons.tune_rounded,
+          color: ThemeColors.logoGold.withValues(alpha: 0.92),
+        ),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.92),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 15,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFF0D7D2)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFF0D7D2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: BorderSide(
+            color: ThemeColors.primary.withValues(alpha: 0.42),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CurrencyOptionTile extends StatelessWidget {
+  const _CurrencyOptionTile({
+    required this.currency,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final CurrencyOption currency;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = selected
+        ? ThemeColors.primary.withValues(alpha: 0.38)
+        : const Color(0xFFF0D7D2);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          decoration: BoxDecoration(
+            color: selected
+                ? ThemeColors.primary.withValues(alpha: 0.08)
+                : Colors.white.withValues(alpha: 0.86),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: borderColor),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: ThemeColors.primary.withValues(alpha: 0.12),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? ThemeColors.primary
+                      : ThemeColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  currency.symbol,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected ? Colors.white : ThemeColors.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          currency.code,
+                          style: const TextStyle(
+                            color: ThemeColors.logoDeep,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            currency.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: ThemeColors.logoDeep.withValues(
+                                alpha: 0.78,
+                              ),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      'Symbol ${currency.symbol}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: ThemeColors.logoDeep.withValues(alpha: 0.52),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Icon(
+                selected
+                    ? Icons.check_circle_rounded
+                    : Icons.chevron_right_rounded,
+                color: selected
+                    ? ThemeColors.primary
+                    : ThemeColors.logoDeep.withValues(alpha: 0.38),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
+    );
+  }
+}
+
+class _CurrencyEmptyState extends StatelessWidget {
+  const _CurrencyEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: ThemeColors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                Icons.search_off_rounded,
+                color: ThemeColors.primary,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'No currency found',
+              style: TextStyle(
+                color: ThemeColors.logoDeep,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              'Try searching by code, country currency name, or symbol.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: ThemeColors.logoDeep.withValues(alpha: 0.62),
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

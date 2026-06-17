@@ -546,7 +546,11 @@ class _DashboardTabPage extends GetView<DashboardController> {
                 decoration: BoxDecoration(
                   color: ThemeColors.scaffoldColor,
                   borderRadius:
-                      index == 0 || index == 1 || index == 2 || index == 3
+                      index == 0 ||
+                          index == 1 ||
+                          index == 2 ||
+                          index == 3 ||
+                          index == 4
                       ? BorderRadius.zero
                       : const BorderRadius.only(
                           topLeft: Radius.circular(30),

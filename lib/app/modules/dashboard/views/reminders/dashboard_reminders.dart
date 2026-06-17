@@ -25,6 +25,8 @@ class RemindersPanel extends GetView<DashboardController> {
     final completedCount = reminders.where((item) => item.isDone).length;
     final mobile = isMobile(context);
     final desktop = isDesktop(context);
+    final horizontalPadding = mobile ? 16.0 : 24.0;
+    final sectionGap = desktop ? 18.0 : 14.0;
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -44,9 +46,9 @@ class RemindersPanel extends GetView<DashboardController> {
             offset: desktop ? Offset.zero : const Offset(0, -15),
             child: Padding(
               padding: EdgeInsets.fromLTRB(
-                mobile ? 16.0 : 24.0,
+                horizontalPadding,
                 desktop ? 24 : 0,
-                mobile ? 16.0 : 24.0,
+                horizontalPadding,
                 0,
               ),
               child: _ReminderStatsCard(
@@ -83,11 +85,12 @@ class RemindersPanel extends GetView<DashboardController> {
               ),
             ),
           ),
+          SizedBox(height: desktop ? 14 : 0),
           Padding(
             padding: EdgeInsets.fromLTRB(
-              mobile ? 16 : 24,
+              horizontalPadding,
               0,
-              mobile ? 16 : 24,
+              horizontalPadding,
               0,
             ),
             child: _PaymentEmptyCallout(
@@ -96,14 +99,14 @@ class RemindersPanel extends GetView<DashboardController> {
               onTap: controller.openReminderAdd,
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: sectionGap),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: mobile ? 18 : 24),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: _ReminderTaskHeader(showingCompleted: false, onTap: () {}),
           ),
           const SizedBox(height: 8),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: mobile ? 16 : 24),
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
             child: taskReminders.isEmpty
                 ? _ReminderEmptyTasks(onTap: controller.openReminderAdd)
                 : ResponsiveCardGrid(
@@ -667,15 +670,21 @@ class _ReminderEmptyTasks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final desktop = isDesktop(context);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.symmetric(
+        horizontal: desktop ? 24 : 22,
+        vertical: desktop ? 26 : 22,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.76),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFF0D7D2)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             CupertinoIcons.calendar_badge_plus,
