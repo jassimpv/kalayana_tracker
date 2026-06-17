@@ -153,6 +153,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
                         const InlineNativeAdCard(),
                         const SizedBox(height: 18),
                         analytics,
+                        const SizedBox(height: 100),
                       ],
                     )
                   : Column(
@@ -214,7 +215,6 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
       stretch: true,
       elevation: 0,
       scrolledUnderElevation: 0,
-      backgroundColor: const Color(0xFF8F1438),
       toolbarHeight: 70,
       collapsedHeight: collapsedHeight,
       expandedHeight: expandedHeight,
@@ -233,28 +233,39 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
               );
           final bool isCollapsed = currentExtent <= minExtent + 1;
 
+          // Animate bottom corner radius: 0 when expanded → 24 when collapsed
+          final bottomRadius = Radius.circular(
+            (1.0 - expandProgress).clamp(0.0, 1.0) * 24.0,
+          );
+
           return Stack(
             clipBehavior: Clip.none,
             children: [
               Positioned.fill(
-                child: Image.asset(
-                  'assets/images/dashboard_figma_wedding_header.png',
-                  fit: BoxFit.cover,
-                  alignment: const Alignment(1.0, 0),
-                  filterQuality: FilterQuality.high,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.vertical(bottom: bottomRadius),
+                  child: Image.asset(
+                    'assets/images/dashboard_figma_wedding_header.png',
+                    fit: BoxFit.cover,
+                    alignment: const Alignment(1.0, 0),
+                    filterQuality: FilterQuality.high,
+                  ),
                 ),
               ),
               Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        const Color(0xFF5A0820).withValues(alpha: 0.42),
-                        const Color(0xFF8F1438).withValues(alpha: 0.18),
-                        const Color(0xFF8F1438).withValues(alpha: 0.34),
-                      ],
+                child: ClipRRect(
+                  borderRadius: BorderRadius.vertical(bottom: bottomRadius),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0xFF5A0820).withValues(alpha: 0.42),
+                          const Color(0xFF8F1438).withValues(alpha: 0.18),
+                          const Color(0xFF8F1438).withValues(alpha: 0.34),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -295,17 +306,8 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
                             ),
                           ],
                         ),
-                      )
-                    else
-                      Expanded(
-                        child: _WeddingIdentityCard(
-                          coupleName: coupleName,
-                          weddingDate: weddingDate,
-                          daysLeft: daysLeft,
-                          onEdit: onEditWedding,
-                        ),
                       ),
-                    const SizedBox(width: 12),
+                    Spacer(),
                     _ProfilePill(user: user, onTap: onProfileTap),
                   ],
                 ),
@@ -331,18 +333,41 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
                   ),
                 ),
               ),
-              if (!isCollapsed)
-                Positioned(
-                  left: 16,
-                  right: 108,
-                  bottom: 14,
-                  child: _WeddingIdentityCard(
-                    coupleName: coupleName,
-                    weddingDate: weddingDate,
-                    daysLeft: daysLeft,
-                    onEdit: onEditWedding,
+              // Bottom border fades in when collapsed
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Opacity(
+                  opacity: (1.0 - expandProgress).clamp(0.0, 1.0),
+                  child: Container(
+                    height: 1.5,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.white.withValues(alpha: 0.0),
+                          Colors.white.withValues(alpha: 0.28),
+                          Colors.white.withValues(alpha: 0.28),
+                          Colors.white.withValues(alpha: 0.0),
+                        ],
+                        stops: const [0.0, 0.15, 0.85, 1.0],
+                      ),
+                    ),
                   ),
                 ),
+              ),
+
+              Positioned(
+                left: 16,
+                right: 108,
+                bottom: 14.0 + (1.0 - expandProgress) * 26.0,
+                child: _WeddingIdentityCard(
+                  coupleName: coupleName,
+                  weddingDate: weddingDate,
+                  daysLeft: daysLeft,
+                  onEdit: onEditWedding,
+                ),
+              ),
             ],
           );
         },

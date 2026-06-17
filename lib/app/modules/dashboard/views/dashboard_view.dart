@@ -534,7 +534,6 @@ class _DashboardTabPage extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final mobile = isMobile(context);
     return Obx(
       () => SafeArea(
         top: false,
@@ -544,7 +543,6 @@ class _DashboardTabPage extends GetView<DashboardController> {
               child: Container(
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: ThemeColors.scaffoldColor,
                   borderRadius:
                       index == 0 ||
                           index == 1 ||
@@ -557,50 +555,9 @@ class _DashboardTabPage extends GetView<DashboardController> {
                           topRight: Radius.circular(30),
                         ),
                 ),
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    top:
-                        index == 0 ||
-                            index == 1 ||
-                            index == 2 ||
-                            index == 3 ||
-                            index == 4
-                        ? 0
-                        : 8,
-                    bottom: isDesktop(context)
-                        ? 32
-                        : MediaQuery.paddingOf(context).bottom +
-                              (index == 0 ? 0 : 60) +
-                              (isMobileAdsSupported
-                                  ? AdsConfig.bannerHeight
-                                  : 0),
-                    left:
-                        mobile &&
-                            (index == 0 ||
-                                index == 1 ||
-                                index == 2 ||
-                                index == 3 ||
-                                index == 4)
-                        ? 0
-                        : mobile
-                        ? 16
-                        : 0,
-                    right:
-                        mobile &&
-                            (index == 0 ||
-                                index == 1 ||
-                                index == 2 ||
-                                index == 3 ||
-                                index == 4)
-                        ? 0
-                        : mobile
-                        ? 16
-                        : 0,
-                  ),
-                  child: ResponsivePageContainer(
-                    padding: EdgeInsets.zero,
-                    child: _page(index, controller.data.value),
-                  ),
+                child: ResponsivePageContainer(
+                  padding: EdgeInsets.zero,
+                  child: _page(index, controller.data.value),
                 ),
               ),
             ),

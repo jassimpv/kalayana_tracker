@@ -36,89 +36,93 @@ class RemindersPanel extends GetView<DashboardController> {
           colors: [Color(0xFFFDF4EC), Color(0xFFFFF8F0)],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // The desktop shell already shows a "Reminders" title bar above
-          // this panel, so skip the mobile-style gradient hero there.
-          if (!desktop) _ReminderHero(),
-          Transform.translate(
-            offset: desktop ? Offset.zero : const Offset(0, -15),
-            child: Padding(
+      child: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
+        padding: EdgeInsets.only(bottom: 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // The desktop shell already shows a "Reminders" title bar above
+            // this panel, so skip the mobile-style gradient hero there.
+            if (!desktop) _ReminderHero(),
+            Transform.translate(
+              offset: desktop ? Offset.zero : const Offset(0, -15),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  desktop ? 24 : 0,
+                  horizontalPadding,
+                  0,
+                ),
+                child: _ReminderStatsCard(
+                  stats: [
+                    _ReminderStat(
+                      icon: CupertinoIcons.creditcard_fill,
+                      value: dueTodayPayments.length,
+                      label: 'Due Today',
+                      color: const Color(0xFFA90B3D),
+                      tint: const Color(0xFFFBE8EA),
+                    ),
+                    _ReminderStat(
+                      icon: CupertinoIcons.calendar_badge_plus,
+                      value: upcomingPaymentsCount,
+                      label: 'Upcoming',
+                      color: const Color(0xFFF28B18),
+                      tint: const Color(0xFFFFF0E0),
+                    ),
+                    _ReminderStat(
+                      icon: CupertinoIcons.check_mark_circled_solid,
+                      value: completedCount,
+                      label: 'Completed',
+                      color: const Color(0xFF0D7A3A),
+                      tint: const Color(0xFFEAF3ED),
+                    ),
+                    _ReminderStat(
+                      icon: CupertinoIcons.arrow_counterclockwise,
+                      value: reminders.length,
+                      label: 'All Reminders',
+                      color: const Color(0xFF6A0C91),
+                      tint: const Color(0xFFF0E7F7),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: desktop ? 14 : 0),
+            Padding(
               padding: EdgeInsets.fromLTRB(
                 horizontalPadding,
-                desktop ? 24 : 0,
+                0,
                 horizontalPadding,
                 0,
               ),
-              child: _ReminderStatsCard(
-                stats: [
-                  _ReminderStat(
-                    icon: CupertinoIcons.creditcard_fill,
-                    value: dueTodayPayments.length,
-                    label: 'Due Today',
-                    color: const Color(0xFFA90B3D),
-                    tint: const Color(0xFFFBE8EA),
-                  ),
-                  _ReminderStat(
-                    icon: CupertinoIcons.calendar_badge_plus,
-                    value: upcomingPaymentsCount,
-                    label: 'Upcoming',
-                    color: const Color(0xFFF28B18),
-                    tint: const Color(0xFFFFF0E0),
-                  ),
-                  _ReminderStat(
-                    icon: CupertinoIcons.check_mark_circled_solid,
-                    value: completedCount,
-                    label: 'Completed',
-                    color: const Color(0xFF0D7A3A),
-                    tint: const Color(0xFFEAF3ED),
-                  ),
-                  _ReminderStat(
-                    icon: CupertinoIcons.arrow_counterclockwise,
-                    value: reminders.length,
-                    label: 'All Reminders',
-                    color: const Color(0xFF6A0C91),
-                    tint: const Color(0xFFF0E7F7),
-                  ),
-                ],
+              child: _PaymentEmptyCallout(
+                hasDuePayments: dueTodayPayments.isNotEmpty,
+                payment: dueTodayPayments.firstOrNull,
+                onTap: controller.openReminderAdd,
               ),
             ),
-          ),
-          SizedBox(height: desktop ? 14 : 0),
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPadding,
-              0,
-              horizontalPadding,
-              0,
+            SizedBox(height: sectionGap),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: _ReminderTaskHeader(showingCompleted: false, onTap: () {}),
             ),
-            child: _PaymentEmptyCallout(
-              hasDuePayments: dueTodayPayments.isNotEmpty,
-              payment: dueTodayPayments.firstOrNull,
-              onTap: controller.openReminderAdd,
+            const SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: taskReminders.isEmpty
+                  ? _ReminderEmptyTasks(onTap: controller.openReminderAdd)
+                  : ResponsiveCardGrid(
+                      desktopCount: 2,
+                      spacing: 14,
+                      runSpacing: 4,
+                      children: taskReminders
+                          .map((item) => _WeddingTaskCard(item: item))
+                          .toList(),
+                    ),
             ),
-          ),
-          SizedBox(height: sectionGap),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: _ReminderTaskHeader(showingCompleted: false, onTap: () {}),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: taskReminders.isEmpty
-                ? _ReminderEmptyTasks(onTap: controller.openReminderAdd)
-                : ResponsiveCardGrid(
-                    desktopCount: 2,
-                    spacing: 14,
-                    runSpacing: 4,
-                    children: taskReminders
-                        .map((item) => _WeddingTaskCard(item: item))
-                        .toList(),
-                  ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

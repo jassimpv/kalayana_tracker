@@ -19,6 +19,7 @@ class ProfilePanel extends GetView<DashboardController> {
         ),
       ),
       child: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
         padding: const EdgeInsets.only(bottom: 108),
         child: ResponsivePageContainer(
           maxWidth: 900,
@@ -28,7 +29,7 @@ class ProfilePanel extends GetView<DashboardController> {
                 builder: (context) {
                   final topInset = MediaQuery.paddingOf(context).top;
                   return SizedBox(
-                    height: topInset + 238,
+                    height: topInset + 170,
                     child: _ProfileHeader(
                       name: name,
                       email: email,

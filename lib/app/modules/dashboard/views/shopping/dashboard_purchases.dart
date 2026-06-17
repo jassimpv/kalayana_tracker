@@ -59,64 +59,68 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
           colors: [Color(0xFFFDF4EC), Color(0xFFFFF8F0)],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // The desktop shell already shows a "Shopping" title bar above
-          // this panel, so skip the mobile-style gradient hero there.
-          if (!desktop) const _ShoppingHero(),
-          Transform.translate(
-            offset: desktop ? Offset.zero : const Offset(0, -20),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                horizontalPadding,
-                desktop ? 24 : 0,
-                horizontalPadding,
-                0,
-              ),
-              child: _ShoppingSearchPanel(
-                controller: _searchController,
-                selectedFilter: _selectedFilter,
-                total: total,
-                pending: pendingCount,
-                purchased: purchasedCount,
-                onChanged: (value) => setState(() {
-                  _searchQuery = value;
-                }),
-                onFilterChanged: (value) => setState(() {
-                  _selectedFilter = value;
-                }),
+      child: SingleChildScrollView(
+        physics: ClampingScrollPhysics(),
+        padding: EdgeInsets.only(bottom: 100),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // The desktop shell already shows a "Shopping" title bar above
+            // this panel, so skip the mobile-style gradient hero there.
+            if (!desktop) const _ShoppingHero(),
+            Transform.translate(
+              offset: desktop ? Offset.zero : const Offset(0, -20),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  desktop ? 24 : 0,
+                  horizontalPadding,
+                  0,
+                ),
+                child: _ShoppingSearchPanel(
+                  controller: _searchController,
+                  selectedFilter: _selectedFilter,
+                  total: total,
+                  pending: pendingCount,
+                  purchased: purchasedCount,
+                  onChanged: (value) => setState(() {
+                    _searchQuery = value;
+                  }),
+                  onFilterChanged: (value) => setState(() {
+                    _selectedFilter = value;
+                  }),
+                ),
               ),
             ),
-          ),
-          SizedBox(height: desktop ? 14 : 0),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: _WishlistCallout(onTap: controller.openPurchaseAdd),
-          ),
-          SizedBox(height: sectionGap),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: _ShoppingListHeader(count: visible.length),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            child: visible.isEmpty
-                ? _ShoppingEmptyState(
-                    filter: _selectedFilter,
-                    onTap: controller.openPurchaseAdd,
-                  )
-                : ResponsiveCardGrid(
-                    desktopCount: 2,
-                    spacing: 14,
-                    runSpacing: 4,
-                    children: visible
-                        .map((item) => _PurchaseListCard(item: item))
-                        .toList(),
-                  ),
-          ),
-        ],
+            SizedBox(height: desktop ? 14 : 0),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: _WishlistCallout(onTap: controller.openPurchaseAdd),
+            ),
+            SizedBox(height: sectionGap),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: _ShoppingListHeader(count: visible.length),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: visible.isEmpty
+                  ? _ShoppingEmptyState(
+                      filter: _selectedFilter,
+                      onTap: controller.openPurchaseAdd,
+                    )
+                  : ResponsiveCardGrid(
+                      desktopCount: 2,
+                      spacing: 14,
+                      runSpacing: 4,
+                      children: visible
+                          .map((item) => _PurchaseListCard(item: item))
+                          .toList(),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

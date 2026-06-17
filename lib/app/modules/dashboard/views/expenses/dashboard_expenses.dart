@@ -53,8 +53,9 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
     final mobile = isMobile(context);
     final desktop = isDesktop(context);
 
-    return DecoratedBox(
-      decoration: const BoxDecoration(color: Colors.white),
+    return SingleChildScrollView(
+      physics: ClampingScrollPhysics(),
+      padding: EdgeInsets.only(bottom: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
