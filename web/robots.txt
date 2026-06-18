@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://expense-tracker-20653.web.app/sitemap.xml
