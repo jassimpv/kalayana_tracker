@@ -1,9 +1,35 @@
 {
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.productIconTheme": "material-product-icons",
+  "files.watcherExclude": {
+    "**/build/**": true,
+    "**/.dart_tool/**": true,
+    "**/ios/Pods/**": true,
+    "**/ios/.symlinks/**": true,
+    "**/.git/objects/**": true
+  },
+  "files.exclude": {
+    "**/build": true,
+    "**/.dart_tool": true,
+    "**/ios/Pods": true,
+    "**/ios/.symlinks": true
+  },
+  "search.exclude": {
+    "**/build": true,
+    "**/.dart_tool": true,
+    "**/ios/Pods": true,
+    "**/ios/.symlinks": true
+  },
   "workbench.colorCustomizations": {
     "activityBar.background": "#05070A",
     "activityBar.border": "#1B1F27",
     "activityBar.foreground": "#F4F7FB",
-    "activityBar.inactiveForeground": "#8B949E",
+    "activityBar.inactiveForeground": "#F4F7FB",
+    "activityBar.activeBackground": "#080B10",
+    "activityBar.activeBorder": "#F4F7FB",
+    "activityBar.activeFocusBorder": "#F4F7FB",
+    "activityBarBadge.background": "#F4F7FB",
+    "activityBarBadge.foreground": "#05070A",
     "editorGroupHeader.tabsBackground": "#05070A",
     "editorGroupHeader.tabsBorder": "#1B1F27",
     "sideBar.background": "#05070A",

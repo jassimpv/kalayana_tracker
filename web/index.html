@@ -51,6 +51,40 @@
   <!-- Manifest -->
   <link rel="manifest" href="manifest.json">
 
+  <!-- PWA install prompt bridge -->
+  <script>
+    window.flutterPwaInstall = { deferredPrompt: null, canInstall: false };
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      window.flutterPwaInstall.deferredPrompt = event;
+      window.flutterPwaInstall.canInstall = true;
+      window.dispatchEvent(new CustomEvent('flutter-pwa-can-install'));
+    });
+
+    window.addEventListener('appinstalled', () => {
+      window.flutterPwaInstall.deferredPrompt = null;
+      window.flutterPwaInstall.canInstall = false;
+      window.dispatchEvent(new CustomEvent('flutter-pwa-can-install'));
+    });
+
+    window.flutterPwaPromptInstall = async function () {
+      const promptEvent = window.flutterPwaInstall.deferredPrompt;
+      if (!promptEvent) return false;
+      promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
+      window.flutterPwaInstall.deferredPrompt = null;
+      window.flutterPwaInstall.canInstall = false;
+      window.dispatchEvent(new CustomEvent('flutter-pwa-can-install'));
+      return choice.outcome === 'accepted';
+    };
+
+    window.flutterPwaIsStandalone = function () {
+      return window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+    };
+  </script>
+
   <!-- Structured Data -->
   <script type="application/ld+json">
   {

@@ -8,6 +8,7 @@ import 'package:kalayanaexpresstracker/app/core/services/app_open_ad_manager.dar
 import 'package:kalayanaexpresstracker/app/core/services/notification_service.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/pwa_install_banner.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 import 'firebase_options.dart';
 
@@ -38,6 +39,8 @@ class KalyanaApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       initialRoute: AppRoutes.splash,
       getPages: AppPages.pages,
+      builder: (context, child) =>
+          PwaInstallBanner(child: child ?? const SizedBox.shrink()),
     );
   }
 }
