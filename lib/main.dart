@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:kalayanaexpresstracker/app/core/services/app_open_ad_manager.dart';
-import 'package:kalayanaexpresstracker/app/core/services/device_info_service.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
@@ -57,11 +55,6 @@ class AppBootstrap {
       );
     }
 
-    FirebaseAuth.instance.authStateChanges().listen((user) {
-      if (user != null) {
-        unawaited(DeviceInfoService.instance.initDeviceInfo());
-      }
-    });
   }
 
   static void loadAds() {

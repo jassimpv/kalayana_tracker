@@ -79,13 +79,13 @@ class AuthController extends GetxController {
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
-        unawaited(DeviceInfoService.instance.initDeviceInfo());
+        _saveDeviceInfoAfterAuth();
       } else {
         await _auth.signInWithEmailAndPassword(
           email: email.text.trim(),
           password: password.text.trim(),
         );
-        unawaited(DeviceInfoService.instance.initDeviceInfo());
+        _saveDeviceInfoAfterAuth();
       }
     } on FirebaseAuthException catch (error) {
       _showError(error.message ?? error.code);
@@ -131,7 +131,7 @@ class AuthController extends GetxController {
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      unawaited(DeviceInfoService.instance.initDeviceInfo());
+      _saveDeviceInfoAfterAuth();
     } on FirebaseAuthException catch (error) {
       _showError(error.message ?? error.code);
     } catch (error) {
@@ -182,6 +182,16 @@ class AuthController extends GetxController {
         .collection('users')
         .doc(_auth.currentUser!.uid)
         .set(userData, SetOptions(merge: true));
+  }
+
+  void _saveDeviceInfoAfterAuth() {
+    unawaited(
+      DeviceInfoService.instance.initDeviceInfo().catchError((Object error) {
+        if (kDebugMode) {
+          debugPrint('Device info capture ignored after auth: $error');
+        }
+      }),
+    );
   }
 
   void _showError(String message) {
