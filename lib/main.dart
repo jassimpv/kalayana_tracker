@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:kalayanaexpresstracker/app/core/services/app_open_ad_manager.dart';
+import 'package:kalayanaexpresstracker/app/core/services/notification_service.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
@@ -55,6 +56,7 @@ class AppBootstrap {
       );
     }
 
+    await NotificationService.instance.initialize();
   }
 
   static void loadAds() {

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
+import 'package:kalayanaexpresstracker/app/core/services/notification_service.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
@@ -209,6 +210,30 @@ class DashboardController extends GetxController {
     super.onInit();
     repository.seedIfEmpty();
     _bindStreams();
+    NotificationService.instance.requestPermission();
+  }
+
+  bool get notificationsEnabled => profile['notificationsEnabled'] != false;
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    if (enabled) await NotificationService.instance.requestPermission();
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'notificationsEnabled': enabled,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    await NotificationService.instance.syncSchedule(
+      data.value,
+      enabled: enabled,
+    );
+  }
+
+  void _resyncNotifications() {
+    NotificationService.instance.syncSchedule(
+      data.value,
+      enabled: notificationsEnabled,
+    );
   }
 
   @override
@@ -792,6 +817,7 @@ class DashboardController extends GetxController {
       (value) {
         data.value = value;
         loading.value = false;
+        _resyncNotifications();
       },
       onError: (Object exception) {
         error.value = exception.toString();
@@ -827,6 +853,7 @@ class DashboardController extends GetxController {
               nextWorkspaceId != workspaceId.value) {
             _bindWorkspace(nextWorkspaceId);
           }
+          _resyncNotifications();
         });
   }
 

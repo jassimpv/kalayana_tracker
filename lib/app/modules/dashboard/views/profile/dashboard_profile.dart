@@ -67,12 +67,16 @@ class ProfilePanel extends GetView<DashboardController> {
                   //     );
                   //   },
                   // ),
-                  _ProfileMenuRow(
-                    icon: Icons.notifications_none_rounded,
-                    label: 'Notification Settings',
-                    subtitle: 'Manage your alerts',
-                    onTap: () =>
-                        _showProfileSnack('Notification settings soon.'),
+                  Obx(
+                    () => _ProfileMenuRow(
+                      icon: Icons.notifications_none_rounded,
+                      label: 'Reminder Notifications',
+                      subtitle: 'Alerts for due dates & reminders',
+                      trailing: Switch(
+                        value: controller.notificationsEnabled,
+                        onChanged: controller.setNotificationsEnabled,
+                      ),
+                    ),
                   ),
                   _ProfileMenuRow(
                     icon: Icons.bar_chart_rounded,
@@ -1025,6 +1029,7 @@ class _ProfileMenuRow extends StatelessWidget {
     this.destructive = false,
     this.showDivider = true,
     this.onTap,
+    this.trailing,
   });
 
   final IconData icon;
@@ -1035,6 +1040,7 @@ class _ProfileMenuRow extends StatelessWidget {
   final bool destructive;
   final bool showDivider;
   final VoidCallback? onTap;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -1113,11 +1119,12 @@ class _ProfileMenuRow extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                   ],
-                  Icon(
-                    trailingIcon,
-                    color: ThemeColors.logoDeep.withValues(alpha: 0.58),
-                    size: 22,
-                  ),
+                  trailing ??
+                      Icon(
+                        trailingIcon,
+                        color: ThemeColors.logoDeep.withValues(alpha: 0.58),
+                        size: 22,
+                      ),
                 ],
               ),
             ),
