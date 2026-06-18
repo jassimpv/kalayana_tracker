@@ -678,6 +678,10 @@ class DashboardController extends GetxController {
     );
   }
 
+  Future<void> setBudgetGoal(double amount) async {
+    await _save(data.value.copyWith(budgetGoal: amount));
+  }
+
   Future<void> saveProfile({
     required String groom,
     required String bride,

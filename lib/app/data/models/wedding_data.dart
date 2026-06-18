@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
@@ -7,6 +8,7 @@ class WeddingData {
     required this.expenses,
     required this.reminders,
     required this.purchases,
+    this.budgetGoal = 0,
   });
 
   factory WeddingData.empty() =>
@@ -29,15 +31,25 @@ class WeddingData {
           .whereType<Map<String, dynamic>>()
           .map(PurchaseItem.fromJson)
           .toList(),
+      budgetGoal: numberFromJson(json['budgetGoal']) ?? 0,
     );
   }
 
   final List<ExpenseItem> expenses;
   final List<EventReminder> reminders;
   final List<PurchaseItem> purchases;
+  final double budgetGoal;
 
   double get totalBudget =>
       expenses.fold(0, (total, item) => total + item.knownTotal);
+
+  bool get hasBudgetGoal => budgetGoal > 0;
+
+  double get effectiveBudget => hasBudgetGoal ? budgetGoal : totalBudget;
+
+  bool get isOverBudget => hasBudgetGoal && totalBudget > budgetGoal;
+
+  double get overBudgetAmount => isOverBudget ? totalBudget - budgetGoal : 0;
   double get paid =>
       expenses.fold(0, (total, item) => total + item.paidForSummary);
   double get pending =>
@@ -69,16 +81,19 @@ class WeddingData {
     'expenses': expenses.map((item) => item.toJson()).toList(),
     'reminders': reminders.map((item) => item.toJson()).toList(),
     'purchases': purchases.map((item) => item.toJson()).toList(),
+    'budgetGoal': budgetGoal,
   };
 
   WeddingData copyWith({
     List<ExpenseItem>? expenses,
     List<EventReminder>? reminders,
     List<PurchaseItem>? purchases,
+    double? budgetGoal,
   }) => WeddingData(
     expenses: expenses ?? this.expenses,
     reminders: reminders ?? this.reminders,
     purchases: purchases ?? this.purchases,
+    budgetGoal: budgetGoal ?? this.budgetGoal,
   );
 }
 

@@ -832,6 +832,10 @@ Future<void> showProfileDialog(BuildContext context) async {
   final bride = TextEditingController(text: profileBride(controller.profile));
   var weddingDate = profileMarriageDate(controller.profile);
   var currency = profileCurrency(controller.profile);
+  final budgetGoal = controller.data.value.budgetGoal;
+  final budget = TextEditingController(
+    text: budgetGoal > 0 ? formatMoney(budgetGoal) : '',
+  );
 
   await showDialog<void>(
     context: context,
@@ -853,6 +857,10 @@ Future<void> showProfileDialog(BuildContext context) async {
                 weddingDate: weddingDate,
                 currency: currency,
               );
+              final parsedBudget =
+                  double.tryParse(budget.text.trim().replaceAll(',', '')) ??
+                  0;
+              await controller.setBudgetGoal(parsedBudget);
               if (context.mounted) Navigator.pop(context);
             },
             child: const Text('Save'),
@@ -922,6 +930,21 @@ Future<void> showProfileDialog(BuildContext context) async {
                 );
                 if (selected != null) setState(() => currency = selected);
               },
+            ),
+            const SizedBox(height: 14),
+            _dialogLabel('Wedding Budget'),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: budget,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Set a budget goal',
+                prefixIcon: Icon(AppConfig.appCurrencyIcon),
+                helperText:
+                    'Leave empty to use the total of all expenses.',
+              ),
             ),
           ],
         ),

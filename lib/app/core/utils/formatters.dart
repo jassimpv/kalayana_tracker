@@ -97,4 +97,12 @@ const months = [
 String formatDate(DateTime date) =>
     '${months[date.month - 1]} ${date.day}, ${date.year}';
 
+String formatPercent(double ratio) {
+  final percent = ratio * 100;
+  if (percent > 0 && percent < 1) {
+    return '${percent.toStringAsFixed(1)}%';
+  }
+  return '${percent.round()}%';
+}
+
 String newId() => DateTime.now().microsecondsSinceEpoch.toString();

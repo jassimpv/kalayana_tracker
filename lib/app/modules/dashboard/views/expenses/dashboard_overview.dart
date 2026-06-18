@@ -10,9 +10,9 @@ class OverviewPanel extends GetView<DashboardController> {
     return Obx(() {
       final profile = controller.profile;
       final date = profileMarriageDate(profile);
-      final paymentProgress = data.totalBudget == 0
+      final paymentProgress = data.effectiveBudget == 0
           ? 0.0
-          : (data.paid / data.totalBudget).clamp(0.0, 1.0);
+          : (data.paid / data.effectiveBudget).clamp(0.0, 1.0);
       return _DashboardOverviewScreen(
         data: data,
         profile: profile,
@@ -78,15 +78,17 @@ class _DashboardOverviewScreen extends StatelessWidget {
     final paid = data.paid;
     final pending = data.pending;
     final repayment = data.repaymentPending;
-    final remaining = math.max(data.totalBudget - paid - pending, 0.0);
+    final remaining = math.max(data.effectiveBudget - paid - pending, 0.0);
 
     final firstNameLabel = firstName == '-' ? 'Jassim' : firstName;
     final budget = _BudgetHeroCard(
-      total: data.totalBudget,
+      total: data.effectiveBudget,
       paid: paid,
       pending: pending,
       remaining: remaining,
       progress: progress,
+      isOverBudget: data.isOverBudget,
+      overBudgetAmount: data.overBudgetAmount,
     );
     final metrics = _BudgetMetricStrip(
       paid: paid,
@@ -205,7 +207,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topInset = MediaQuery.paddingOf(context).top;
+    final topInset = kIsWeb ? 90.00 : MediaQuery.paddingOf(context).top;
     final expandedHeight = topInset + 130;
     final collapsedHeight = topInset + 70;
 
@@ -271,7 +273,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: topInset + 14,
+                top: kIsWeb ? 30 : (topInset + 14),
                 left: 22,
                 right: 18,
                 child: Row(
@@ -616,6 +618,8 @@ class _BudgetHeroCard extends StatelessWidget {
     required this.pending,
     required this.remaining,
     required this.progress,
+    this.isOverBudget = false,
+    this.overBudgetAmount = 0,
   });
 
   final double total;
@@ -623,6 +627,8 @@ class _BudgetHeroCard extends StatelessWidget {
   final double pending;
   final double remaining;
   final double progress;
+  final bool isOverBudget;
+  final double overBudgetAmount;
 
   @override
   Widget build(BuildContext context) {
@@ -690,17 +696,48 @@ class _BudgetHeroCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  Text(
-                    'Overall allocation across\nall expenses and vendors',
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.70),
-                      fontSize: compact ? 11 : 12,
-                      fontWeight: FontWeight.w400,
-                      height: 1.38,
+                  if (isOverBudget)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE36C76).withValues(alpha: 0.22),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            CupertinoIcons.exclamationmark_triangle_fill,
+                            color: Color(0xFFFFD9DC),
+                            size: 13,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${AppConfig.appCurrency}${formatMoney(overBudgetAmount)} over budget',
+                            style: const TextStyle(
+                              color: Color(0xFFFFD9DC),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Text(
+                      'Overall allocation across\nall expenses and vendors',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.70),
+                        fontSize: compact ? 11 : 12,
+                        fontWeight: FontWeight.w400,
+                        height: 1.38,
+                      ),
                     ),
-                  ),
                 ],
               ),
 
@@ -720,7 +757,7 @@ class _BudgetHeroCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '${(progress * 100).round()}%',
+                            formatPercent(progress),
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: compact ? 16 : 20,
@@ -939,7 +976,7 @@ class _BudgetMetricStrip extends StatelessWidget {
       _MetricSpec(
         CupertinoIcons.chart_pie_fill,
         'Budget Used',
-        '${(progress * 100).round()}%',
+        formatPercent(progress),
         ThemeColors.primary,
       ),
     ];
@@ -1347,7 +1384,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      '${(progress * 100).round()}%',
+                      formatPercent(progress),
                       style: const TextStyle(
                         color: Color(0xFF421018),
                         fontSize: 18,
@@ -1525,7 +1562,7 @@ class _CategorySpendRow extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${(percent * 100).round()}%',
+                      formatPercent(percent),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontSize: 11,

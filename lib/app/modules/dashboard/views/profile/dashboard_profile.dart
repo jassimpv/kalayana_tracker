@@ -148,7 +148,7 @@ class ReportsPanel extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final data = controller.data.value;
-      final total = data.totalBudget;
+      final total = data.effectiveBudget;
       final paid = data.paid;
       final pending = data.pending;
       final repaymentPending = data.repaymentPending;
@@ -465,13 +465,13 @@ class ReportsPanel extends GetView<DashboardController> {
                         children: [
                           _ReportPercentLabel(
                             label: 'Paid',
-                            value: '${(paidRatio * 100).round()}%',
+                            value: formatPercent(paidRatio),
                             color: const Color(0xFF209B4B),
                           ),
                           const SizedBox(width: 10),
                           _ReportPercentLabel(
                             label: 'Pending',
-                            value: '${(pendingRatio * 100).round()}%',
+                            value: formatPercent(pendingRatio),
                             color: const Color(0xFFFF6824),
                           ),
                         ],
