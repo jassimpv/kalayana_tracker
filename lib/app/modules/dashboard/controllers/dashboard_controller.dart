@@ -208,9 +208,24 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _initialize();
+    NotificationService.instance.requestPermission();
+  }
+
+  Future<void> _initialize() async {
+    final user = await _resolveCurrentUser();
+    if (user == null) {
+      Get.offAllNamed(AppRoutes.auth);
+      return;
+    }
     repository.seedIfEmpty();
     _bindStreams();
-    NotificationService.instance.requestPermission();
+  }
+
+  Future<User?> _resolveCurrentUser() async {
+    final current = FirebaseAuth.instance.currentUser;
+    if (current != null) return current;
+    return FirebaseAuth.instance.authStateChanges().first;
   }
 
   bool get notificationsEnabled => profile['notificationsEnabled'] != false;
