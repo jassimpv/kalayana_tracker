@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kalayanaexpresstracker/app/core/services/device_info_service.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
@@ -79,13 +77,11 @@ class AuthController extends GetxController {
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
-        _saveDeviceInfoAfterAuth();
       } else {
         await _auth.signInWithEmailAndPassword(
           email: email.text.trim(),
           password: password.text.trim(),
         );
-        _saveDeviceInfoAfterAuth();
       }
     } on FirebaseAuthException catch (error) {
       _showError(error.message ?? error.code);
@@ -131,7 +127,6 @@ class AuthController extends GetxController {
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      _saveDeviceInfoAfterAuth();
     } on FirebaseAuthException catch (error) {
       _showError(error.message ?? error.code);
     } catch (error) {
@@ -182,16 +177,6 @@ class AuthController extends GetxController {
         .collection('users')
         .doc(_auth.currentUser!.uid)
         .set(userData, SetOptions(merge: true));
-  }
-
-  void _saveDeviceInfoAfterAuth() {
-    unawaited(
-      DeviceInfoService.instance.initDeviceInfo().catchError((Object error) {
-        if (kDebugMode) {
-          debugPrint('Device info capture ignored after auth: $error');
-        }
-      }),
-    );
   }
 
   void _showError(String message) {
