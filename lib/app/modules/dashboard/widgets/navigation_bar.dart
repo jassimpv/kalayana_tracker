@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/dashboard_controller.dart';
 import 'dashboard_widgets.dart';
@@ -185,12 +187,33 @@ class DashboardSideMenu extends StatelessWidget {
                   }).toList(),
                 ),
               ),
+              if (kIsWeb) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(height: 1),
+                ),
+                ...sideMenuExternalLinks.map(
+                  (link) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _SideMenuItem(
+                      label: link.label,
+                      icon: link.icon,
+                      selected: false,
+                      onTap: () => _openExternalLink(link.url),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
   }
+}
+
+Future<void> _openExternalLink(String url) async {
+  await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 }
 
 class _SideMenuItem extends StatelessWidget {

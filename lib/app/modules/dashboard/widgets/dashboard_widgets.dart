@@ -34,6 +34,26 @@ class NavItem {
   final IconData selectedIcon;
 }
 
+const sideMenuExternalLinks = [
+  ExternalLinkItem(
+    'FAQ',
+    CupertinoIcons.question_circle,
+    'https://expense-tracker-20653.web.app/marriage-budget-planner/#faqs',
+  ),
+  ExternalLinkItem(
+    'Blog',
+    CupertinoIcons.news,
+    'https://expense-tracker-20653.web.app/blog/',
+  ),
+];
+
+class ExternalLinkItem {
+  const ExternalLinkItem(this.label, this.icon, this.url);
+  final String label;
+  final IconData icon;
+  final String url;
+}
+
 class PageTitle extends StatelessWidget {
   const PageTitle({
     super.key,
