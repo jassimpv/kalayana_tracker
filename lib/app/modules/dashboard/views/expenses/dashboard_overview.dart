@@ -968,7 +968,7 @@ class _BudgetMetricStrip extends StatelessWidget {
         const Color(0xFFE49B22),
       ),
       _MetricSpec(
-        CupertinoIcons.money_dollar_circle,
+        Icons.assignment_return_rounded,
         'I Owe',
         '${AppConfig.appCurrency}${formatMoney(repayment)}',
         ThemeColors.primary,

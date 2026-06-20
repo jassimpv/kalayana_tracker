@@ -477,6 +477,31 @@ class DashboardController extends GetxController {
     );
   }
 
+  Future<RepayPerson?> findOrCreateRepayPerson(String name) async {
+    final normalizedName = name.trim();
+    if (normalizedName.isEmpty) return null;
+
+    final existing = repayPersons.firstWhereOrNull(
+      (person) => person.name.trim().toLowerCase() == normalizedName.toLowerCase(),
+    );
+    if (existing != null) return existing;
+
+    final now = DateTime.now();
+    final person = RepayPerson(
+      id: newId(),
+      name: normalizedName,
+      createdAt: now,
+      updatedAt: now,
+    );
+    try {
+      await repository.addRepayPerson(person);
+      return person;
+    } catch (exception) {
+      _showDashboardSnack('Pay Back', exception.toString());
+      return null;
+    }
+  }
+
   Future<bool> addRepayPerson(String name) async {
     final normalizedName = name.trim();
     if (normalizedName.isEmpty) {

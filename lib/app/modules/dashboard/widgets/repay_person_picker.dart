@@ -11,6 +11,9 @@ class RepayPersonPicker extends GetView<DashboardController> {
     this.labelText = 'Paid by',
     this.helperText = 'Choose Self or a saved person',
     this.validator,
+    this.allowOther = false,
+    this.isOtherSelected = false,
+    this.onOtherSelected,
   });
 
   final String? selectedPersonId;
@@ -18,12 +21,17 @@ class RepayPersonPicker extends GetView<DashboardController> {
   final String labelText;
   final String? helperText;
   final FormFieldValidator<String>? validator;
+  final bool allowOther;
+  final bool isOtherSelected;
+  final VoidCallback? onOtherSelected;
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final people = controller.repayPersons;
-      final selected = people.any((person) => person.id == selectedPersonId)
+      final selected = isOtherSelected
+          ? _otherValue
+          : people.any((person) => person.id == selectedPersonId)
           ? selectedPersonId
           : _selfValue;
 
@@ -72,10 +80,16 @@ class RepayPersonPicker extends GetView<DashboardController> {
             (person) =>
                 DropdownMenuItem(value: person.id, child: Text(person.name)),
           ),
+          if (allowOther)
+            const DropdownMenuItem(value: _otherValue, child: Text('Other')),
         ],
         onChanged: (id) {
           if (id == _selfValue) {
             onChanged(null);
+            return;
+          }
+          if (id == _otherValue) {
+            onOtherSelected?.call();
             return;
           }
 
@@ -93,3 +107,4 @@ class RepayPersonPicker extends GetView<DashboardController> {
 }
 
 const _selfValue = '__self__';
+const _otherValue = '__other__';

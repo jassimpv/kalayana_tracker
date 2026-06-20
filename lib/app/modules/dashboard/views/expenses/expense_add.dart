@@ -25,11 +25,13 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
   final _totalController = TextEditingController();
   final _paidController = TextEditingController();
   final _notesController = TextEditingController();
+  final _otherPersonNameController = TextEditingController();
 
   String _category = expenseCategories.first;
   DateTime? _dueDate;
   RepayPerson? _paidByPerson;
   bool _needsRepayment = false;
+  bool _paidByOther = false;
   bool _isSaving = false;
   String _sourceShoppingItemId = '';
   String _sourceReminderId = '';
@@ -84,6 +86,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
     _totalController.dispose();
     _paidController.dispose();
     _notesController.dispose();
+    _otherPersonNameController.dispose();
     super.dispose();
   }
 
@@ -105,18 +108,33 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
   Future<void> _saveExpense() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-    final repaymentPerson = _needsRepayment ? _paidByPerson?.name ?? '' : '';
+
+    var paidByPerson = _paidByPerson;
+    var needsRepayment = _needsRepayment;
+    if (_paidByOther) {
+      paidByPerson = await controller.findOrCreateRepayPerson(
+        _otherPersonNameController.text,
+      );
+      if (paidByPerson == null) {
+        if (!mounted) return;
+        setState(() => _isSaving = false);
+        return;
+      }
+      needsRepayment = true;
+    }
+
+    final repaymentPerson = needsRepayment ? paidByPerson?.name ?? '' : '';
 
     final expense = buildExpense(
       name: _nameController.text,
       category: _category,
       total: _totalController.text,
       paid: _paidController.text,
-      paidBy: _paidByPerson?.name ?? '',
-      paidByPersonId: _paidByPerson?.id ?? '',
-      paidByPersonName: _paidByPerson?.name ?? '',
+      paidBy: paidByPerson?.name ?? '',
+      paidByPersonId: paidByPerson?.id ?? '',
+      paidByPersonName: paidByPerson?.name ?? '',
       repayPerson: repaymentPerson,
-      needsRepayment: _needsRepayment,
+      needsRepayment: needsRepayment,
       repayAmount: '',
       dueDate: _dueDate,
       notes: _notesController.text,
@@ -126,10 +144,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
 
     await controller.saveExpense(expense);
     if (_sourceShoppingItemId.isNotEmpty) {
-      await controller.linkPurchaseToExpense(
-        _sourceShoppingItemId,
-        expense.id,
-      );
+      await controller.linkPurchaseToExpense(_sourceShoppingItemId, expense.id);
     } else if (_sourceReminderId.isNotEmpty) {
       await controller.linkReminderToExpense(_sourceReminderId, expense.id);
     }
@@ -138,7 +153,13 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
     controller.closeDashboardSubPage();
   }
 
-  String get _repaymentToText => _paidByPerson?.name ?? 'Self';
+  String get _repaymentToText {
+    if (_paidByOther) {
+      final name = _otherPersonNameController.text.trim();
+      return name.isEmpty ? 'Enter person name' : name;
+    }
+    return _paidByPerson?.name ?? 'Self';
+  }
 
   String get _repaymentAmountText {
     final paidAmount = moneyFromText(_paidController.text);
@@ -240,20 +261,49 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                         prefixIcon: Icon(Icons.payments_rounded),
                       ),
                       onChanged: (_) {
-                        if (_needsRepayment) setState(() {});
+                        if (_needsRepayment || _paidByOther) setState(() {});
                       },
                     ),
                     const SizedBox(height: 12),
                     RepayPersonPicker(
                       selectedPersonId: _paidByPerson?.id,
                       helperText: 'Choose Self or the person who paid',
+                      allowOther: true,
+                      isOtherSelected: _paidByOther,
                       onChanged: (person) {
                         setState(() {
                           _paidByPerson = person;
+                          _paidByOther = false;
                           if (person == null) _needsRepayment = false;
                         });
                       },
+                      onOtherSelected: () {
+                        setState(() {
+                          _paidByPerson = null;
+                          _paidByOther = true;
+                          _needsRepayment = false;
+                        });
+                      },
                     ),
+                    if (_paidByOther) ...[
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _otherPersonNameController,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: const InputDecoration(
+                          labelText: 'Person name',
+                          hintText: 'Enter person name',
+                          prefixIcon: Icon(Icons.person_add_alt_1_rounded),
+                        ),
+                        validator: _required,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 8),
+                      _RepaymentAutoSummary(
+                        repayTo: _repaymentToText,
+                        amount: _repaymentAmountText,
+                      ),
+                    ],
                     if (_paidByPerson != null) ...[
                       const SizedBox(height: 8),
                       Material(
