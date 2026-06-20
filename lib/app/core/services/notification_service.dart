@@ -28,6 +28,7 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
     _initialized = true;
+    if (kIsWeb) return;
 
     tz_data.initializeTimeZones();
     try {
@@ -64,6 +65,7 @@ class NotificationService {
   }
 
   Future<void> requestPermission() async {
+    if (kIsWeb) return;
     final androidPlugin = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -77,9 +79,13 @@ class NotificationService {
     await iosPlugin?.requestPermissions(alert: true, badge: true, sound: true);
   }
 
-  Future<void> cancelAll() => _plugin.cancelAll();
+  Future<void> cancelAll() {
+    if (kIsWeb) return Future.value();
+    return _plugin.cancelAll();
+  }
 
   Future<void> syncSchedule(WeddingData data, {required bool enabled}) async {
+    if (kIsWeb) return;
     await _plugin.cancelAll();
     if (!enabled) return;
 
