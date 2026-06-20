@@ -64,7 +64,7 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
                   maxWidth: 900,
                   child: PremiumEmptyState(
                     icon: Icons.error_outline_rounded,
-                    title: 'Could not load repay persons',
+                    title: 'Could not load people',
                     subtitle: controller.repayPersonsError.value!,
                   ),
                 ),
@@ -94,9 +94,9 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
                     children: [
                       const PremiumEmptyState(
                         icon: Icons.people_alt_rounded,
-                        title: 'No repay persons added yet',
+                        title: 'No people added yet',
                         subtitle:
-                            'Add people who can be selected as payment payers.',
+                            'Add people who paid expenses on your behalf.',
                       ),
                       const SizedBox(height: 14),
                       SizedBox(
@@ -197,7 +197,7 @@ class _RepayPersonTile extends GetView<DashboardController> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Pending to pay: ${moneyOrDash(pending)}',
+                      'Amount owed: ${moneyOrDash(pending)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -358,7 +358,7 @@ class _RepayPersonDetailHeader extends StatelessWidget {
             children: [
               Expanded(
                 child: _RepayPersonMetric(
-                  label: 'Pending to pay',
+                  label: 'Amount owed',
                   value: moneyOrDash(pending),
                   color: pending > 0
                       ? ThemeColors.primary
@@ -665,7 +665,7 @@ Future<void> _showRepayPersonDialog(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) {
-        final title = person == null ? 'Add Repay Person' : 'Edit Repay Person';
+        final title = person == null ? 'Add Person' : 'Edit Person';
         final subtitle = person == null
             ? 'Add someone who can pay expenses on your behalf.'
             : 'Update this person for future payment selection.';
@@ -838,7 +838,7 @@ Future<void> _confirmDeleteRepayPerson(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete Repay Person'),
+      title: const Text('Delete Person'),
       content: Text('Delete ${person.name}?'),
       actions: [
         TextButton(

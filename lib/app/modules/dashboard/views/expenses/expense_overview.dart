@@ -399,7 +399,7 @@ class _ExpenseRepaymentPanel extends GetView<DashboardController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  completed ? 'Repayment completed' : 'Repayment needed',
+                  completed ? 'Paid back' : 'You owe for this',
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
                     fontSize: 12,

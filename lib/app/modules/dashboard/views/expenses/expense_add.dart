@@ -180,7 +180,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                 ? 'Review the prefilled details, then save to log this purchase as an expense.'
                 : _sourceReminderId.isNotEmpty
                 ? 'Review the prefilled details, then save to log this reminder as an expense.'
-                : 'Track totals, paid amount, due date, and repayments.',
+                : 'Track totals, paid amount, due date, and money owed.',
           ),
           const SizedBox(height: 12),
           DashboardFormCard(
@@ -260,7 +260,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                         color: Colors.transparent,
                         child: SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('Needs repayment'),
+                          title: const Text('I owe this person'),
                           value: _needsRepayment,
                           onChanged: (value) =>
                               setState(() => _needsRepayment = value),
@@ -331,13 +331,13 @@ class _RepaymentAutoSummary extends StatelessWidget {
         children: [
           _RepaymentAutoRow(
             icon: Icons.assignment_return_rounded,
-            label: 'Repayment to',
+            label: 'I owe',
             value: repayTo,
           ),
           const SizedBox(height: 10),
           _RepaymentAutoRow(
             icon: Icons.monetization_on_rounded,
-            label: 'Repayment amount',
+            label: 'Amount owed',
             value: amount,
           ),
         ],

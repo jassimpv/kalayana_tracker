@@ -43,7 +43,7 @@ Future<void> showExpenseDialog(
       builder: (context, setState) => _PlannerDialog(
         icon: Icons.payments_rounded,
         title: item == null ? 'Add expense' : 'Edit expense',
-        subtitle: 'Track totals, payments, due dates, and repayment.',
+        subtitle: 'Track totals, payments, due dates, and money owed.',
         actions: [
           TextButton(
             onPressed: Navigator.of(context).pop,
@@ -164,7 +164,7 @@ Future<void> showExpenseDialog(
                 color: Colors.transparent,
                 child: SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Need to repay someone'),
+                  title: const Text('I owe this person'),
                   value: needsRepayment,
                   onChanged: (value) => setState(() => needsRepayment = value),
                 ),
@@ -174,7 +174,7 @@ Future<void> showExpenseDialog(
                 TextFormField(
                   controller: repayPerson,
                   decoration: const InputDecoration(
-                    labelText: 'Need to repay person',
+                    labelText: 'Owed to',
                     prefixIcon: Icon(Icons.person_add_alt_1_rounded),
                   ),
                 ),
@@ -182,7 +182,7 @@ Future<void> showExpenseDialog(
                 TextFormField(
                   controller: repayAmount,
                   decoration: InputDecoration(
-                    labelText: 'Repay amount',
+                    labelText: 'Amount owed',
                     prefixIcon: Icon(AppConfig.appCurrencyIcon),
                   ),
                   keyboardType: TextInputType.number,

@@ -969,7 +969,7 @@ class _BudgetMetricStrip extends StatelessWidget {
       ),
       _MetricSpec(
         CupertinoIcons.money_dollar_circle,
-        'Repayment',
+        'I Owe',
         '${AppConfig.appCurrency}${formatMoney(repayment)}',
         ThemeColors.primary,
       ),
@@ -1225,7 +1225,7 @@ class _OverviewQuickActions extends StatelessWidget {
         onReminder,
       ),
       _ActionSpec(CupertinoIcons.bag, 'Shopping', 'Manage items', onPurchase),
-      _ActionSpec(CupertinoIcons.person_3, 'Repay', 'Manage people', () {
+      _ActionSpec(CupertinoIcons.person_3, 'Pay Back', 'Manage people', () {
         Get.find<DashboardController>().openRepayPersons();
       }),
     ];
@@ -2334,9 +2334,9 @@ class _TodayFocusCard extends StatelessWidget {
             _FocusRow(
               icon: Icons.assignment_return_rounded,
               color: const Color(0xFFB85D75),
-              title: 'Repayment pending',
+              title: 'Money you owe',
               subtitle:
-                  '${AppConfig.appCurrency} ${formatMoney(repayment)} needs settlement',
+                  '${AppConfig.appCurrency} ${formatMoney(repayment)} owed to others',
             ),
           ],
         ],

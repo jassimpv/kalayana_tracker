@@ -292,7 +292,7 @@ class ReportsPanel extends GetView<DashboardController> {
                             const Color(0xFFFF6824),
                           ),
                           _ReportInfoSpec(
-                            'Repayment pending',
+                            'Owed to others',
                             moneyOrDash(repaymentPending),
                             Icons.assignment_return_rounded,
                             ThemeColors.primary,
@@ -342,7 +342,7 @@ class ReportsPanel extends GetView<DashboardController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _ReportTitle(
-                        'Repayment Report',
+                        'Money I Owe',
                         icon: Icons.assignment_return_rounded,
                         color: ThemeColors.primary,
                       ),
@@ -350,7 +350,7 @@ class ReportsPanel extends GetView<DashboardController> {
                       _ReportInfoGrid(
                         items: [
                           _ReportInfoSpec(
-                            'Total repayment',
+                            'Total owed',
                             moneyOrDash(
                               repaymentExpenses.fold<double>(
                                 0,
@@ -361,19 +361,19 @@ class ReportsPanel extends GetView<DashboardController> {
                             ThemeColors.primary,
                           ),
                           _ReportInfoSpec(
-                            'Pending to repay',
+                            'Still owed',
                             moneyOrDash(repaymentPending),
                             Icons.assignment_return_rounded,
                             const Color(0xFFFF6824),
                           ),
                           _ReportInfoSpec(
-                            'Active repayments',
+                            'Open balances',
                             '${repaymentExpenses.where((item) => item.repaymentPending > 0).length}',
                             Icons.pending_actions_rounded,
                             ThemeColors.primary,
                           ),
                           _ReportInfoSpec(
-                            'Completed repayments',
+                            'Paid back',
                             '${repaymentExpenses.where((item) => item.repaymentPending == 0).length}',
                             Icons.task_alt_rounded,
                             const Color(0xFF209B4B),
@@ -1305,7 +1305,7 @@ class _ReportHeroCard extends StatelessWidget {
               Expanded(
                 child: _HeroStat(
                   icon: Icons.assignment_return_rounded,
-                  label: 'Repay',
+                  label: 'I Owe',
                   value: '${AppConfig.appCurrency}${formatMoney(repayment)}',
                 ),
               ),
@@ -1601,7 +1601,7 @@ class _PersonRepaymentReportList extends StatelessWidget {
                   : const Color(0xFF209B4B),
               title: entry.name,
               subtitle:
-                  '${entry.itemCount} repayment item${entry.itemCount == 1 ? '' : 's'}',
+                  '${entry.itemCount} item${entry.itemCount == 1 ? '' : 's'} owed',
               trailingTitle: moneyOrDash(entry.total),
               trailingSubtitle: '${moneyOrDash(entry.pending)} pending',
             ),

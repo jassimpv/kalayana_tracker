@@ -19,7 +19,7 @@ const expenseStatusPending = 'Pending';
 const expenseStatusPartiallyPaid = 'Partially Paid';
 const expenseStatusCompleted = 'Completed';
 const expenseStatusPaidByOther = 'Paid by Other';
-const expenseStatusNeedToRepay = 'Need to Repay';
+const expenseStatusNeedToRepay = 'You Owe';
 const expenseStatusOverdue = 'Overdue';
 const paymentSplitStatusPending = 'Pending';
 const paymentSplitStatusCompleted = 'Completed';
@@ -480,11 +480,11 @@ class DashboardController extends GetxController {
   Future<bool> addRepayPerson(String name) async {
     final normalizedName = name.trim();
     if (normalizedName.isEmpty) {
-      _showDashboardSnack('Repay', 'Person name cannot be empty.');
+      _showDashboardSnack('Pay Back', 'Person name cannot be empty.');
       return false;
     }
     if (_hasDuplicateRepayPersonName(normalizedName)) {
-      _showDashboardSnack('Repay', 'A person with this name already exists.');
+      _showDashboardSnack('Pay Back', 'A person with this name already exists.');
       return false;
     }
     final now = DateTime.now();
@@ -499,7 +499,7 @@ class DashboardController extends GetxController {
       );
       return true;
     } catch (exception) {
-      _showDashboardSnack('Repay', exception.toString());
+      _showDashboardSnack('Pay Back', exception.toString());
       return false;
     }
   }
@@ -507,11 +507,11 @@ class DashboardController extends GetxController {
   Future<bool> updateRepayPerson(RepayPerson person, String name) async {
     final normalizedName = name.trim();
     if (normalizedName.isEmpty) {
-      _showDashboardSnack('Repay', 'Person name cannot be empty.');
+      _showDashboardSnack('Pay Back', 'Person name cannot be empty.');
       return false;
     }
     if (_hasDuplicateRepayPersonName(normalizedName, exceptId: person.id)) {
-      _showDashboardSnack('Repay', 'A person with this name already exists.');
+      _showDashboardSnack('Pay Back', 'A person with this name already exists.');
       return false;
     }
     try {
@@ -520,7 +520,7 @@ class DashboardController extends GetxController {
       );
       return true;
     } catch (exception) {
-      _showDashboardSnack('Repay', exception.toString());
+      _showDashboardSnack('Pay Back', exception.toString());
       return false;
     }
   }
@@ -528,7 +528,7 @@ class DashboardController extends GetxController {
   Future<bool> deleteRepayPerson(RepayPerson person) async {
     if (isRepayPersonUsed(person.id, personName: person.name)) {
       _showDashboardSnack(
-        'Repay',
+        'Pay Back',
         '${person.name} is already used in a payment or expense.',
       );
       return false;
@@ -537,7 +537,7 @@ class DashboardController extends GetxController {
       await repository.deleteRepayPerson(person.id);
       return true;
     } catch (exception) {
-      _showDashboardSnack('Repay', exception.toString());
+      _showDashboardSnack('Pay Back', exception.toString());
       return false;
     }
   }

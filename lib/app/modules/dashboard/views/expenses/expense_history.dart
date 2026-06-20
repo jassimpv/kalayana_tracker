@@ -525,7 +525,7 @@ class _PaymentTotalsCard extends StatelessWidget {
               icon: AppConfig.appCurrencyIcon,
               iconColor: ThemeColors.primary,
               iconBackground: const Color(0xFFFFEAF1),
-              label: 'Total To Repay',
+              label: 'Total Owed',
               value: moneyOrDash(totalToRepay),
             ),
           ),
@@ -671,7 +671,7 @@ class _ExpenseSplitPersonTile extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _ExpenseSplitAmountCard(
-                      label: hasRepayment ? 'To repay' : 'Repayment',
+                      label: hasRepayment ? 'Owed' : 'Paid back',
                       value: hasRepayment
                           ? moneyOrDash(split.toRepay)
                           : 'Settled',
@@ -689,7 +689,7 @@ class _ExpenseSplitPersonTile extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _ExpenseSplitStatusPill(
-            label: hasRepayment ? 'Repayment pending' : split.paymentStatus,
+            label: hasRepayment ? 'Money owed' : split.paymentStatus,
             completed: isCompleted,
           ),
           if (showDivider)

@@ -512,7 +512,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
                   Text(
                     pending <= 0
                         ? 'Every recorded bill is settled.'
-                        : '${moneyOrDash(pending)} pending${repayment > 0 ? ' + ${moneyOrDash(repayment)} repayment' : ''}',
+                        : '${moneyOrDash(pending)} pending${repayment > 0 ? ' + ${moneyOrDash(repayment)} owed' : ''}',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -851,7 +851,7 @@ Future<Uint8List> _buildExpensePdf(
             pw.SizedBox(width: 8),
             _pdfSummaryBox('Pending', _pdfMoney(pending)),
             pw.SizedBox(width: 8),
-            _pdfSummaryBox('Repay', _pdfMoney(repayment)),
+            _pdfSummaryBox('Owed', _pdfMoney(repayment)),
           ],
         ),
         pw.SizedBox(height: 18),
@@ -951,7 +951,7 @@ Future<Uint8List> _buildExpensePaymentsPdf(
             pw.SizedBox(width: 8),
             _pdfSummaryBox('Pending', _pdfMoney(pending)),
             pw.SizedBox(width: 8),
-            _pdfSummaryBox('Repay', _pdfMoney(repayment)),
+            _pdfSummaryBox('Owed', _pdfMoney(repayment)),
           ],
         ),
         pw.SizedBox(height: 18),
@@ -1039,8 +1039,8 @@ Future<void> _copyExpenseCsv(
       'Paid',
       'Pending',
       'Paid By',
-      'Repay Person',
-      'Repay Amount',
+      'Owed To',
+      'Amount Owed',
       'Due Date',
       'Notes',
     ],
@@ -1142,7 +1142,7 @@ class _ExpenseSummaryCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 _LegendRow(
                   color: const Color(0xFFB85D75),
-                  label: 'Need to repay',
+                  label: 'You owe',
                   value: '${AppConfig.appCurrency}${formatMoney(repayment)}',
                 ),
               ],
@@ -1271,7 +1271,7 @@ class _PendingPaymentReminderCard extends StatelessWidget {
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      'Upcoming balances and repayment deadlines',
+                      'Upcoming balances and amounts you owe',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontWeight: FontWeight.w500,
@@ -1413,7 +1413,7 @@ class _ExpenseBillCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = item.repaymentPending > 0
-        ? 'Need to Repay'
+        ? 'You Owe'
         : expenseShortStatus(item);
     final statusColor = _expenseLedgerColor(status);
     final categoryIcon = _expenseCategoryIcon(item.category);
@@ -1581,8 +1581,8 @@ class _ExpenseBillCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item.isRepaymentCompleted
-                              ? 'Repayment completed'
-                              : 'Repay ${moneyOrDash(item.repaymentAmount)}${repaymentName.isEmpty ? '' : ' to $repaymentName'}',
+                              ? 'Paid back'
+                              : 'You owe ${moneyOrDash(item.repaymentAmount)}${repaymentName.isEmpty ? '' : ' to $repaymentName'}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -1671,7 +1671,7 @@ class _ExpenseAmountDivider extends StatelessWidget {
 
 Color _expenseLedgerColor(String status) {
   final normalized = status.toLowerCase();
-  if (normalized.contains('repay')) return const Color(0xFF4422D8);
+  if (normalized.contains('owe')) return const Color(0xFF4422D8);
   if (normalized.contains('paid')) return const Color(0xFF159154);
   if (normalized.contains('partial')) return const Color(0xFF6A38D6);
   if (normalized.contains('overdue')) return const Color(0xFFE9395C);
