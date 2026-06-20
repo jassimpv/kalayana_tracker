@@ -337,20 +337,44 @@ class _DesktopOverviewAppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final profile = controller.profile;
-    final displayName = _profileDisplayName(user, profile);
-    final firstName = displayName.split(RegExp(r'\s+')).first;
-    final groom = profileGroom(profile);
-    final bride = profileBride(profile);
-    final couple = groom.isNotEmpty && bride.isNotEmpty
-        ? '$groom & $bride'
-        : displayName == '-'
-        ? 'Your Wedding'
-        : displayName;
-    final weddingDate = profileMarriageDate(profile);
-    final daysLeft = daysUntilDate(weddingDate);
+    return Obx(() {
+      final user = FirebaseAuth.instance.currentUser;
+      final profile = controller.profile;
+      final identityProfile = controller.weddingIdentityProfile;
+      final displayName = _profileDisplayName(user, profile);
+      final firstName = displayName.split(RegExp(r'\s+')).first;
+      final groom = profileGroom(identityProfile);
+      final bride = profileBride(identityProfile);
+      final isWorkspaceAdmin = controller.isWorkspaceAdmin;
+      final couple = groom.isNotEmpty && bride.isNotEmpty
+          ? '$groom & $bride'
+          : isWorkspaceAdmin
+          ? (displayName == '-' ? 'Your Wedding' : displayName)
+          : 'Connected to ${controller.workspaceAdminCollaborator?.name ?? 'Admin'}';
+      final weddingDate = profileMarriageDate(identityProfile);
+      final daysLeft = daysUntilDate(weddingDate);
 
+      return _buildHeader(
+        context,
+        user: user,
+        firstName: firstName,
+        couple: couple,
+        weddingDate: weddingDate,
+        daysLeft: daysLeft,
+        isWorkspaceAdmin: isWorkspaceAdmin,
+      );
+    });
+  }
+
+  Widget _buildHeader(
+    BuildContext context, {
+    required User? user,
+    required String firstName,
+    required String couple,
+    required DateTime? weddingDate,
+    required int? daysLeft,
+    required bool isWorkspaceAdmin,
+  }) {
     return Container(
       height: 210,
       clipBehavior: Clip.antiAlias,
@@ -445,7 +469,9 @@ class _DesktopOverviewAppHeader extends StatelessWidget {
                         coupleName: couple,
                         weddingDate: weddingDate,
                         daysLeft: daysLeft,
-                        onEdit: () => showProfileDialog(context),
+                        onEdit: isWorkspaceAdmin
+                            ? () => showProfileDialog(context)
+                            : null,
                       ),
                     ),
                   ),

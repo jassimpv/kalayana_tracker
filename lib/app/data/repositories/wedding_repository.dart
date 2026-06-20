@@ -57,9 +57,17 @@ class FirestoreWeddingRepository implements WeddingRepository {
     final userRef = _firestore.collection('users').doc(user.uid);
     final snapshot = await userRef.get();
     final existing = snapshot.data()?['workspaceId']?.toString().trim();
-    if (existing != null && existing.isNotEmpty) return existing;
+    if (existing != null && existing.isNotEmpty) {
+      final existingWorkspace = await _workspaceDoc(existing).get();
+      if (existingWorkspace.exists) return existing;
+      // Points at a workspace doc that no longer exists (e.g. the user left
+      // or was removed from a shared workspace before ever creating their
+      // own). Fall through and recreate their personal workspace below.
+    }
 
-    final workspaceId = user.uid;
+    final workspaceId = (existing != null && existing.isNotEmpty)
+        ? existing
+        : user.uid;
     await _workspaceDoc(workspaceId).set({
       'ownerId': user.uid,
       'joinCode': _joinCodeFor(user.uid),

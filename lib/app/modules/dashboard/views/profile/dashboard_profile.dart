@@ -10,6 +10,7 @@ class ProfilePanel extends GetView<DashboardController> {
     final name = _profileDisplayName(user, profile);
     final email = user?.email ?? 'Shared planning space';
     final currency = profileCurrency(profile);
+    final isWorkspaceAdmin = controller.isWorkspaceAdmin;
     return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -34,6 +35,7 @@ class ProfilePanel extends GetView<DashboardController> {
                       name: name,
                       email: email,
                       photoUrl: user?.photoURL,
+                      canEdit: isWorkspaceAdmin,
                     ),
                   );
                 },
@@ -44,8 +46,12 @@ class ProfilePanel extends GetView<DashboardController> {
                   _ProfileMenuRow(
                     icon: Icons.account_box_outlined,
                     label: 'Profile Details',
-                    subtitle: 'View and edit your profile',
-                    onTap: () => showProfileDialog(context),
+                    subtitle: isWorkspaceAdmin
+                        ? 'View and edit your profile'
+                        : 'Managed by your wedding admin',
+                    onTap: isWorkspaceAdmin
+                        ? () => showProfileDialog(context)
+                        : null,
                   ),
                   _ProfileMenuRow(
                     icon: AppConfig.appCurrencyIcon,
@@ -576,99 +582,120 @@ class CollaboratorsPanel extends GetView<DashboardController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _ReportSurface(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _ReportTitle(
-                        'Your Join Key',
-                        icon: Icons.vpn_key_rounded,
-                        color: ThemeColors.logoGold,
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
+                if (controller.isWorkspaceAdmin) ...[
+                  _ReportSurface(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const _ReportTitle(
+                          'Your Join Key',
+                          icon: Icons.vpn_key_rounded,
+                          color: ThemeColors.logoGold,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.66),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFEDE2D5)),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.66),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFEDE2D5)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  joinKey,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: controller.joinCode.value == null
+                                    ? null
+                                    : () => _copyJoinKey(joinKey),
+                                icon: const Icon(Icons.copy_rounded),
+                                color: ThemeColors.logoDeep,
+                              ),
+                              IconButton(
+                                onPressed: controller.collaborationLoading.value
+                                    ? null
+                                    : () => _confirmRegenerateJoinKey(
+                                        context,
+                                        controller,
+                                      ),
+                                tooltip: 'Generate new join key',
+                                icon: const Icon(Icons.autorenew_rounded),
+                                color: ThemeColors.logoDeep,
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Row(
+                        const SizedBox(height: 8),
+                        Text(
+                          'Share this key with family or friends to sync one wedding plan.',
+                          style: TextStyle(
+                            color: ThemeColors.logoDeep.withValues(alpha: 0.72),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                joinKey,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1.2,
+                              child: FilledButton.icon(
+                                onPressed: controller.joinCode.value == null
+                                    ? null
+                                    : () => _copyJoinKey(joinKey),
+                                icon: const Icon(Icons.ios_share_rounded),
+                                label: const Text('Share'),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: ThemeColors.primary,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size.fromHeight(46),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
                               ),
                             ),
-                            IconButton(
-                              onPressed: controller.joinCode.value == null
-                                  ? null
-                                  : () => _copyJoinKey(joinKey),
-                              icon: const Icon(Icons.copy_rounded),
-                              color: ThemeColors.logoDeep,
-                            ),
+                            // Joining a different workspace would orphan the
+                            // collaborators already in this one, so only
+                            // offer it while the admin is still alone.
+                            if (collaborators.length <= 1) ...[
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed:
+                                      controller.collaborationLoading.value
+                                      ? null
+                                      : () => _showJoinWorkspaceDialog(context),
+                                  icon: const Icon(Icons.group_add_outlined),
+                                  label: const Text('Join'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: ThemeColors.primary,
+                                    minimumSize: const Size.fromHeight(46),
+                                    side: BorderSide(
+                                      color: ThemeColors.primary,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Share this key with family or friends to sync one wedding plan.',
-                        style: TextStyle(
-                          color: ThemeColors.logoDeep.withValues(alpha: 0.72),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: FilledButton.icon(
-                              onPressed: controller.joinCode.value == null
-                                  ? null
-                                  : () => _copyJoinKey(joinKey),
-                              icon: const Icon(Icons.ios_share_rounded),
-                              label: const Text('Share'),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: ThemeColors.primary,
-                                foregroundColor: Colors.white,
-                                minimumSize: const Size.fromHeight(46),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: controller.collaborationLoading.value
-                                  ? null
-                                  : () => _showJoinWorkspaceDialog(context),
-                              icon: const Icon(Icons.group_add_outlined),
-                              label: const Text('Join'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: ThemeColors.primary,
-                                minimumSize: const Size.fromHeight(46),
-                                side: BorderSide(color: ThemeColors.primary),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+                ],
                 const SizedBox(height: 28),
                 _ReportTitle(
                   'Collaborators',
@@ -676,7 +703,17 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                   color: ThemeColors.primary,
                 ),
                 const SizedBox(height: 12),
-                _CollaboratorList(collaborators: collaborators),
+                _CollaboratorList(
+                  collaborators: collaborators,
+                  isWorkspaceAdmin: controller.isWorkspaceAdmin,
+                  isRemoving: controller.collaborationLoading.value,
+                  onRemove: (collaborator) => _confirmRemoveCollaborator(
+                    context,
+                    controller,
+                    collaborator,
+                  ),
+                  onLeave: () => _confirmLeaveWorkspace(context, controller),
+                ),
                 const SizedBox(height: 40),
                 FilledButton(
                   onPressed: () => controller.openActivityLog(),
@@ -707,11 +744,13 @@ class _ProfileHeader extends StatelessWidget {
     required this.name,
     required this.email,
     required this.photoUrl,
+    this.canEdit = true,
   });
 
   final String name;
   final String email;
   final String? photoUrl;
+  final bool canEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -778,7 +817,7 @@ class _ProfileHeader extends StatelessWidget {
                   _EditableProfileAvatar(
                     name: name,
                     photoUrl: photoUrl,
-                    onTap: () => showProfileDialog(context),
+                    onTap: canEdit ? () => showProfileDialog(context) : null,
                   ),
                   const SizedBox(height: 10),
                   Text(
@@ -918,12 +957,12 @@ class _EditableProfileAvatar extends StatelessWidget {
   const _EditableProfileAvatar({
     required this.name,
     required this.photoUrl,
-    required this.onTap,
+    this.onTap,
   });
 
   final String name;
   final String? photoUrl;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -950,41 +989,42 @@ class _EditableProfileAvatar extends StatelessWidget {
             ),
             child: _ProfileAvatar(name: name, photoUrl: photoUrl, radius: 40),
           ),
-          Positioned(
-            right: 8,
-            bottom: 2,
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(999),
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    border: Border.all(
-                      color: const Color(0xFFF3D2DD),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.10),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
+          if (onTap != null)
+            Positioned(
+              right: 8,
+              bottom: 2,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onTap,
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(
+                        color: const Color(0xFFF3D2DD),
+                        width: 2,
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.edit_outlined,
-                    color: ThemeColors.primary,
-                    size: 18,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.10),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.edit_outlined,
+                      color: ThemeColors.primary,
+                      size: 18,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -1784,12 +1824,23 @@ class _CategoryDonutPainter extends CustomPainter {
 }
 
 class _CollaboratorList extends StatelessWidget {
-  const _CollaboratorList({required this.collaborators});
+  const _CollaboratorList({
+    required this.collaborators,
+    required this.isWorkspaceAdmin,
+    required this.isRemoving,
+    required this.onRemove,
+    required this.onLeave,
+  });
 
   final List<DashboardCollaborator> collaborators;
+  final bool isWorkspaceAdmin;
+  final bool isRemoving;
+  final ValueChanged<DashboardCollaborator> onRemove;
+  final VoidCallback onLeave;
 
   @override
   Widget build(BuildContext context) {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.82),
@@ -1800,6 +1851,9 @@ class _CollaboratorList extends StatelessWidget {
         children: collaborators.asMap().entries.map((entry) {
           final collaborator = entry.value;
           final isLast = entry.key == collaborators.length - 1;
+          final isSelf = collaborator.uid == currentUid;
+          final canRemove = isWorkspaceAdmin && !isSelf;
+          final canLeave = isSelf && !isWorkspaceAdmin;
           return Column(
             children: [
               Padding(
@@ -1817,8 +1871,7 @@ class _CollaboratorList extends StatelessWidget {
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        collaborator.uid ==
-                                FirebaseAuth.instance.currentUser?.uid
+                        isSelf
                             ? '${collaborator.name} (You)'
                             : collaborator.name,
                         maxLines: 1,
@@ -1836,6 +1889,21 @@ class _CollaboratorList extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (canRemove || canLeave) ...[
+                      const SizedBox(width: 12),
+                      TextButton(
+                        onPressed: isRemoving
+                            ? null
+                            : canRemove
+                            ? () => onRemove(collaborator)
+                            : onLeave,
+                        style: TextButton.styleFrom(
+                          foregroundColor: ThemeColors.primary,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                        ),
+                        child: Text(canRemove ? 'Remove' : 'Leave'),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -2088,6 +2156,93 @@ Future<void> _showJoinWorkspaceDialog(BuildContext context) async {
     },
   );
   codeController.dispose();
+}
+
+Future<void> _confirmRegenerateJoinKey(
+  BuildContext context,
+  DashboardController controller,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Generate new join key?'),
+      content: const Text(
+        'The current join key will stop working. Anyone you previously '
+        'shared it with will no longer be able to use it to join.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Generate'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) {
+    await controller.regenerateJoinCode();
+  }
+}
+
+Future<void> _confirmLeaveWorkspace(
+  BuildContext context,
+  DashboardController controller,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Leave workspace?'),
+      content: const Text(
+        "You'll lose access to this shared wedding plan until you rejoin "
+        'with a join key.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Leave'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) {
+    await controller.leaveWorkspace();
+  }
+}
+
+Future<void> _confirmRemoveCollaborator(
+  BuildContext context,
+  DashboardController controller,
+  DashboardCollaborator collaborator,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Remove ${collaborator.name}?'),
+      content: const Text(
+        'They will lose access to this shared wedding plan immediately.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Remove'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) {
+    await controller.removeCollaborator(collaborator);
+  }
 }
 
 Future<void> _showCurrencyPicker(

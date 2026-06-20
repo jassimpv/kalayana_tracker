@@ -9,15 +9,19 @@ class OverviewPanel extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final profile = controller.profile;
-      final date = profileMarriageDate(profile);
+      final identityProfile = controller.weddingIdentityProfile;
+      final date = profileMarriageDate(identityProfile);
       final paymentProgress = data.effectiveBudget == 0
           ? 0.0
           : (data.paid / data.effectiveBudget).clamp(0.0, 1.0);
       return _DashboardOverviewScreen(
         data: data,
         profile: profile,
+        identityProfile: identityProfile,
         weddingDate: date,
         progress: paymentProgress,
+        isWorkspaceAdmin: controller.isWorkspaceAdmin,
+        workspaceAdminName: controller.workspaceAdminCollaborator?.name,
         onExpense: controller.openExpenseAdd,
         onReminder: controller.openReminderAdd,
         onPurchase: controller.openPurchaseAdd,
@@ -39,8 +43,11 @@ class _DashboardOverviewScreen extends StatelessWidget {
   const _DashboardOverviewScreen({
     required this.data,
     required this.profile,
+    required this.identityProfile,
     required this.weddingDate,
     required this.progress,
+    required this.isWorkspaceAdmin,
+    required this.workspaceAdminName,
     required this.onExpense,
     required this.onReminder,
     required this.onPurchase,
@@ -52,8 +59,11 @@ class _DashboardOverviewScreen extends StatelessWidget {
 
   final WeddingData data;
   final Map<String, dynamic> profile;
+  final Map<String, dynamic> identityProfile;
   final DateTime? weddingDate;
   final double progress;
+  final bool isWorkspaceAdmin;
+  final String? workspaceAdminName;
   final VoidCallback onExpense;
   final VoidCallback onReminder;
   final VoidCallback onPurchase;
@@ -67,13 +77,13 @@ class _DashboardOverviewScreen extends StatelessWidget {
     final user = FirebaseAuth.instance.currentUser;
     final displayName = _profileDisplayName(user, profile);
     final firstName = displayName.split(RegExp(r'\s+')).first;
-    final groom = profileGroom(profile);
-    final bride = profileBride(profile);
+    final groom = profileGroom(identityProfile);
+    final bride = profileBride(identityProfile);
     final couple = groom.isNotEmpty && bride.isNotEmpty
         ? '$groom & $bride'
-        : displayName == '-'
-        ? 'Your Wedding'
-        : displayName;
+        : isWorkspaceAdmin
+        ? (displayName == '-' ? 'Your Wedding' : displayName)
+        : 'Connected to ${workspaceAdminName ?? 'Admin'}';
     final daysLeft = daysUntilDate(weddingDate);
     final paid = data.paid;
     final pending = data.pending;
@@ -131,7 +141,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
               daysLeft: daysLeft,
               onReminderTap: onShowReminders,
               onProfileTap: onShowProfile,
-              onEditWedding: onEditWedding,
+              onEditWedding: isWorkspaceAdmin ? onEditWedding : null,
             ),
           SliverPadding(
             padding: EdgeInsets.fromLTRB(
@@ -193,7 +203,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
     required this.daysLeft,
     required this.onReminderTap,
     required this.onProfileTap,
-    required this.onEditWedding,
+    this.onEditWedding,
   });
 
   final String firstName;
@@ -203,7 +213,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
   final int? daysLeft;
   final VoidCallback onReminderTap;
   final VoidCallback onProfileTap;
-  final VoidCallback onEditWedding;
+  final VoidCallback? onEditWedding;
 
   @override
   Widget build(BuildContext context) {
@@ -457,13 +467,13 @@ class _WeddingIdentityCard extends StatelessWidget {
     required this.coupleName,
     required this.weddingDate,
     required this.daysLeft,
-    required this.onEdit,
+    this.onEdit,
   });
 
   final String coupleName;
   final DateTime? weddingDate;
   final int? daysLeft;
-  final VoidCallback onEdit;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -534,22 +544,24 @@ class _WeddingIdentityCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: onEdit,
-                      tooltip: 'Edit wedding details',
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 20,
-                        height: 20,
+                    if (onEdit != null) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: onEdit,
+                        tooltip: 'Edit wedding details',
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 20,
+                          height: 20,
+                        ),
+                        icon: const Icon(
+                          CupertinoIcons.pencil,
+                          color: Color(0xFFB87A25),
+                          size: 20,
+                        ),
                       ),
-                      icon: const Icon(
-                        CupertinoIcons.pencil,
-                        color: Color(0xFFB87A25),
-                        size: 20,
-                      ),
-                    ),
+                    ],
                   ],
                 ),
                 FittedBox(

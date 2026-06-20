@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -95,6 +96,7 @@ class DashboardController extends GetxController {
   final loading = true.obs;
   final error = RxnString();
   final profile = <String, dynamic>{}.obs;
+  final workspaceProfile = <String, dynamic>{}.obs;
   final collaborators = <DashboardCollaborator>[].obs;
   final activityLog = <ActivityLogEntry>[].obs;
   final activityLogLoading = true.obs;
@@ -111,6 +113,25 @@ class DashboardController extends GetxController {
   StreamSubscription<List<RepayPerson>>? _repayPersonsSub;
 
   bool get isDashboardSubPage => dashboardPage.value != DashboardPageKind.tab;
+
+  bool get isWorkspaceAdmin =>
+      (profile['collaboratorRole']?.toString() ?? 'Admin') != 'Member';
+
+  DashboardCollaborator? get workspaceAdminCollaborator =>
+      collaborators.firstWhereOrNull((entry) => entry.role == 'Admin');
+
+  /// Wedding identity fields (groom/bride/marriage date) live on the
+  /// workspace doc once shared, so every collaborator sees the same
+  /// values regardless of who set them up. Falls back to the current
+  /// user's own profile field-by-field until the workspace copy exists.
+  Map<String, dynamic> get weddingIdentityProfile {
+    if (workspaceProfile.isEmpty) return profile;
+    final merged = Map<String, dynamic>.from(profile);
+    for (final key in const ['groomName', 'brideName', 'marriageDate']) {
+      if (workspaceProfile[key] != null) merged[key] = workspaceProfile[key];
+    }
+    return merged;
+  }
 
   void openDashboardTab(int index) {
     selectedIndex.value = index;
@@ -280,7 +301,9 @@ class DashboardController extends GetxController {
     await _save(data.value.copyWith(expenses: items));
     unawaited(
       _logActivity(
-        isNew ? 'added expense "${item.name}"' : 'updated expense "${item.name}"',
+        isNew
+            ? 'added expense "${item.name}"'
+            : 'updated expense "${item.name}"',
       ),
     );
   }
@@ -497,7 +520,8 @@ class DashboardController extends GetxController {
     if (normalizedName.isEmpty) return null;
 
     final existing = repayPersons.firstWhereOrNull(
-      (person) => person.name.trim().toLowerCase() == normalizedName.toLowerCase(),
+      (person) =>
+          person.name.trim().toLowerCase() == normalizedName.toLowerCase(),
     );
     if (existing != null) return existing;
 
@@ -525,7 +549,10 @@ class DashboardController extends GetxController {
       return false;
     }
     if (_hasDuplicateRepayPersonName(normalizedName)) {
-      _showDashboardSnack('Pay Back', 'A person with this name already exists.');
+      _showDashboardSnack(
+        'Pay Back',
+        'A person with this name already exists.',
+      );
       return false;
     }
     final now = DateTime.now();
@@ -553,7 +580,10 @@ class DashboardController extends GetxController {
       return false;
     }
     if (_hasDuplicateRepayPersonName(normalizedName, exceptId: person.id)) {
-      _showDashboardSnack('Pay Back', 'A person with this name already exists.');
+      _showDashboardSnack(
+        'Pay Back',
+        'A person with this name already exists.',
+      );
       return false;
     }
     try {
@@ -789,6 +819,18 @@ class DashboardController extends GetxController {
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
     if (currency != null) CurrencySymbolApi.applyToAppConfig(currency);
+    final currentWorkspaceId = workspaceId.value;
+    if (currentWorkspaceId != null) {
+      await FirebaseFirestore.instance
+          .collection('weddingWorkspaces')
+          .doc(currentWorkspaceId)
+          .set({
+            'groomName': groomValue,
+            'brideName': brideValue,
+            'marriageDate': weddingDate?.toIso8601String(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+    }
     await _updateCurrentMember();
   }
 
@@ -874,6 +916,54 @@ class DashboardController extends GetxController {
     }
   }
 
+  Future<void> removeCollaborator(DashboardCollaborator collaborator) async {
+    final currentWorkspaceId = workspaceId.value;
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentWorkspaceId == null || !isWorkspaceAdmin) return;
+    if (collaborator.uid == currentUid) return;
+
+    collaborationLoading.value = true;
+    try {
+      final workspaceRef = FirebaseFirestore.instance
+          .collection('weddingWorkspaces')
+          .doc(currentWorkspaceId);
+      await workspaceRef.set({
+        'members': {collaborator.uid: FieldValue.delete()},
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      await _writeActivityLog(
+        workspaceRef,
+        'removed ${collaborator.name} from the workspace',
+      );
+      _showDashboardSnack('Collaborators', '${collaborator.name} was removed.');
+    } catch (exception) {
+      _showDashboardSnack('Collaborators', exception.toString());
+    } finally {
+      collaborationLoading.value = false;
+    }
+  }
+
+  Future<void> regenerateJoinCode() async {
+    final currentWorkspaceId = workspaceId.value;
+    if (currentWorkspaceId == null || !isWorkspaceAdmin) return;
+
+    collaborationLoading.value = true;
+    try {
+      await FirebaseFirestore.instance
+          .collection('weddingWorkspaces')
+          .doc(currentWorkspaceId)
+          .set({
+            'joinCode': _generateRandomJoinCode(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
+      _showDashboardSnack('Collaborators', 'New join key generated.');
+    } catch (exception) {
+      _showDashboardSnack('Collaborators', exception.toString());
+    } finally {
+      collaborationLoading.value = false;
+    }
+  }
+
   Future<void> _writeActivityLog(
     DocumentReference<Map<String, dynamic>> workspaceRef,
     String action,
@@ -916,9 +1006,36 @@ class DashboardController extends GetxController {
   }
 
   void _bindStreams() {
-    _dataSub?.cancel();
     _profileSub?.cancel();
-    _workspaceSub?.cancel();
+    _bindData();
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    _profileSub = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .snapshots()
+        .listen((snapshot) {
+          profile.value = snapshot.data() ?? {};
+          CurrencySymbolApi.applyToAppConfig(profileCurrency(profile));
+          final nextWorkspaceId = profile['workspaceId']?.toString();
+          if (nextWorkspaceId != null &&
+              nextWorkspaceId.isNotEmpty &&
+              nextWorkspaceId != workspaceId.value) {
+            _bindWorkspace(nextWorkspaceId);
+            _bindData();
+          }
+          _resyncNotifications();
+        });
+  }
+
+  /// (Re)subscribes the wedding data and pay-back streams, which are scoped
+  /// to whatever workspace the user's profile currently points at. Called
+  /// both at startup and whenever the workspace changes (join/leave/removed)
+  /// so the rest of the dashboard never keeps showing a stale workspace's
+  /// data.
+  void _bindData() {
+    _dataSub?.cancel();
     _repayPersonsSub?.cancel();
 
     _dataSub = repository.watch().listen(
@@ -945,24 +1062,6 @@ class DashboardController extends GetxController {
         repayPersonsLoading.value = false;
       },
     );
-
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    _profileSub = FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .snapshots()
-        .listen((snapshot) {
-          profile.value = snapshot.data() ?? {};
-          CurrencySymbolApi.applyToAppConfig(profileCurrency(profile));
-          final nextWorkspaceId = profile['workspaceId']?.toString();
-          if (nextWorkspaceId != null &&
-              nextWorkspaceId.isNotEmpty &&
-              nextWorkspaceId != workspaceId.value) {
-            _bindWorkspace(nextWorkspaceId);
-          }
-          _resyncNotifications();
-        });
   }
 
   void _bindWorkspace(String nextWorkspaceId) {
@@ -994,8 +1093,18 @@ class DashboardController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           final workspace = snapshot.data() ?? {};
-          joinCode.value = workspace['joinCode']?.toString();
           final members = workspace['members'];
+          final currentUid = FirebaseAuth.instance.currentUser?.uid;
+          if (workspace.isNotEmpty &&
+              currentUid != null &&
+              members is Map<String, dynamic> &&
+              !members.containsKey(currentUid)) {
+            _handleRemovedFromWorkspace();
+            return;
+          }
+          joinCode.value = workspace['joinCode']?.toString();
+          workspaceProfile.value = workspace;
+          _backfillWorkspaceWeddingProfile(nextWorkspaceId, workspace);
           if (members is Map<String, dynamic>) {
             collaborators.value =
                 members.entries
@@ -1020,6 +1129,55 @@ class DashboardController extends GetxController {
             collaborators.clear();
           }
         });
+  }
+
+  /// Triggered when the workspace snapshot no longer lists the current
+  /// user as a member (an admin removed them). Resets their own profile
+  /// back to a fresh personal workspace; the [_profileSub] listener picks
+  /// up the new workspaceId and rebinds every stream away from the old one.
+  Future<void> _handleRemovedFromWorkspace() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+      'workspaceId': user.uid,
+      'collaboratorRole': 'Admin',
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+    _showDashboardSnack(
+      'Collaborators',
+      'You were removed from the shared workspace.',
+    );
+  }
+
+  /// Backfills the workspace's shared wedding identity fields from the
+  /// admin's own profile the first time the workspace doc is seen without
+  /// them (e.g. workspaces created before sharing was added), so members
+  /// don't see a blank couple name / date until the admin re-saves.
+  void _backfillWorkspaceWeddingProfile(
+    String currentWorkspaceId,
+    Map<String, dynamic> workspace,
+  ) {
+    if (!isWorkspaceAdmin) return;
+    final alreadySynced =
+        workspace['groomName'] != null || workspace['marriageDate'] != null;
+    if (alreadySynced) return;
+    final ownGroom = profile['groomName']?.toString() ?? '';
+    final ownBride = profile['brideName']?.toString() ?? '';
+    final ownMarriageDate = profile['marriageDate'];
+    if (ownGroom.isEmpty && ownBride.isEmpty && ownMarriageDate == null) {
+      return;
+    }
+    unawaited(
+      FirebaseFirestore.instance
+          .collection('weddingWorkspaces')
+          .doc(currentWorkspaceId)
+          .set({
+            'groomName': ownGroom,
+            'brideName': ownBride,
+            'marriageDate': ownMarriageDate,
+            'updatedAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true)),
+    );
   }
 
   Future<void> _updateCurrentMember() async {
@@ -1095,6 +1253,14 @@ class ActivityLogEntry {
   final String actorName;
   final String action;
   final DateTime createdAt;
+}
+
+String _generateRandomJoinCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  final random = Random.secure();
+  String randomChunk(int length) =>
+      List.generate(length, (_) => chars[random.nextInt(chars.length)]).join();
+  return 'KALY-${randomChunk(4)}-${randomChunk(4)}';
 }
 
 Map<String, dynamic> _currentMemberData(User user, String role) {
