@@ -23,7 +23,12 @@ class AdsConfig {
   /// Height reserved for [DashboardBannerAd] (matches AdSize.banner).
   static const double bannerHeight = 50;
 
-  /// Minimum time between two App Open ad impressions, so returning to the
-  /// app repeatedly in quick succession doesn't show an ad every time.
-  static const Duration appOpenMinInterval = Duration(hours: 3);
+  /// Minimum time between two App Open ad impressions.
+  static const Duration appOpenMinInterval = Duration.zero;
+
+  /// Maximum age for a loaded App Open ad before it is discarded and reloaded.
+  static const Duration appOpenMaxCacheDuration = Duration(hours: 4);
+
+  /// Minimum delay before retrying an App Open ad load after a failed request.
+  static const Duration appOpenRetryDelay = Duration(seconds: 30);
 }
