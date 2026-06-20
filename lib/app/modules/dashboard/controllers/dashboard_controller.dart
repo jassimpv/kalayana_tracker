@@ -79,6 +79,7 @@ enum DashboardPageKind {
   repayPersons,
   reports,
   collaborators,
+  activityLog,
 }
 
 class DashboardController extends GetxController {
@@ -95,6 +96,8 @@ class DashboardController extends GetxController {
   final error = RxnString();
   final profile = <String, dynamic>{}.obs;
   final collaborators = <DashboardCollaborator>[].obs;
+  final activityLog = <ActivityLogEntry>[].obs;
+  final activityLogLoading = true.obs;
   final repayPersons = <RepayPerson>[].obs;
   final repayPersonsLoading = true.obs;
   final repayPersonsError = RxnString();
@@ -104,6 +107,7 @@ class DashboardController extends GetxController {
   StreamSubscription<WeddingData>? _dataSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _profileSub;
   StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? _workspaceSub;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _activityLogSub;
   StreamSubscription<List<RepayPerson>>? _repayPersonsSub;
 
   bool get isDashboardSubPage => dashboardPage.value != DashboardPageKind.tab;
@@ -163,6 +167,9 @@ class DashboardController extends GetxController {
 
   void openCollaborators() =>
       _openDashboardSubPage(DashboardPageKind.collaborators, selectedTab: 4);
+
+  void openActivityLog() =>
+      _openDashboardSubPage(DashboardPageKind.activityLog, selectedTab: 4);
 
   void closeDashboardSubPage() {
     if (_previousDashboardPage != null) {
@@ -256,6 +263,7 @@ class DashboardController extends GetxController {
     _dataSub?.cancel();
     _profileSub?.cancel();
     _workspaceSub?.cancel();
+    _activityLogSub?.cancel();
     _repayPersonsSub?.cancel();
     super.onClose();
   }
@@ -267,8 +275,14 @@ class DashboardController extends GetxController {
   Future<void> saveExpense(ExpenseItem item) async {
     final items = [...data.value.expenses];
     final index = items.indexWhere((entry) => entry.id == item.id);
-    index == -1 ? items.add(item) : items[index] = item;
+    final isNew = index == -1;
+    isNew ? items.add(item) : items[index] = item;
     await _save(data.value.copyWith(expenses: items));
+    unawaited(
+      _logActivity(
+        isNew ? 'added expense "${item.name}"' : 'updated expense "${item.name}"',
+      ),
+    );
   }
 
   Future<void> deleteExpense(ExpenseItem item) async {
@@ -279,6 +293,7 @@ class DashboardController extends GetxController {
             .toList(),
       ),
     );
+    unawaited(_logActivity('deleted expense "${item.name}"'));
   }
 
   Future<bool> addExpensePayment(
@@ -495,6 +510,7 @@ class DashboardController extends GetxController {
     );
     try {
       await repository.addRepayPerson(person);
+      unawaited(_logActivity('added person "$normalizedName" to Pay Back'));
       return person;
     } catch (exception) {
       _showDashboardSnack('Pay Back', exception.toString());
@@ -522,6 +538,7 @@ class DashboardController extends GetxController {
           updatedAt: now,
         ),
       );
+      unawaited(_logActivity('added person "$normalizedName" to Pay Back'));
       return true;
     } catch (exception) {
       _showDashboardSnack('Pay Back', exception.toString());
@@ -543,6 +560,9 @@ class DashboardController extends GetxController {
       await repository.updateRepayPerson(
         person.copyWith(name: normalizedName, updatedAt: DateTime.now()),
       );
+      unawaited(
+        _logActivity('renamed person "${person.name}" to "$normalizedName"'),
+      );
       return true;
     } catch (exception) {
       _showDashboardSnack('Pay Back', exception.toString());
@@ -560,6 +580,7 @@ class DashboardController extends GetxController {
     }
     try {
       await repository.deleteRepayPerson(person.id);
+      unawaited(_logActivity('removed person "${person.name}" from Pay Back'));
       return true;
     } catch (exception) {
       _showDashboardSnack('Pay Back', exception.toString());
@@ -788,6 +809,23 @@ class DashboardController extends GetxController {
         return;
       }
       final workspace = query.docs.first;
+      final previousWorkspaceId = workspaceId.value;
+      if (previousWorkspaceId == workspace.id) {
+        _showDashboardSnack(
+          'Collaborators',
+          'You are already in this workspace.',
+        );
+        return;
+      }
+      if (previousWorkspaceId != null) {
+        await FirebaseFirestore.instance
+            .collection('weddingWorkspaces')
+            .doc(previousWorkspaceId)
+            .set({
+              'members': {user.uid: FieldValue.delete()},
+              'updatedAt': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+      }
       await workspace.reference.set({
         'members': {user.uid: _currentMemberData(user, 'Member')},
         'updatedAt': FieldValue.serverTimestamp(),
@@ -797,6 +835,7 @@ class DashboardController extends GetxController {
         'collaboratorRole': 'Member',
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
+      await _writeActivityLog(workspace.reference, 'joined the workspace');
       _showDashboardSnack('Collaborators', 'Workspace joined.');
       _bindStreams();
     } catch (exception) {
@@ -813,13 +852,14 @@ class DashboardController extends GetxController {
 
     collaborationLoading.value = true;
     try {
-      await FirebaseFirestore.instance
+      final workspaceRef = FirebaseFirestore.instance
           .collection('weddingWorkspaces')
-          .doc(currentWorkspaceId)
-          .set({
-            'members': {user.uid: FieldValue.delete()},
-            'updatedAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
+          .doc(currentWorkspaceId);
+      await workspaceRef.set({
+        'members': {user.uid: FieldValue.delete()},
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      await _writeActivityLog(workspaceRef, 'left the workspace');
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'workspaceId': user.uid,
         'collaboratorRole': 'Admin',
@@ -832,6 +872,34 @@ class DashboardController extends GetxController {
     } finally {
       collaborationLoading.value = false;
     }
+  }
+
+  Future<void> _writeActivityLog(
+    DocumentReference<Map<String, dynamic>> workspaceRef,
+    String action,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    final name = user.displayName?.trim().isNotEmpty == true
+        ? user.displayName!.trim()
+        : (user.email?.split('@').first ?? 'Someone');
+    await workspaceRef.collection('activityLog').add({
+      'actorUid': user.uid,
+      'actorName': name,
+      'action': action,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> _logActivity(String action) async {
+    final currentWorkspaceId = workspaceId.value;
+    if (currentWorkspaceId == null) return;
+    await _writeActivityLog(
+      FirebaseFirestore.instance
+          .collection('weddingWorkspaces')
+          .doc(currentWorkspaceId),
+      action,
+    );
   }
 
   Future<void> _save(WeddingData value) async {
@@ -899,6 +967,26 @@ class DashboardController extends GetxController {
 
   void _bindWorkspace(String nextWorkspaceId) {
     workspaceId.value = nextWorkspaceId;
+    _activityLogSub?.cancel();
+    activityLogLoading.value = true;
+    _activityLogSub = FirebaseFirestore.instance
+        .collection('weddingWorkspaces')
+        .doc(nextWorkspaceId)
+        .collection('activityLog')
+        .orderBy('createdAt', descending: true)
+        .limit(100)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            activityLog.value = snapshot.docs
+                .map((doc) => ActivityLogEntry.fromJson(doc.id, doc.data()))
+                .toList();
+            activityLogLoading.value = false;
+          },
+          onError: (Object exception) {
+            activityLogLoading.value = false;
+          },
+        );
     _workspaceSub?.cancel();
     _workspaceSub = FirebaseFirestore.instance
         .collection('weddingWorkspaces')
@@ -978,6 +1066,35 @@ class DashboardCollaborator {
   final String email;
   final String role;
   final String? photoUrl;
+}
+
+class ActivityLogEntry {
+  const ActivityLogEntry({
+    required this.id,
+    required this.actorUid,
+    required this.actorName,
+    required this.action,
+    required this.createdAt,
+  });
+
+  factory ActivityLogEntry.fromJson(String id, Map<String, dynamic> json) {
+    final createdAt = json['createdAt'];
+    return ActivityLogEntry(
+      id: id,
+      actorUid: json['actorUid']?.toString() ?? '',
+      actorName: json['actorName']?.toString().trim().isNotEmpty == true
+          ? json['actorName'].toString().trim()
+          : 'Someone',
+      action: json['action']?.toString() ?? '',
+      createdAt: createdAt is Timestamp ? createdAt.toDate() : DateTime.now(),
+    );
+  }
+
+  final String id;
+  final String actorUid;
+  final String actorName;
+  final String action;
+  final DateTime createdAt;
 }
 
 Map<String, dynamic> _currentMemberData(User user, String role) {

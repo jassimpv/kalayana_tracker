@@ -679,8 +679,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                 _CollaboratorList(collaborators: collaborators),
                 const SizedBox(height: 40),
                 FilledButton(
-                  onPressed: () =>
-                      _showProfileSnack('Activity logs coming soon.'),
+                  onPressed: () => controller.openActivityLog(),
                   style: FilledButton.styleFrom(
                     backgroundColor: ThemeColors.primary,
                     foregroundColor: Colors.white,

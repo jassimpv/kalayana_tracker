@@ -24,6 +24,7 @@ import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expe
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_history.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_payment_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/reminders/reminder_add.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/profile/activity_log_page.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/repay/repay_persons_page.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/shopping/purchase_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/app_bar.dart';
@@ -465,15 +466,13 @@ class _DashboardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final page = controller.dashboardPage.value;
-    final argument = controller.dashboardPageArgument.value;
-
-    return Obx(
-      () => AnimatedSwitcher(
+    return Obx(() {
+      final argument = controller.dashboardPageArgument.value;
+      return AnimatedSwitcher(
         duration: const Duration(milliseconds: 220),
         switchInCurve: Curves.easeOutCubic,
         switchOutCurve: Curves.easeInCubic,
-        child: switch (page) {
+        child: switch (controller.dashboardPage.value) {
           DashboardPageKind.expenseAdd => ExpenseAddPage(
             key: ValueKey('expense-add-$argument'),
             sourceArgument: argument,
@@ -505,13 +504,16 @@ class _DashboardBody extends StatelessWidget {
           DashboardPageKind.collaborators => const CollaboratorsPanel(
             key: ValueKey('collaborators'),
           ),
+          DashboardPageKind.activityLog => const ActivityLogPage(
+            key: ValueKey('activity-log'),
+          ),
           DashboardPageKind.tab => _DashboardTabPage(
             key: ValueKey('tab-${controller.selectedIndex.value}'),
             index: controller.selectedIndex.value,
           ),
         },
-      ),
-    );
+      );
+    });
   }
 }
 
@@ -525,6 +527,7 @@ String _dashboardPageTitle(DashboardPageKind page) => switch (page) {
   DashboardPageKind.repayPersons => 'Pay Back',
   DashboardPageKind.reports => 'Reports',
   DashboardPageKind.collaborators => 'Collaborators',
+  DashboardPageKind.activityLog => 'Activity Log',
   DashboardPageKind.tab => 'Dashboard',
 };
 
