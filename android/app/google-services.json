@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "1097547412500-76shoqp4a4f5m0ugeba5bfu8iq7gd7ot.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fueltech.kalayanaexpresstracker",
+            "certificate_hash": "7a4bdeb4e022c662b4524a26113cd1e6cebe12d3"
+          }
+        },
+        {
           "client_id": "1097547412500-dlttq0ck3gks6gklndimu5p09h9eebdt.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -63,6 +71,14 @@
           "android_info": {
             "package_name": "com.fueltech.kalyana_tracker",
             "certificate_hash": "333fa0668a37c792fe9d98fdd5e57f0779a5c179"
+          }
+        },
+        {
+          "client_id": "1097547412500-lan1ljg9jeaiv5ui06o4q7t1tf8shm6n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fueltech.kalyana_tracker",
+            "certificate_hash": "7a4bdeb4e022c662b4524a26113cd1e6cebe12d3"
           }
         },
         {
