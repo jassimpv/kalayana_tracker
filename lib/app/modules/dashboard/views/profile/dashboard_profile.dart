@@ -225,6 +225,14 @@ class ReportsPanel extends GetView<DashboardController> {
                                       categoryEntries,
                                     ),
                                   ),
+                                  Container(
+                                    width: 70,
+                                    height: 70,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
                                   SizedBox(
                                     width: 68,
                                     child: Column(
