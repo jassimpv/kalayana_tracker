@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kalayanaexpresstracker/app/core/config/ads_config.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
 
 const double mobileBreakpoint = 600;
 const double desktopBreakpoint = 1024;
@@ -92,7 +94,18 @@ class ResponsiveCardGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final count = responsiveGridCount(context, desktopCount: desktopCount);
     if (count == 1) {
-      return SingleChildScrollView(child: Column(children: children));
+      // Mobile tabs float the bottom nav bar (and banner ad, when shown)
+      // over the page content, so the list needs matching bottom padding
+      // or its last card ends up hidden behind them.
+      final bottomInset =
+          MediaQuery.paddingOf(context).bottom +
+          72 +
+          (isMobileAdsSupported ? AdsConfig.bannerHeight : 0) +
+          16;
+      return SingleChildScrollView(
+        padding: EdgeInsets.only(bottom: bottomInset),
+        child: Column(children: children),
+      );
     }
 
     return LayoutBuilder(

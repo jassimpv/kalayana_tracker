@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:kalayanaexpresstracker/app/core/config/ads_config.dart';
@@ -79,6 +80,7 @@ class AppOpenAdManager with WidgetsBindingObserver {
 
   void showAdIfAvailable() {
     if (_isShowingAd) return;
+    if (!_isLoggedIn) return;
     if (!_canShowByInterval()) {
       _showWhenLoaded = false;
       _loadAd();
@@ -121,6 +123,18 @@ class AppOpenAdManager with WidgetsBindingObserver {
     final lastAttempt = _lastLoadAttemptAt;
     return lastAttempt == null ||
         DateTime.now().difference(lastAttempt) >= AdsConfig.appOpenRetryDelay;
+  }
+
+  /// Mirrors the dashboard access gate in `SplashView._canOpenDashboard`:
+  /// password accounts must have a verified email before they're considered
+  /// logged in, so the ad never shows on top of the auth/verification flow.
+  bool get _isLoggedIn {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+    final usesPassword = user.providerData.any(
+      (provider) => provider.providerId == EmailAuthProvider.PROVIDER_ID,
+    );
+    return !usesPassword || user.emailVerified;
   }
 
   bool _canShowByInterval() {

@@ -116,7 +116,13 @@ class DashboardView extends GetView<DashboardController> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const DashboardBannerAdSlot(),
+                                  Obx(
+                                    () => DashboardBannerAdSlot(
+                                      key: ValueKey(
+                                        'dashboard_banner_${controller.selectedIndex.value}',
+                                      ),
+                                    ),
+                                  ),
                                   BottomNav(
                                     controller: controller,
                                     onItemClick: controller.openDashboardTab,

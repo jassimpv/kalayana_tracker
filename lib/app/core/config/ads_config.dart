@@ -24,7 +24,7 @@ class AdsConfig {
   static const double bannerHeight = 50;
 
   /// Minimum time between two App Open ad impressions.
-  static const Duration appOpenMinInterval = Duration.zero;
+  static const Duration appOpenMinInterval = Duration(hours: 1);
 
   /// Maximum age for a loaded App Open ad before it is discarded and reloaded.
   static const Duration appOpenMaxCacheDuration = Duration(hours: 4);
