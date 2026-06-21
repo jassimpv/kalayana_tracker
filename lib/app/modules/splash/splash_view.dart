@@ -44,11 +44,31 @@ class _SplashViewState extends State<SplashView>
   Future<void> _openNextScreen() async {
     await Future<void>.delayed(const Duration(milliseconds: 1400));
     if (!mounted) return;
-    final route = FirebaseAuth.instance.currentUser == null
-        ? AppRoutes.auth
-        : AppRoutes.dashboard;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await user.reload();
+      } on FirebaseAuthException {
+        await FirebaseAuth.instance.signOut();
+      }
+    }
+    final refreshedUser = FirebaseAuth.instance.currentUser;
+    if (refreshedUser != null && !_canOpenDashboard(refreshedUser)) {
+      await FirebaseAuth.instance.signOut();
+    }
+    final route = _canOpenDashboard(refreshedUser)
+        ? AppRoutes.dashboard
+        : AppRoutes.auth;
 
     Get.offAllNamed(route);
+  }
+
+  bool _canOpenDashboard(User? user) {
+    if (user == null) return false;
+    final usesPassword = user.providerData.any(
+      (provider) => provider.providerId == EmailAuthProvider.PROVIDER_ID,
+    );
+    return !usesPassword || user.emailVerified;
   }
 
   @override

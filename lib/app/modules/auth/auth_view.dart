@@ -464,6 +464,29 @@ class _AuthForm extends GetView<AuthController> {
                     ),
                     validator: _required,
                   ),
+                  if (!controller.isCreate.value) ...[
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: controller.loading.value
+                            ? null
+                            : controller.resetPassword,
+                        style: TextButton.styleFrom(
+                          foregroundColor: _authGoldDeep,
+                          padding: const EdgeInsets.fromLTRB(12, 6, 0, 4),
+                          minimumSize: const Size(0, 36),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          'Forgot password?',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
 
                   if (controller.isCreate.value) ...[
                     SizedBox(height: gap),
