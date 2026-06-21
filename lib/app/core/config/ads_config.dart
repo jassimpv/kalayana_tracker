@@ -20,6 +20,10 @@ class AdsConfig {
   /// App open ad unit shown when the app returns to the foreground.
   static const String appOpenUnitId = 'ca-app-pub-1869067456074705/7218987371';
 
+  /// Rewarded ad unit shown before generating a PDF report.
+  static const String rewardedReportUnitId =
+      'ca-app-pub-1869067456074705/7157812588';
+
   /// Height reserved for [DashboardBannerAd] (matches AdSize.banner).
   static const double bannerHeight = 50;
 

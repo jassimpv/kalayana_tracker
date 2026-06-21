@@ -502,8 +502,10 @@ class ReportsPanel extends GetView<DashboardController> {
                   children: [
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () =>
-                            _printExpensePdf(context, data.expenses),
+                        onPressed: () => RewardedAdManager.instance
+                            .showForAction(
+                              () => _printExpensePdf(context, data.expenses),
+                            ),
                         style: FilledButton.styleFrom(
                           backgroundColor: ThemeColors.primary,
                           foregroundColor: Colors.white,
@@ -525,8 +527,13 @@ class ReportsPanel extends GetView<DashboardController> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () =>
-                            _printExpensePaymentsPdf(context, data.expenses),
+                        onPressed: () => RewardedAdManager.instance
+                            .showForAction(
+                              () => _printExpensePaymentsPdf(
+                                context,
+                                data.expenses,
+                              ),
+                            ),
                         style: FilledButton.styleFrom(
                           backgroundColor: ThemeColors.primary,
                           foregroundColor: Colors.white,

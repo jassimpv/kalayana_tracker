@@ -34,7 +34,9 @@ android {
         applicationId = "com.fueltech.kalyana_tracker"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // flutter_file_dialog (used for the report "Download" action) requires
+        // minSdkVersion 24; the Flutter default can be lower than that.
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

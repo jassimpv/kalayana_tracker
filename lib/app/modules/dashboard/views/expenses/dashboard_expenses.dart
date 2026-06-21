@@ -719,12 +719,89 @@ class _ExpenseExportCard extends StatelessWidget {
 Future<void> _printExpensePdf(
   BuildContext context,
   List<ExpenseItem> expenses,
-) async {
+) {
+  return _showReportActionSheet(
+    context: context,
+    title: 'Expenses Report',
+    filename: 'kalyana-expenses.pdf',
+    buildPdf: () => _buildExpensePdf(expenses, PdfPageFormat.a4),
+  );
+}
+
+Future<void> _printExpensePaymentsPdf(
+  BuildContext context,
+  List<ExpenseItem> expenses,
+) {
+  return _showReportActionSheet(
+    context: context,
+    title: 'Payment Expenses Report',
+    filename: 'kalyana-expense-payments.pdf',
+    buildPdf: () => _buildExpensePaymentsPdf(expenses, PdfPageFormat.a4),
+  );
+}
+
+enum _ReportAction { view, share, download }
+
+/// Lets the user pick how to open a generated report instead of jumping
+/// straight into the OS print/share flow.
+Future<void> _showReportActionSheet({
+  required BuildContext context,
+  required String title,
+  required String filename,
+  required Future<Uint8List> Function() buildPdf,
+}) async {
+  final action = await showModalBottomSheet<_ReportAction>(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (sheetContext) => SafeArea(
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.visibility_outlined),
+            title: const Text('View report'),
+            onTap: () => Navigator.pop(sheetContext, _ReportAction.view),
+          ),
+          ListTile(
+            leading: const Icon(Icons.ios_share_rounded),
+            title: const Text('Share report'),
+            onTap: () => Navigator.pop(sheetContext, _ReportAction.share),
+          ),
+          ListTile(
+            leading: const Icon(Icons.download_rounded),
+            title: const Text('Download report'),
+            onTap: () => Navigator.pop(sheetContext, _ReportAction.download),
+          ),
+        ],
+      ),
+    ),
+  );
+  if (action == null || !context.mounted) return;
+
   try {
-    await Printing.layoutPdf(
-      name: 'kalyana-expenses.pdf',
-      onLayout: (format) => _buildExpensePdf(expenses, format),
-    );
+    final bytes = await buildPdf();
+    if (!context.mounted) return;
+    switch (action) {
+      case _ReportAction.view:
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => _ReportPreviewPage(title: title, bytes: bytes),
+          ),
+        );
+      case _ReportAction.share:
+        await Printing.sharePdf(bytes: bytes, filename: filename);
+      case _ReportAction.download:
+        final savedPath = await FlutterFileDialog.saveFile(
+          params: SaveFileDialogParams(data: bytes, fileName: filename),
+        );
+        if (!context.mounted || savedPath == null) return;
+        Get.snackbar(
+          'Report downloaded',
+          'Saved to $savedPath',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+    }
   } catch (error) {
     if (!context.mounted) return;
     Get.snackbar(
@@ -735,24 +812,29 @@ Future<void> _printExpensePdf(
   }
 }
 
-Future<void> _printExpensePaymentsPdf(
-  BuildContext context,
-  List<ExpenseItem> expenses,
-) async {
-  try {
-    await Printing.layoutPdf(
-      name: 'kalyana-expense-payments.pdf',
-      onLayout: (format) => _buildExpensePaymentsPdf(expenses, format),
-    );
-  } catch (error) {
-    if (!context.mounted) return;
-    Get.snackbar(
-      'PDF export failed',
-      error.toString(),
-      snackPosition: SnackPosition.BOTTOM,
+class _ReportPreviewPage extends StatelessWidget {
+  const _ReportPreviewPage({required this.title, required this.bytes});
+
+  final String title;
+  final Uint8List bytes;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: PdfPreview(
+        build: (format) => bytes,
+        canChangeOrientation: false,
+        canChangePageFormat: false,
+        allowPrinting: false,
+        allowSharing: false,
+      ),
     );
   }
 }
+
+final PdfColor _pdfBrandColor = PdfColor.fromInt(0xFF8F1438);
+final PdfColor _pdfBrandColorLight = PdfColor.fromInt(0xFFFBEAEF);
 
 pw.TextStyle _pdfLabelStyle() => pw.TextStyle(
   color: PdfColors.grey700,
@@ -760,14 +842,24 @@ pw.TextStyle _pdfLabelStyle() => pw.TextStyle(
   fontWeight: pw.FontWeight.bold,
 );
 
+Future<pw.MemoryImage> _pdfBrandLogo() async {
+  final bytes = await rootBundle.load('assets/logo.png');
+  return pw.MemoryImage(bytes.buffer.asUint8List());
+}
+
 pw.Widget _pdfSummaryBox(String label, String value) {
   return pw.Expanded(
     child: pw.Container(
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
-        color: PdfColors.grey100,
+        color: _pdfBrandColorLight,
         borderRadius: pw.BorderRadius.circular(6),
-        border: pw.Border.all(color: PdfColors.grey300),
+        border: pw.Border(
+          left: pw.BorderSide(color: _pdfBrandColor, width: 3),
+          top: const pw.BorderSide(color: PdfColors.grey300),
+          right: const pw.BorderSide(color: PdfColors.grey300),
+          bottom: const pw.BorderSide(color: PdfColors.grey300),
+        ),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -776,7 +868,11 @@ pw.Widget _pdfSummaryBox(String label, String value) {
           pw.SizedBox(height: 4),
           pw.Text(
             value,
-            style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            style: pw.TextStyle(
+              fontSize: 14,
+              fontWeight: pw.FontWeight.bold,
+              color: _pdfBrandColor,
+            ),
           ),
         ],
       ),
@@ -784,30 +880,73 @@ pw.Widget _pdfSummaryBox(String label, String value) {
   );
 }
 
-pw.Widget _pdfReportHeader(String title, String countLabel) {
-  return pw.Row(
+pw.Widget _pdfReportHeader(
+  String title,
+  String countLabel,
+  pw.MemoryImage logo,
+) {
+  return pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     children: [
-      pw.Expanded(
-        child: pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text(
-              title,
-              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+      pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.ClipRRect(
+            horizontalRadius: 8,
+            verticalRadius: 8,
+            child: pw.Image(logo, width: 38, height: 38, fit: pw.BoxFit.cover),
+          ),
+          pw.SizedBox(width: 10),
+          pw.Expanded(
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  AppConfig.appName,
+                  style: pw.TextStyle(
+                    fontSize: 12,
+                    fontWeight: pw.FontWeight.bold,
+                    color: _pdfBrandColor,
+                  ),
+                ),
+                pw.SizedBox(height: 2),
+                pw.Text(
+                  title,
+                  style: pw.TextStyle(
+                    fontSize: 17,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            pw.SizedBox(height: 4),
-            pw.Text(
-              'Generated on ${formatDate(DateTime.now())}',
-              style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 10),
+          ),
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
             ),
-          ],
-        ),
+            decoration: pw.BoxDecoration(
+              color: _pdfBrandColor,
+              borderRadius: pw.BorderRadius.circular(6),
+            ),
+            child: pw.Text(
+              countLabel,
+              style: pw.TextStyle(
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.white,
+              ),
+            ),
+          ),
+        ],
       ),
+      pw.SizedBox(height: 8),
       pw.Text(
-        countLabel,
-        style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+        'Generated on ${formatDate(DateTime.now())}',
+        style: const pw.TextStyle(color: PdfColors.grey700, fontSize: 9),
       ),
+      pw.SizedBox(height: 10),
+      pw.Container(height: 2, color: _pdfBrandColor),
     ],
   );
 }
@@ -818,6 +957,7 @@ Future<Uint8List> _buildExpensePdf(
 ) async {
   final font = await PdfGoogleFonts.notoSansRegular();
   final boldFont = await PdfGoogleFonts.notoSansBold();
+  final logo = await _pdfBrandLogo();
   final total = expenses.fold<double>(0, (sum, item) => sum + item.totalAmount);
   final paid = expenses.fold<double>(
     0,
@@ -841,7 +981,11 @@ Future<Uint8List> _buildExpensePdf(
       pageFormat: format,
       margin: const pw.EdgeInsets.all(28),
       build: (context) => [
-        _pdfReportHeader('Kalyana Expense Report', '${expenses.length} bills'),
+        _pdfReportHeader(
+          'Kalyana Expense Report',
+          '${expenses.length} bills',
+          logo,
+        ),
         pw.SizedBox(height: 18),
         pw.Row(
           children: [
@@ -914,6 +1058,7 @@ Future<Uint8List> _buildExpensePaymentsPdf(
 ) async {
   final font = await PdfGoogleFonts.notoSansRegular();
   final boldFont = await PdfGoogleFonts.notoSansBold();
+  final logo = await _pdfBrandLogo();
   final paid = expenses.fold<double>(
     0,
     (sum, item) => sum + item.paidForSummary,
@@ -943,6 +1088,7 @@ Future<Uint8List> _buildExpensePaymentsPdf(
         _pdfReportHeader(
           'Kalyana Payment Expenses Report',
           '$paymentCount payments',
+          logo,
         ),
         pw.SizedBox(height: 18),
         pw.Row(
