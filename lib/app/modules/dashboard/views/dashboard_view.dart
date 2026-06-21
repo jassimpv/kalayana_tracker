@@ -20,10 +20,13 @@ import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/guests_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_details.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_history.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/expenses/expense_payment_add.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/guests/dashboard_guests.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/guests/guest_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/reminders/reminder_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/profile/activity_log_page.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/repay/repay_persons_page.dart';
@@ -144,7 +147,8 @@ class DashboardView extends GetView<DashboardController> {
                   () =>
                       controller.isDashboardSubPage ||
                           controller.selectedIndex.value == 0 ||
-                          controller.selectedIndex.value == 4
+                          controller.selectedIndex.value == 4 ||
+                          controller.selectedIndex.value == 5
                       ? const SizedBox.shrink()
                       : Padding(
                           padding: EdgeInsets.only(
@@ -221,7 +225,8 @@ class _DesktopDashboardScaffold extends StatelessWidget {
         () =>
             controller.isDashboardSubPage ||
                 controller.selectedIndex.value == 0 ||
-                controller.selectedIndex.value == 4
+                controller.selectedIndex.value == 4 ||
+                controller.selectedIndex.value == 5
             ? const SizedBox.shrink()
             : FloatingActionButton.extended(
                 onPressed: () =>
@@ -313,7 +318,7 @@ class _DesktopDashboardAppBar extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               InkWell(
-                onTap: () => controller.openDashboardTab(4),
+                onTap: () => controller.openDashboardTab(5),
                 borderRadius: BorderRadius.circular(999),
                 child: _ResilientAvatar(
                   initials: _profileInitials(
@@ -459,7 +464,7 @@ class _DesktopOverviewAppHeader extends StatelessWidget {
                       const SizedBox(width: 10),
                       _ProfilePill(
                         user: user,
-                        onTap: () => controller.openDashboardTab(4),
+                        onTap: () => controller.openDashboardTab(5),
                       ),
                       const SizedBox(width: 10),
                       _HeaderCircleButton(
@@ -541,6 +546,9 @@ class _DashboardBody extends StatelessWidget {
           DashboardPageKind.activityLog => const ActivityLogPage(
             key: ValueKey('activity-log'),
           ),
+          DashboardPageKind.guests => const GuestsPanel(
+            key: ValueKey('guests'),
+          ),
           DashboardPageKind.tab => _DashboardTabPage(
             key: ValueKey('tab-${controller.selectedIndex.value}'),
             index: controller.selectedIndex.value,
@@ -562,6 +570,7 @@ String _dashboardPageTitle(DashboardPageKind page) => switch (page) {
   DashboardPageKind.reports => 'Reports',
   DashboardPageKind.collaborators => 'Collaborators',
   DashboardPageKind.activityLog => 'Activity Log',
+  DashboardPageKind.guests => 'Guests & RSVP',
   DashboardPageKind.tab => 'Dashboard',
 };
 
@@ -586,7 +595,8 @@ class _DashboardTabPage extends GetView<DashboardController> {
                           index == 1 ||
                           index == 2 ||
                           index == 3 ||
-                          index == 4
+                          index == 4 ||
+                          index == 5
                       ? BorderRadius.zero
                       : const BorderRadius.only(
                           topLeft: Radius.circular(30),
@@ -619,7 +629,8 @@ class _DashboardTabPage extends GetView<DashboardController> {
         key: const ValueKey('purchases'),
         purchases: data.purchases,
       ),
-      4 => const ProfilePanel(key: ValueKey('profile')),
+      4 => const GuestsPanel(key: ValueKey('rsvp'), showHero: true),
+      5 => const ProfilePanel(key: ValueKey('profile')),
       _ => OverviewPanel(key: const ValueKey('overview'), data: data),
     };
   }

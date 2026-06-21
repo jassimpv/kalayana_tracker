@@ -25,8 +25,12 @@ class OverviewPanel extends GetView<DashboardController> {
         onExpense: controller.openExpenseAdd,
         onReminder: controller.openReminderAdd,
         onPurchase: controller.openPurchaseAdd,
+        onGuest: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const GuestAddPage())),
         onShowReminders: () => _openDashboardTab(2),
-        onShowProfile: () => _openDashboardTab(4),
+        onShowRsvp: controller.openGuests,
+        onShowProfile: () => _openDashboardTab(5),
         onEditWedding: () => showProfileDialog(context),
         onViewReports: controller.openReports,
       );
@@ -51,7 +55,9 @@ class _DashboardOverviewScreen extends StatelessWidget {
     required this.onExpense,
     required this.onReminder,
     required this.onPurchase,
+    required this.onGuest,
     required this.onShowReminders,
+    required this.onShowRsvp,
     required this.onShowProfile,
     required this.onEditWedding,
     required this.onViewReports,
@@ -67,7 +73,9 @@ class _DashboardOverviewScreen extends StatelessWidget {
   final VoidCallback onExpense;
   final VoidCallback onReminder;
   final VoidCallback onPurchase;
+  final VoidCallback onGuest;
   final VoidCallback onShowReminders;
+  final VoidCallback onShowRsvp;
   final VoidCallback onShowProfile;
   final VoidCallback onEditWedding;
   final VoidCallback onViewReports;
@@ -112,6 +120,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
       onExpense: onExpense,
       onReminder: onReminder,
       onPurchase: onPurchase,
+      onGuest: onGuest,
     );
     final analytics = _OverviewBudgetAnalytics(
       progress: progress,
@@ -159,9 +168,9 @@ class _DashboardOverviewScreen extends StatelessWidget {
                         metrics,
                         const SizedBox(height: 18),
                         pulse,
+                        _RsvpHomeSummaryStrip(onTap: onShowRsvp),
                         const SizedBox(height: 20),
                         actions,
-                        const SizedBox(height: 18),
                         const InlineNativeAdCard(),
                         const SizedBox(height: 18),
                         analytics,
@@ -180,6 +189,7 @@ class _DashboardOverviewScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         metrics,
+                        _RsvpHomeSummaryStrip(onTap: onShowRsvp),
                         const SizedBox(height: 20),
                         actions,
                         const SizedBox(height: 20),
@@ -1023,6 +1033,92 @@ class _BudgetMetricStrip extends StatelessWidget {
   }
 }
 
+class _RsvpHomeSummaryStrip extends GetView<GuestsController> {
+  const _RsvpHomeSummaryStrip({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final hasRsvpData =
+          controller.guests.isNotEmpty ||
+          controller.events.isNotEmpty ||
+          controller.responses.isNotEmpty;
+      if (!hasRsvpData) return const SizedBox.shrink();
+
+      final metrics = [
+        _MetricSpec(
+          CupertinoIcons.person_3_fill,
+          'Guests',
+          '${controller.totalGuests}',
+          ThemeColors.primary,
+        ),
+        _MetricSpec(
+          CupertinoIcons.calendar,
+          'Events',
+          '${controller.events.length}',
+          ThemeColors.logoGold,
+        ),
+        _MetricSpec(
+          CupertinoIcons.check_mark_circled_solid,
+          'Confirmed',
+          '${controller.confirmedCount}',
+          const Color(0xFF13A05F),
+        ),
+        _MetricSpec(
+          CupertinoIcons.timer,
+          'Pending',
+          '${controller.pendingCount}',
+          const Color(0xFFE49B22),
+        ),
+      ];
+
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(24),
+            child: Ink(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.90),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: ThemeColors.primary.withValues(alpha: 0.10),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: ThemeColors.logoDeep.withValues(alpha: 0.08),
+                    blurRadius: 22,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  for (var i = 0; i < metrics.length; i++) ...[
+                    Expanded(child: _MetricTile(spec: metrics[i])),
+                    if (i != metrics.length - 1)
+                      Container(
+                        width: 1,
+                        height: 58,
+                        color: ThemeColors.primary.withValues(alpha: 0.12),
+                      ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    });
+  }
+}
+
 class _MetricSpec {
   const _MetricSpec(this.icon, this.label, this.value, this.color);
   final IconData icon;
@@ -1215,11 +1311,13 @@ class _OverviewQuickActions extends StatelessWidget {
     required this.onExpense,
     required this.onReminder,
     required this.onPurchase,
+    required this.onGuest,
   });
 
   final VoidCallback onExpense;
   final VoidCallback onReminder;
   final VoidCallback onPurchase;
+  final VoidCallback onGuest;
 
   @override
   Widget build(BuildContext context) {
@@ -1231,12 +1329,18 @@ class _OverviewQuickActions extends StatelessWidget {
         onExpense,
       ),
       _ActionSpec(
+        CupertinoIcons.person_add,
+        'Add Guest',
+        'RSVP invitee',
+        onGuest,
+      ),
+      _ActionSpec(
         CupertinoIcons.calendar_badge_plus,
         'Add Date',
         'Important events',
         onReminder,
       ),
-      _ActionSpec(CupertinoIcons.bag, 'Shopping', 'Manage items', onPurchase),
+      // _ActionSpec(CupertinoIcons.bag, 'Shopping', 'Manage items', onPurchase),
       _ActionSpec(CupertinoIcons.person_3, 'Pay Back', 'Manage people', () {
         Get.find<DashboardController>().openRepayPersons();
       }),

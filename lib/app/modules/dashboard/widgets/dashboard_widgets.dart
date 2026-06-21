@@ -24,7 +24,12 @@ const navDestinations = [
   ),
   NavItem('Reminders', CupertinoIcons.calendar, CupertinoIcons.calendar),
   NavItem('Shopping', CupertinoIcons.bag, CupertinoIcons.bag_fill),
-  NavItem('Profile', CupertinoIcons.person, CupertinoIcons.person_fill),
+  NavItem(
+    'RSVP',
+    CupertinoIcons.person_crop_circle_badge_checkmark,
+    CupertinoIcons.person_crop_circle_fill_badge_checkmark,
+  ),
+  // NavItem('Profile', CupertinoIcons.person, CupertinoIcons.person_fill),
 ];
 
 class NavItem {

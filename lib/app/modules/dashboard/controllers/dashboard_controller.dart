@@ -13,7 +13,9 @@ import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
+import 'package:kalayanaexpresstracker/app/data/repositories/guest_repository.dart';
 import 'package:kalayanaexpresstracker/app/data/repositories/wedding_repository.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/guests_controller.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
 const expenseStatusPending = 'Pending';
@@ -81,6 +83,7 @@ enum DashboardPageKind {
   reports,
   collaborators,
   activityLog,
+  guests,
 }
 
 class DashboardController extends GetxController {
@@ -184,13 +187,16 @@ class DashboardController extends GetxController {
       _openDashboardSubPage(DashboardPageKind.repayPersons, selectedTab: 0);
 
   void openReports() =>
-      _openDashboardSubPage(DashboardPageKind.reports, selectedTab: 4);
+      _openDashboardSubPage(DashboardPageKind.reports, selectedTab: 5);
 
   void openCollaborators() =>
-      _openDashboardSubPage(DashboardPageKind.collaborators, selectedTab: 4);
+      _openDashboardSubPage(DashboardPageKind.collaborators, selectedTab: 5);
 
   void openActivityLog() =>
-      _openDashboardSubPage(DashboardPageKind.activityLog, selectedTab: 4);
+      _openDashboardSubPage(DashboardPageKind.activityLog, selectedTab: 5);
+
+  void openGuests() =>
+      _openDashboardSubPage(DashboardPageKind.guests, selectedTab: 4);
 
   void closeDashboardSubPage() {
     if (_previousDashboardPage != null) {
@@ -1368,6 +1374,13 @@ class DashboardBinding extends Bindings {
       ),
     );
     Get.lazyPut(() => DashboardController(Get.find<WeddingRepository>()));
+    Get.lazyPut<GuestRepository>(
+      () => FirestoreGuestRepository(FirebaseFirestore.instance),
+    );
+    Get.lazyPut(
+      () => GuestsController(Get.find<GuestRepository>()),
+      fenix: true,
+    );
   }
 }
 

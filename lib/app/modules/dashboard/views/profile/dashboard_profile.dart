@@ -98,6 +98,12 @@ class ProfilePanel extends GetView<DashboardController> {
                     onTap: controller.openCollaborators,
                   ),
                   _ProfileMenuRow(
+                    icon: Icons.groups_outlined,
+                    label: 'Guests & RSVP',
+                    subtitle: 'Manage guest list & invitations',
+                    onTap: controller.openGuests,
+                  ),
+                  _ProfileMenuRow(
                     icon: Icons.help_outline_rounded,
                     label: 'Help & Support',
                     subtitle: 'FAQs and contact support',
