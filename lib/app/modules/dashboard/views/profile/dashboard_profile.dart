@@ -109,6 +109,13 @@ class ProfilePanel extends GetView<DashboardController> {
                     subtitle: 'FAQs and contact support',
                     onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
                   ),
+                  _ProfileMenuRow(
+                    icon: Icons.rate_review_outlined,
+                    label: 'Send Feedback',
+                    subtitle: 'Share your thoughts with us',
+                    showDivider: false,
+                    onTap: () => _showFeedbackSheet(context),
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -130,6 +137,15 @@ class ProfilePanel extends GetView<DashboardController> {
       ),
     );
   }
+}
+
+Future<void> _showFeedbackSheet(BuildContext context) async {
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => const _FeedbackSheet(),
+  );
 }
 
 Future<void> _confirmLogout(
@@ -155,6 +171,174 @@ Future<void> _confirmLogout(
   );
   if (confirmed != true) return;
   await controller.logout();
+}
+
+class _FeedbackSheet extends StatefulWidget {
+  const _FeedbackSheet();
+
+  @override
+  State<_FeedbackSheet> createState() => _FeedbackSheetState();
+}
+
+class _FeedbackSheetState extends State<_FeedbackSheet> {
+  final _controller = TextEditingController();
+  int _rating = 0;
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final message = _controller.text.trim();
+    if (message.isEmpty) {
+      Get.snackbar(
+        'Required',
+        'Please write your feedback before submitting.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    setState(() => _submitting = true);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) throw Exception('Not authenticated');
+      await FirebaseFirestore.instance.collection('feedback').add({
+        'uid': user.uid,
+        'email': user.email,
+        'displayName': user.displayName,
+        'rating': _rating > 0 ? _rating : null,
+        'message': message,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      if (mounted) Navigator.pop(context);
+      Get.snackbar(
+        'Thank you!',
+        'Your feedback has been submitted.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } catch (_, e) {
+      setState(() => _submitting = false);
+      Get.snackbar(
+        'Error',
+        'Failed to submit feedback. Please try again. $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.viewInsetsOf(context).bottom;
+    return Container(
+      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + bottom),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Send Feedback',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'How would you rate your experience?',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: List.generate(5, (i) {
+              final star = i + 1;
+              return GestureDetector(
+                onTap: () => setState(() => _rating = star),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Icon(
+                    star <= _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    color: star <= _rating
+                        ? const Color(0xFFF5A623)
+                        : Colors.grey.shade400,
+                    size: 32,
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _controller,
+            maxLines: 4,
+            minLines: 3,
+            maxLength: 500,
+            decoration: InputDecoration(
+              hintText: 'Share your thoughts, suggestions or issues…',
+              filled: true,
+              fillColor: const Color(0xFFFAF5F2),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFF5DED4)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFF5DED4)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: ThemeColors.logoDeep.withValues(alpha: 0.6),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _submitting ? null : _submit,
+              style: FilledButton.styleFrom(
+                backgroundColor: ThemeColors.logoDeep,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _submitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Submit Feedback'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class ReportsPanel extends GetView<DashboardController> {

@@ -1466,7 +1466,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
     ];
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.78),
         borderRadius: BorderRadius.circular(22),
@@ -1486,9 +1486,31 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                   ),
                 ),
               ),
+              TextButton(
+                onPressed: onViewReports,
+                style: TextButton.styleFrom(
+                  foregroundColor: ThemeColors.primary,
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'View Report',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 2),
+                    Icon(CupertinoIcons.chevron_right, size: 16),
+                  ],
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 18),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -1532,29 +1554,6 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                           child: Text(
                             'Top Spending Categories',
                             style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: onViewReports,
-                          style: TextButton.styleFrom(
-                            foregroundColor: ThemeColors.primary,
-                            visualDensity: VisualDensity.compact,
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'View Report',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(width: 2),
-                              Icon(CupertinoIcons.chevron_right, size: 16),
-                            ],
                           ),
                         ),
                       ],
