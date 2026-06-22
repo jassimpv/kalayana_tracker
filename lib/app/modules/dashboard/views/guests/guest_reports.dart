@@ -140,7 +140,10 @@ class _ReportPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
       body: PdfPreview(
         build: (format) => bytes,
         canChangeOrientation: false,
@@ -150,6 +153,12 @@ class _ReportPreviewPage extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<pw.ThemeData> _pdfTheme() async {
+  final font = await PdfGoogleFonts.notoSansRegular();
+  final boldFont = await PdfGoogleFonts.notoSansBold();
+  return pw.ThemeData.withFont(base: font, bold: boldFont);
 }
 
 final PdfColor _pdfBrandColor = PdfColor.fromInt(0xFF8F1438);
@@ -172,7 +181,6 @@ pw.Widget _pdfSummaryBox(String label, String value) {
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
         color: _pdfBrandColorLight,
-        borderRadius: pw.BorderRadius.circular(6),
         border: pw.Border(
           left: pw.BorderSide(color: _pdfBrandColor, width: 3),
           top: const pw.BorderSide(color: PdfColors.grey300),
@@ -296,10 +304,12 @@ pw.TableRow _pdfTableRow(List<String> cells) {
 
 Future<Uint8List> _buildGuestListPdf(List<Guest> guests) async {
   final logo = await _pdfBrandLogo();
+  final theme = await _pdfTheme();
   final doc = pw.Document();
   doc.addPage(
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
+      theme: theme,
       build: (context) => [
         _pdfReportHeader('Guest List Report', '${guests.length} Guests', logo),
         pw.SizedBox(height: 14),
@@ -339,10 +349,12 @@ Future<Uint8List> _buildGuestListPdf(List<Guest> guests) async {
 
 Future<Uint8List> _buildRsvpSummaryPdf(GuestsController controller) async {
   final logo = await _pdfBrandLogo();
+  final theme = await _pdfTheme();
   final doc = pw.Document();
   doc.addPage(
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
+      theme: theme,
       build: (context) => [
         _pdfReportHeader(
           'RSVP Summary Report',
@@ -390,11 +402,13 @@ Future<Uint8List> _buildRsvpSummaryPdf(GuestsController controller) async {
 
 Future<Uint8List> _buildEventAttendancePdf(GuestsController controller) async {
   final logo = await _pdfBrandLogo();
+  final theme = await _pdfTheme();
   final doc = pw.Document();
   final summary = controller.eventWiseSummary;
   doc.addPage(
     pw.MultiPage(
       pageFormat: PdfPageFormat.a4,
+      theme: theme,
       build: (context) => [
         _pdfReportHeader(
           'Event Attendance Report',

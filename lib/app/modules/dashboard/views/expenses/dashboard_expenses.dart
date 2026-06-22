@@ -853,7 +853,6 @@ pw.Widget _pdfSummaryBox(String label, String value) {
       padding: const pw.EdgeInsets.all(10),
       decoration: pw.BoxDecoration(
         color: _pdfBrandColorLight,
-        borderRadius: pw.BorderRadius.circular(6),
         border: pw.Border(
           left: pw.BorderSide(color: _pdfBrandColor, width: 3),
           top: const pw.BorderSide(color: PdfColors.grey300),

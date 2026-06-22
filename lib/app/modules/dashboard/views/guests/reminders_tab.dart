@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -418,23 +419,24 @@ class _ReminderRow extends StatelessWidget {
               const SizedBox(width: 4),
               _RoundIconButton(
                 tooltip: 'Copy message',
-                icon: CupertinoIcons.doc_on_doc,
+                icon: FontAwesomeIcons.copy,
                 background: ThemeColors.logoGold.withValues(alpha: 0.12),
                 iconColor: ThemeColors.logoDeep,
                 onPressed: () => controller.copyReminderMessage(guest, event),
               ),
               const SizedBox(width: 8),
-              _RoundIconButton(
-                tooltip: 'Send via WhatsApp',
-                icon: CupertinoIcons.chat_bubble_fill,
-                background: hasPhone
-                    ? const Color(0xFF25D366).withValues(alpha: 0.14)
-                    : Colors.grey.withValues(alpha: 0.1),
-                iconColor: hasPhone ? const Color(0xFF128C3F) : Colors.grey,
-                onPressed: hasPhone
-                    ? () => controller.sendWhatsAppReminder(guest, event)
-                    : null,
-              ),
+              if (hasPhone)
+                _RoundIconButton(
+                  tooltip: 'Send via WhatsApp',
+                  icon: FontAwesomeIcons.whatsapp,
+                  background: hasPhone
+                      ? const Color(0xFF25D366).withValues(alpha: 0.14)
+                      : Colors.grey.withValues(alpha: 0.1),
+                  iconColor: hasPhone ? const Color(0xFF128C3F) : Colors.grey,
+                  onPressed: hasPhone
+                      ? () => controller.sendWhatsAppReminder(guest, event)
+                      : null,
+                ),
             ],
           ),
         ),
@@ -493,7 +495,7 @@ class _RoundIconButton extends StatelessWidget {
   });
 
   final String tooltip;
-  final IconData icon;
+  final FaIconData icon;
   final Color background;
   final Color iconColor;
   final VoidCallback? onPressed;
@@ -511,7 +513,7 @@ class _RoundIconButton extends StatelessWidget {
           child: SizedBox(
             width: 36,
             height: 36,
-            child: Icon(icon, size: 17, color: iconColor),
+            child: FaIcon(icon, size: 17, color: iconColor),
           ),
         ),
       ),
