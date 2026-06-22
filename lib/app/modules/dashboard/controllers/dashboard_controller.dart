@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
+import 'package:kalayanaexpresstracker/app/core/services/in_app_review_service.dart';
 import 'package:kalayanaexpresstracker/app/core/services/notification_service.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
@@ -254,6 +255,7 @@ class DashboardController extends GetxController {
     }
     repository.seedIfEmpty();
     _bindStreams();
+    InAppReviewService.maybeRequestReview();
   }
 
   Future<User?> _resolveCurrentUser() async {
