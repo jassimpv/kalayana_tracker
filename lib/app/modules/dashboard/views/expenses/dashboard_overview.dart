@@ -930,7 +930,7 @@ class _DoughnutChartPainter extends CustomPainter {
         .toList(growable: false);
     final total = drawableSegments.fold<double>(
       0,
-      (sum, segment) => sum + segment.value,
+      (acc, segment) => acc + segment.value,
     );
     if (total <= 0) return;
 
@@ -1458,7 +1458,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
     final entries = categoryTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final top = entries.take(3).toList();
-    final total = top.fold<double>(0, (sum, item) => sum + item.value);
+    final total = top.fold<double>(0, (acc, item) => acc + item.value);
     final colors = [
       ThemeColors.primary,
       const Color(0xFFC88932),

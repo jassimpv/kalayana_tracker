@@ -5,137 +5,139 @@ class ProfilePanel extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final profile = controller.profile;
-    final name = _profileDisplayName(user, profile);
-    final email = user?.email ?? 'Shared planning space';
-    final currency = profileCurrency(profile);
-    final isWorkspaceAdmin = controller.isWorkspaceAdmin;
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFFFFBF7), Color(0xFFFFF3EA)],
-        ),
-      ),
-      child: SingleChildScrollView(
-        physics: ClampingScrollPhysics(),
-        padding: const EdgeInsets.only(bottom: 108),
-        child: ResponsivePageContainer(
-          maxWidth: 900,
-          child: Column(
-            children: [
-              Builder(
-                builder: (context) {
-                  final topInset = MediaQuery.paddingOf(context).top;
-                  return SizedBox(
-                    height: topInset + 170,
-                    child: _ProfileHeader(
-                      name: name,
-                      email: email,
-                      photoUrl: user?.photoURL,
-                      canEdit: isWorkspaceAdmin,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              _ProfileMenuCard(
-                children: [
-                  _ProfileMenuRow(
-                    icon: Icons.account_box_outlined,
-                    label: 'Profile Details',
-                    subtitle: isWorkspaceAdmin
-                        ? 'View and edit your profile'
-                        : 'Managed by your wedding admin',
-                    onTap: isWorkspaceAdmin
-                        ? () => showProfileDialog(context)
-                        : null,
-                  ),
-                  _ProfileMenuRow(
-                    icon: AppConfig.appCurrencyIcon,
-                    label: 'Currency',
-                    value: '${currency.code} ${currency.symbol}',
-                    trailingIcon: Icons.keyboard_arrow_down_rounded,
-                    onTap: () => _showCurrencyPicker(context, controller),
-                  ),
-                  // ValueListenableBuilder<ThemeMode>(
-                  //   valueListenable: ThemeService.themeModeNotifier,
-                  //   builder: (context, mode, child) {
-                  //     final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
-                  //     return _ProfileMenuRow(
-                  //       icon: Icons.light_mode_outlined,
-                  //       label: 'Theme',
-                  //       value: label,
-                  //       trailingIcon: Icons.keyboard_arrow_down_rounded,
-                  //       // onTap: () => ThemeService.toggleTheme(),
-                  //     );
-                  //   },
-                  // ),
-                  Obx(
-                    () => _ProfileMenuRow(
-                      icon: Icons.notifications_none_rounded,
-                      label: 'Reminder Notifications',
-                      subtitle: 'Alerts for due dates & reminders',
-                      trailing: Switch(
-                        value: controller.notificationsEnabled,
-                        onChanged: controller.setNotificationsEnabled,
-                      ),
-                    ),
-                  ),
-                  _ProfileMenuRow(
-                    icon: Icons.bar_chart_rounded,
-                    label: 'Reports',
-                    subtitle: 'View insights and analytics',
-                    onTap: controller.openReports,
-                  ),
-
-                  _ProfileMenuRow(
-                    icon: Icons.group_add_outlined,
-                    label: 'Collaborators',
-                    subtitle: 'Invite and manage members',
-                    onTap: controller.openCollaborators,
-                  ),
-                  // _ProfileMenuRow(
-                  //   icon: Icons.groups_outlined,
-                  //   label: 'Guests & RSVP',
-                  //   subtitle: 'Manage guest list & invitations',
-                  //   onTap: controller.openGuests,
-                  // ),
-                  _ProfileMenuRow(
-                    icon: Icons.help_outline_rounded,
-                    label: 'Help & Support',
-                    subtitle: 'FAQs and contact support',
-                    onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
-                  ),
-                  _ProfileMenuRow(
-                    icon: Icons.rate_review_outlined,
-                    label: 'Send Feedback',
-                    subtitle: 'Share your thoughts with us',
-                    showDivider: false,
-                    onTap: () => _showFeedbackSheet(context),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _ProfileMenuCard(
-                children: [
-                  _ProfileMenuRow(
-                    icon: Icons.logout_rounded,
-                    label: 'Logout',
-                    subtitle: 'Sign out from your account',
-                    destructive: true,
-                    showDivider: false,
-                    onTap: () => _confirmLogout(context, controller),
-                  ),
-                ],
-              ),
-            ],
+    return Obx(() {
+      final user = FirebaseAuth.instance.currentUser;
+      final profile = controller.profile;
+      final name = _profileDisplayName(user, profile);
+      final email = user?.email ?? 'Shared planning space';
+      final currency = profileCurrency(profile);
+      final isWorkspaceAdmin = controller.isWorkspaceAdmin;
+      return DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFFBF7), Color(0xFFFFF3EA)],
           ),
         ),
-      ),
-    );
+        child: SingleChildScrollView(
+          physics: ClampingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 108),
+          child: ResponsivePageContainer(
+            maxWidth: 900,
+            child: Column(
+              children: [
+                Builder(
+                  builder: (context) {
+                    final topInset = MediaQuery.paddingOf(context).top;
+                    return SizedBox(
+                      height: topInset + 170,
+                      child: _ProfileHeader(
+                        name: name,
+                        email: email,
+                        photoUrl: user?.photoURL,
+                        canEdit: isWorkspaceAdmin,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _ProfileMenuCard(
+                  children: [
+                    _ProfileMenuRow(
+                      icon: Icons.account_box_outlined,
+                      label: 'Profile Details',
+                      subtitle: isWorkspaceAdmin
+                          ? 'View and edit your profile'
+                          : 'Managed by your wedding admin',
+                      onTap: isWorkspaceAdmin
+                          ? () => showProfileDialog(context)
+                          : null,
+                    ),
+                    _ProfileMenuRow(
+                      icon: AppConfig.appCurrencyIcon,
+                      label: 'Currency',
+                      value: '${currency.code} ${currency.symbol}',
+                      trailingIcon: Icons.keyboard_arrow_down_rounded,
+                      onTap: () => _showCurrencyPicker(context, controller),
+                    ),
+                    // ValueListenableBuilder<ThemeMode>(
+                    //   valueListenable: ThemeService.themeModeNotifier,
+                    //   builder: (context, mode, child) {
+                    //     final label = mode == ThemeMode.dark ? 'Dark' : 'Light';
+                    //     return _ProfileMenuRow(
+                    //       icon: Icons.light_mode_outlined,
+                    //       label: 'Theme',
+                    //       value: label,
+                    //       trailingIcon: Icons.keyboard_arrow_down_rounded,
+                    //       // onTap: () => ThemeService.toggleTheme(),
+                    //     );
+                    //   },
+                    // ),
+                    Obx(
+                      () => _ProfileMenuRow(
+                        icon: Icons.notifications_none_rounded,
+                        label: 'Reminder Notifications',
+                        subtitle: 'Alerts for due dates & reminders',
+                        trailing: Switch(
+                          value: controller.notificationsEnabled,
+                          onChanged: controller.setNotificationsEnabled,
+                        ),
+                      ),
+                    ),
+                    _ProfileMenuRow(
+                      icon: Icons.bar_chart_rounded,
+                      label: 'Reports',
+                      subtitle: 'View insights and analytics',
+                      onTap: controller.openReports,
+                    ),
+
+                    _ProfileMenuRow(
+                      icon: Icons.group_add_outlined,
+                      label: 'Collaborators',
+                      subtitle: 'Invite and manage members',
+                      onTap: controller.openCollaborators,
+                    ),
+                    // _ProfileMenuRow(
+                    //   icon: Icons.groups_outlined,
+                    //   label: 'Guests & RSVP',
+                    //   subtitle: 'Manage guest list & invitations',
+                    //   onTap: controller.openGuests,
+                    // ),
+                    _ProfileMenuRow(
+                      icon: Icons.help_outline_rounded,
+                      label: 'Help & Support',
+                      subtitle: 'FAQs and contact support',
+                      onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+                    ),
+                    _ProfileMenuRow(
+                      icon: Icons.rate_review_outlined,
+                      label: 'Send Feedback',
+                      subtitle: 'Share your thoughts with us',
+                      showDivider: false,
+                      onTap: () => _showFeedbackSheet(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _ProfileMenuCard(
+                  children: [
+                    _ProfileMenuRow(
+                      icon: Icons.logout_rounded,
+                      label: 'Logout',
+                      subtitle: 'Sign out from your account',
+                      destructive: true,
+                      showDivider: false,
+                      onTap: () => _confirmLogout(context, controller),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 }
 
@@ -558,7 +560,7 @@ class ReportsPanel extends GetView<DashboardController> {
                             moneyOrDash(
                               repaymentExpenses.fold<double>(
                                 0,
-                                (sum, item) => sum + item.repaymentAmount,
+                                (acc, item) => acc + item.repaymentAmount,
                               ),
                             ),
                             AppConfig.appCurrencyIcon,
@@ -1961,7 +1963,7 @@ class _CategoryLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final total = entries.fold<double>(0, (sum, entry) => sum + entry.amount);
+    final total = entries.fold<double>(0, (acc, entry) => acc + entry.amount);
     return Column(
       children: entries.map((entry) {
         final percent = total <= 0 ? 0 : (entry.amount / total * 100).round();
@@ -2005,7 +2007,7 @@ class _CategoryDonutPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final total = entries.fold<double>(0, (sum, entry) => sum + entry.amount);
+    final total = entries.fold<double>(0, (acc, entry) => acc + entry.amount);
     final rect = Offset.zero & size;
     final stroke = size.shortestSide * 0.32;
     final paint = Paint()
@@ -2222,7 +2224,7 @@ List<_CategoryReportEntry> _topCategoryEntries(Map<String, double> totals) {
   final top = sorted.take(5).toList();
   final others = sorted
       .skip(5)
-      .fold<double>(0, (sum, item) => sum + item.value);
+      .fold<double>(0, (acc, item) => acc + item.value);
   return [
     for (var index = 0; index < top.length; index++)
       _CategoryReportEntry(top[index].key, top[index].value, colors[index]),

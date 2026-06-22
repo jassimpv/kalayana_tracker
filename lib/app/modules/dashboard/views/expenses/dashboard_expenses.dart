@@ -1065,19 +1065,19 @@ Future<Uint8List> _buildExpensePaymentsPdf(
   final logo = await _pdfBrandLogo();
   final paid = expenses.fold<double>(
     0,
-    (sum, item) => sum + item.paidForSummary,
+    (acc, item) => acc + item.paidForSummary,
   );
   final pending = expenses.fold<double>(
     0,
-    (sum, item) => sum + item.pendingForSummary,
+    (acc, item) => acc + item.pendingForSummary,
   );
   final repayment = expenses.fold<double>(
     0,
-    (sum, item) => sum + item.repaymentPending,
+    (acc, item) => acc + item.repaymentPending,
   );
   final paymentCount = expenses.fold<int>(
     0,
-    (sum, item) => sum + item.paymentSplit.length,
+    (acc, item) => acc + item.paymentSplit.length,
   );
   final doc = pw.Document(
     title: 'Kalyana Payment Expenses Report',
