@@ -1,4 +1,4 @@
-# Flutter Development Rules
+<!-- # Flutter Development Rules
 
 - Never run the application.
 - Never execute `flutter run`, `dart run`, or launch emulators/simulators.
@@ -30,4 +30,4 @@
 - `dart test`
 - `flutter build`
 
-Only modify code and explain the changes. Assume the developer will manually verify everything.
+Only modify code and explain the changes. Assume the developer will manually verify everything. -->

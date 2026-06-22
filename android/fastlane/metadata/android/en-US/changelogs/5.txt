@@ -1,0 +1,6 @@
+Version 1.1.2
+
+- Fixed Pay Back totals and repayment status updates.
+- Added Profile to desktop navigation and fixed desktop Profile routing.
+- Improved desktop overview header button sizing.
+- Improved logout handling for Google sign-in users.
