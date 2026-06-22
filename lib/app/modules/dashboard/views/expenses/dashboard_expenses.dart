@@ -962,18 +962,18 @@ Future<Uint8List> _buildExpensePdf(
   final font = await PdfGoogleFonts.notoSansRegular();
   final boldFont = await PdfGoogleFonts.notoSansBold();
   final logo = await _pdfBrandLogo();
-  final total = expenses.fold<double>(0, (sum, item) => sum + item.totalAmount);
+  final total = expenses.fold<double>(0, (acc, item) => acc + item.totalAmount);
   final paid = expenses.fold<double>(
     0,
-    (sum, item) => sum + item.paidForSummary,
+    (acc, item) => acc + item.paidForSummary,
   );
   final pending = expenses.fold<double>(
     0,
-    (sum, item) => sum + item.pendingForSummary,
+    (acc, item) => acc + item.pendingForSummary,
   );
   final repayment = expenses.fold<double>(
     0,
-    (sum, item) => sum + item.repaymentPending,
+    (acc, item) => acc + item.repaymentPending,
   );
   final doc = pw.Document(
     title: 'Kalyana Expense Report',

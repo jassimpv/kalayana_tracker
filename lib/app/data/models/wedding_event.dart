@@ -16,6 +16,7 @@ class WeddingEvent {
   final String type;
   final DateTime? date;
   final String venue;
+  final String mapUrl;
   final String notes;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -26,6 +27,7 @@ class WeddingEvent {
     this.type = 'Custom',
     this.date,
     this.venue = '',
+    this.mapUrl = '',
     this.notes = '',
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -39,6 +41,7 @@ class WeddingEvent {
       type: json['type']?.toString() ?? 'Custom',
       date: dateFromJson(json['date']),
       venue: json['venue']?.toString() ?? '',
+      mapUrl: json['mapUrl']?.toString() ?? '',
       notes: json['notes']?.toString() ?? '',
       createdAt: dateFromJson(json['createdAt']),
       updatedAt: dateFromJson(json['updatedAt']),
@@ -51,6 +54,7 @@ class WeddingEvent {
       'type': type,
       'date': date?.toIso8601String(),
       'venue': venue,
+      'mapUrl': mapUrl,
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
@@ -64,6 +68,7 @@ class WeddingEvent {
     DateTime? date,
     bool clearDate = false,
     String? venue,
+    String? mapUrl,
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -74,6 +79,7 @@ class WeddingEvent {
       type: type ?? this.type,
       date: clearDate ? null : date ?? this.date,
       venue: venue ?? this.venue,
+      mapUrl: mapUrl ?? this.mapUrl,
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

@@ -301,8 +301,11 @@ class GuestsController extends GetxController {
         ? ''
         : ' on ${event.date!.day}/${event.date!.month}/${event.date!.year}';
     final venueText = event.venue.trim().isEmpty ? '' : ' at ${event.venue}';
+    final mapsUrl = event.mapUrl.trim().isEmpty
+        ? ''
+        : '\n\nVenue on Google Maps: ${event.mapUrl.trim()}';
     return "Hi ${guest.name}, this is a gentle reminder for the ${event.name}$dateText$venueText. "
-        "Please let us know if you'll be able to join us. We'd love to have you there!";
+        "Please let us know if you'll be able to join us. We'd love to have you there!$mapsUrl";
   }
 
   Future<void> sendWhatsAppReminder(Guest guest, WeddingEvent event) async {

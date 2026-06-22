@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/data/models/rsvp_response.dart';
@@ -154,14 +155,76 @@ class _EventRsvpEditor extends StatefulWidget {
 }
 
 class _EventRsvpEditorState extends State<_EventRsvpEditor> {
+  late final TextEditingController _attendeeController;
+  late final TextEditingController _specialController;
+  late final FocusNode _attendeeFocus;
+  late final FocusNode _specialFocus;
+
+  GuestsController get _ctrl => Get.find<GuestsController>();
+
+  @override
+  void initState() {
+    super.initState();
+    final response = _ctrl.responseFor(widget.guestId, widget.event.id);
+    final count = response?.attendeeCount ?? 0;
+    _attendeeController = TextEditingController(
+      text: count == 0 ? '' : '$count',
+    );
+    _specialController = TextEditingController(
+      text: response?.specialRequirements ?? '',
+    );
+    _attendeeFocus = FocusNode()..addListener(_onAttendeeFocusChanged);
+    _specialFocus = FocusNode()..addListener(_onSpecialFocusChanged);
+  }
+
+  @override
+  void dispose() {
+    _attendeeController.dispose();
+    _specialController.dispose();
+    _attendeeFocus
+      ..removeListener(_onAttendeeFocusChanged)
+      ..dispose();
+    _specialFocus
+      ..removeListener(_onSpecialFocusChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onAttendeeFocusChanged() {
+    if (!_attendeeFocus.hasFocus) _saveAttendee();
+  }
+
+  void _onSpecialFocusChanged() {
+    if (!_specialFocus.hasFocus) _saveSpecial();
+  }
+
+  void _saveAttendee() {
+    final response = _ctrl.responseFor(widget.guestId, widget.event.id);
+    _ctrl.setRsvp(
+      guestId: widget.guestId,
+      eventId: widget.event.id,
+      status: response?.status ?? rsvpStatusPending,
+      attendeeCount: int.tryParse(_attendeeController.text.trim()) ?? 0,
+      specialRequirements: response?.specialRequirements ?? '',
+    );
+  }
+
+  void _saveSpecial() {
+    final response = _ctrl.responseFor(widget.guestId, widget.event.id);
+    _ctrl.setRsvp(
+      guestId: widget.guestId,
+      eventId: widget.event.id,
+      status: response?.status ?? rsvpStatusPending,
+      attendeeCount: response?.attendeeCount ?? 0,
+      specialRequirements: _specialController.text.trim(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<GuestsController>();
     return Obx(() {
-      final response = controller.responseFor(widget.guestId, widget.event.id);
+      final response = _ctrl.responseFor(widget.guestId, widget.event.id);
       final status = response?.status ?? rsvpStatusPending;
-      final attendeeCount = response?.attendeeCount ?? 0;
-      final special = response?.specialRequirements ?? '';
       return Padding(
         padding: const EdgeInsets.only(bottom: 10),
         child: DashboardFormCard(
@@ -185,57 +248,40 @@ class _EventRsvpEditorState extends State<_EventRsvpEditor> {
                             : ThemeColors.logoDeep,
                         fontWeight: FontWeight.w600,
                       ),
-                      onSelected: (_) => controller.setRsvp(
+                      onSelected: (_) => _ctrl.setRsvp(
                         guestId: widget.guestId,
                         eventId: widget.event.id,
                         status: s,
-                        attendeeCount: attendeeCount,
-                        specialRequirements: special,
+                        attendeeCount:
+                            int.tryParse(_attendeeController.text.trim()) ?? 0,
+                        specialRequirements: _specialController.text.trim(),
                       ),
                     ),
                   )
                   .toList(),
             ),
             const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    key: ValueKey(
-                      'attendees-${widget.event.id}-$attendeeCount',
-                    ),
-                    initialValue: attendeeCount == 0 ? '' : '$attendeeCount',
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Attendee Count',
-                      isDense: true,
-                    ),
-                    onFieldSubmitted: (value) => controller.setRsvp(
-                      guestId: widget.guestId,
-                      eventId: widget.event.id,
-                      status: status,
-                      attendeeCount: int.tryParse(value) ?? 0,
-                      specialRequirements: special,
-                    ),
-                  ),
-                ),
-              ],
+            TextField(
+              controller: _attendeeController,
+              focusNode: _attendeeFocus,
+              textInputAction: TextInputAction.done,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(
+                labelText: 'Attendee Count',
+                isDense: true,
+              ),
+              onSubmitted: (_) => _saveAttendee(),
             ),
             const SizedBox(height: 10),
-            TextFormField(
-              key: ValueKey('special-${widget.event.id}-$special'),
-              initialValue: special,
+            TextField(
+              controller: _specialController,
+              focusNode: _specialFocus,
+              textInputAction: TextInputAction.done,
               decoration: const InputDecoration(
                 labelText: 'Special Requirements',
                 isDense: true,
               ),
-              onFieldSubmitted: (value) => controller.setRsvp(
-                guestId: widget.guestId,
-                eventId: widget.event.id,
-                status: status,
-                attendeeCount: attendeeCount,
-                specialRequirements: value,
-              ),
+              onSubmitted: (_) => _saveSpecial(),
             ),
           ],
         ),

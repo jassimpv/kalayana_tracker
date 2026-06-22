@@ -17,6 +17,7 @@ class EventAddPage extends StatefulWidget {
 class _EventAddPageState extends State<EventAddPage> {
   late final TextEditingController _nameController;
   late final TextEditingController _venueController;
+  late final TextEditingController _mapUrlController;
   late final TextEditingController _notesController;
   late String _type;
   DateTime? _date;
@@ -29,6 +30,7 @@ class _EventAddPageState extends State<EventAddPage> {
     _type = event?.type ?? weddingEventTypes.first;
     _nameController = TextEditingController(text: event?.name ?? _type);
     _venueController = TextEditingController(text: event?.venue ?? '');
+    _mapUrlController = TextEditingController(text: event?.mapUrl ?? '');
     _notesController = TextEditingController(text: event?.notes ?? '');
     _date = event?.date;
   }
@@ -37,6 +39,7 @@ class _EventAddPageState extends State<EventAddPage> {
   void dispose() {
     _nameController.dispose();
     _venueController.dispose();
+    _mapUrlController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -66,6 +69,7 @@ class _EventAddPageState extends State<EventAddPage> {
       type: _type,
       date: _date,
       venue: _venueController.text.trim(),
+      mapUrl: _mapUrlController.text.trim(),
       notes: _notesController.text.trim(),
       updatedAt: DateTime.now(),
     );
@@ -145,7 +149,9 @@ class _EventAddPageState extends State<EventAddPage> {
                     ? 'Not set'
                     : '${_date!.day}/${_date!.month}/${_date!.year}',
                 onTap: _pickDate,
-                onClear: _date == null ? null : () => setState(() => _date = null),
+                onClear: _date == null
+                    ? null
+                    : () => setState(() => _date = null),
               ),
             ],
           ),
@@ -155,6 +161,15 @@ class _EventAddPageState extends State<EventAddPage> {
               TextField(
                 controller: _venueController,
                 decoration: const InputDecoration(labelText: 'Venue'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _mapUrlController,
+                keyboardType: TextInputType.url,
+                decoration: const InputDecoration(
+                  labelText: 'Google Maps URL',
+                  hintText: 'https://maps.app.goo.gl/...',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
