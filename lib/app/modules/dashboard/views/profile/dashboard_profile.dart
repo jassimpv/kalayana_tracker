@@ -378,6 +378,8 @@ class ReportsPanel extends GetView<DashboardController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                _ReportExportActions(data: data),
+                const SizedBox(height: 12),
                 _ReportHeroCard(
                   total: total,
                   paid: paid,
@@ -689,63 +691,6 @@ class ReportsPanel extends GetView<DashboardController> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () =>
-                            RewardedAdManager.instance.showForAction(
-                              () => _printExpensePdf(context, data.expenses),
-                            ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ThemeColors.primary,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        icon: const Icon(Icons.receipt_long_rounded, size: 18),
-                        label: const Text(
-                          'Expenses',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () =>
-                            RewardedAdManager.instance.showForAction(
-                              () => _printExpensePaymentsPdf(
-                                context,
-                                data.expenses,
-                              ),
-                            ),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: ThemeColors.primary,
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size.fromHeight(48),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        icon: const Icon(Icons.payments_rounded, size: 18),
-                        label: const Text(
-                          'Payment Expenses',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
@@ -753,6 +698,56 @@ class ReportsPanel extends GetView<DashboardController> {
       );
     });
   }
+}
+
+class _ReportExportActions extends StatelessWidget {
+  const _ReportExportActions({required this.data});
+
+  final WeddingData data;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: () => RewardedAdManager.instance.showForAction(
+              () => _printExpensePdf(context, data.expenses),
+            ),
+            style: _reportExportButtonStyle(),
+            icon: const Icon(Icons.receipt_long_rounded, size: 18),
+            label: const Text(
+              'Expenses',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: () => RewardedAdManager.instance.showForAction(
+              () => _printExpensePaymentsPdf(context, data.expenses),
+            ),
+            style: _reportExportButtonStyle(),
+            icon: const Icon(Icons.payments_rounded, size: 18),
+            label: const Text(
+              'Payment Expenses',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+ButtonStyle _reportExportButtonStyle() {
+  return FilledButton.styleFrom(
+    backgroundColor: ThemeColors.primary,
+    foregroundColor: Colors.white,
+    minimumSize: const Size.fromHeight(48),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  );
 }
 
 class CollaboratorsPanel extends GetView<DashboardController> {

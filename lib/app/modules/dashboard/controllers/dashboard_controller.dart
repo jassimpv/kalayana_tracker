@@ -507,19 +507,27 @@ class DashboardController extends GetxController {
   }
 
   Future<void> markRepaymentCompleted(ExpenseItem item) async {
+    await updateRepaymentStatus(item, completed: true);
+  }
+
+  Future<void> updateRepaymentStatus(
+    ExpenseItem item, {
+    required bool completed,
+  }) async {
+    if (item.isRepaymentCompleted == completed) return;
+
+    final nextStatus = completed
+        ? paymentSplitStatusCompleted
+        : paymentSplitStatusPaidByOther;
     final payments = item.paymentSplit
         .map(
           (payment) => _isExpenseRepaymentPayment(item, payment)
-              ? payment.copyWith(paymentStatus: paymentSplitStatusCompleted)
+              ? payment.copyWith(paymentStatus: nextStatus)
               : payment,
         )
         .toList();
     await saveExpense(
-      item.copyWith(
-        isRepaymentCompleted: true,
-        paymentSplit: payments,
-        updatedDate: DateTime.now(),
-      ),
+      item.copyWith(isRepaymentCompleted: completed, paymentSplit: payments),
     );
   }
 

@@ -228,71 +228,73 @@ class _RepayPersonDetailView extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final history = _repayPersonHistory(controller, person);
-    final pending = _repayPersonPendingAmount(controller, person);
-    final totalPaid = _repayPersonPaidAmount(controller, person);
+    return Obx(() {
+      final history = _repayPersonHistory(controller, person);
+      final pending = _repayPersonPendingAmount(controller, person);
+      final totalPaid = _repayPersonPaidAmount(controller, person);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
-      child: ResponsivePageContainer(
-        maxWidth: 900,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _RepayPersonDetailHeader(
-              person: person,
-              pending: pending,
-              totalPaid: totalPaid,
-              onBack: onBack,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: controller.openExpenseAdd,
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Add'),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                _RepayPersonActionButton(
-                  icon: Icons.edit_rounded,
-                  tooltip: 'Edit person',
-                  onPressed: () =>
-                      _showRepayPersonDialog(context, person: person),
-                ),
-                const SizedBox(width: 8),
-                _RepayPersonActionButton(
-                  icon: Icons.delete_outline_rounded,
-                  tooltip: 'Delete person',
-                  destructive: true,
-                  onPressed: () => _confirmDeleteRepayPerson(context, person),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Pay History',
-              style: TextStyle(
-                color: ThemeColors.logoDeep,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+      return SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
+        child: ResponsivePageContainer(
+          maxWidth: 900,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _RepayPersonDetailHeader(
+                person: person,
+                pending: pending,
+                totalPaid: totalPaid,
+                onBack: onBack,
               ),
-            ),
-            const SizedBox(height: 10),
-            if (history.isEmpty)
-              const PremiumEmptyState(
-                icon: Icons.receipt_long_rounded,
-                title: 'No pay history yet',
-                subtitle: 'Expenses involving this person will appear here.',
-              )
-            else
-              ...history.map((item) => _RepayPersonHistoryTile(item: item)),
-          ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: controller.openExpenseAdd,
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('Add'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _RepayPersonActionButton(
+                    icon: Icons.edit_rounded,
+                    tooltip: 'Edit person',
+                    onPressed: () =>
+                        _showRepayPersonDialog(context, person: person),
+                  ),
+                  const SizedBox(width: 8),
+                  _RepayPersonActionButton(
+                    icon: Icons.delete_outline_rounded,
+                    tooltip: 'Delete person',
+                    destructive: true,
+                    onPressed: () => _confirmDeleteRepayPerson(context, person),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Pay History',
+                style: TextStyle(
+                  color: ThemeColors.logoDeep,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 10),
+              if (history.isEmpty)
+                const PremiumEmptyState(
+                  icon: Icons.receipt_long_rounded,
+                  title: 'No pay history yet',
+                  subtitle: 'Expenses involving this person will appear here.',
+                )
+              else
+                ...history.map((item) => _RepayPersonHistoryTile(item: item)),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }
 
@@ -468,7 +470,7 @@ class _RepayPersonActionButton extends StatelessWidget {
   }
 }
 
-class _RepayPersonHistoryTile extends StatelessWidget {
+class _RepayPersonHistoryTile extends GetView<DashboardController> {
   const _RepayPersonHistoryTile({required this.item});
 
   final ExpenseItem item;
@@ -544,6 +546,38 @@ class _RepayPersonHistoryTile extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 2),
+              PopupMenuButton<bool>(
+                tooltip: 'Update payment status',
+                initialValue: settled,
+                onSelected: (completed) => controller.updateRepaymentStatus(
+                  item,
+                  completed: completed,
+                ),
+                itemBuilder: (context) => const [
+                  PopupMenuItem<bool>(value: false, child: Text('Pending')),
+                  PopupMenuItem<bool>(value: true, child: Text('Settled')),
+                ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Update',
+                      style: TextStyle(
+                        color: ThemeColors.logoDeep.withValues(alpha: 0.72),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: ThemeColors.logoDeep.withValues(alpha: 0.72),
+                      size: 14,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
@@ -566,24 +600,10 @@ double _repayPersonPaidAmount(
   DashboardController controller,
   RepayPerson person,
 ) {
-  final personId = person.id.trim().toLowerCase();
-  final personName = person.name.trim().toLowerCase();
-  return controller.data.value.expenses.fold<double>(0, (total, item) {
-    return total +
-        item.paymentSplit.fold<double>(0, (paymentTotal, payment) {
-          if (personId.isNotEmpty &&
-              payment.paidByPersonId.trim().toLowerCase() == personId) {
-            return paymentTotal + payment.amount;
-          }
-
-          if (personName.isNotEmpty &&
-              payment.displayPaidBy.trim().toLowerCase() == personName) {
-            return paymentTotal + payment.amount;
-          }
-
-          return paymentTotal;
-        });
-  });
+  return _repayPersonHistory(
+    controller,
+    person,
+  ).fold<double>(0, (total, item) => total + item.repaymentAmount);
 }
 
 List<ExpenseItem> _repayPersonHistory(
