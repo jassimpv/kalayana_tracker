@@ -3,8 +3,10 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/core/services/in_app_review_service.dart';
@@ -144,6 +146,8 @@ class DashboardController extends GetxController {
     _previousDashboardPage = null;
     _previousDashboardPageArgument = null;
   }
+
+  void openProfile() => openDashboardTab(5);
 
   void openExpenseAdd() =>
       _openDashboardSubPage(DashboardPageKind.expenseAdd, selectedTab: 1);
@@ -297,9 +301,15 @@ class DashboardController extends GetxController {
     super.onClose();
   }
 
-  Future<void> logout() => FirebaseAuth.instance.signOut().then(
-    (_) => Get.offAllNamed(AppRoutes.auth),
-  );
+  Future<void> logout() async {
+    if (!kIsWeb) {
+      await GoogleSignIn().signOut();
+    }
+    await FirebaseAuth.instance.signOut();
+    if (Get.currentRoute != AppRoutes.auth) {
+      Get.offAllNamed(AppRoutes.auth);
+    }
+  }
 
   Future<void> saveExpense(ExpenseItem item) async {
     final items = [...data.value.expenses];

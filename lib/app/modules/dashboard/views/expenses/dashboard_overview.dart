@@ -30,7 +30,7 @@ class OverviewPanel extends GetView<DashboardController> {
         ).push(MaterialPageRoute(builder: (_) => const GuestAddPage())),
         onShowReminders: () => _openDashboardTab(2),
         onShowRsvp: controller.openGuests,
-        onShowProfile: () => _openDashboardTab(5),
+        onShowProfile: controller.openProfile,
         onEditWedding: () => showProfileDialog(context),
         onViewReports: controller.openReports,
       );
@@ -442,7 +442,7 @@ class ProfilePill extends StatelessWidget {
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(26),
       child: InkWell(
-        onTap: () => controller.openDashboardTab(5),
+        onTap: controller.openProfile,
         borderRadius: BorderRadius.circular(26),
         child: Ink(
           height: 40,

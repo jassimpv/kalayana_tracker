@@ -172,7 +172,15 @@ Future<void> _confirmLogout(
     ),
   );
   if (confirmed != true) return;
-  await controller.logout();
+  try {
+    await controller.logout();
+  } catch (error) {
+    Get.snackbar(
+      'Logout failed',
+      error.toString(),
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
 }
 
 class _FeedbackSheet extends StatefulWidget {

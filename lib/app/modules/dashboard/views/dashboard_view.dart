@@ -254,7 +254,7 @@ class _DesktopDashboardAppBar extends StatelessWidget {
       final isSubPage = controller.isDashboardSubPage;
       final title = isSubPage
           ? _dashboardPageTitle(controller.dashboardPage.value)
-          : navDestinations[controller.selectedIndex.value].label;
+          : _dashboardTabTitle(controller.selectedIndex.value);
       final subtitle = isSubPage
           ? 'Manage ${title.toLowerCase()}'
           : 'Wedding Budget Overview';
@@ -319,7 +319,7 @@ class _DesktopDashboardAppBar extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               InkWell(
-                onTap: () => controller.openDashboardTab(5),
+                onTap: controller.openProfile,
                 borderRadius: BorderRadius.circular(999),
                 child: _ResilientAvatar(
                   initials: _profileInitials(
@@ -570,6 +570,15 @@ String _dashboardPageTitle(DashboardPageKind page) => switch (page) {
   DashboardPageKind.activityLog => 'Activity Log',
   DashboardPageKind.guests => 'Guests & RSVP',
   DashboardPageKind.tab => 'Dashboard',
+};
+
+String _dashboardTabTitle(int index) => switch (index) {
+  1 => 'Expenses',
+  2 => 'Reminders',
+  3 => 'Shopping',
+  4 => 'Guests & RSVP',
+  5 => 'Profile',
+  _ => 'Overview',
 };
 
 class _DashboardTabPage extends GetView<DashboardController> {
