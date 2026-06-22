@@ -117,6 +117,7 @@ class _ExpensesHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Get.find<DashboardController>();
     final top = MediaQuery.paddingOf(context).top;
     return Container(
       height: top + 100,
@@ -181,27 +182,34 @@ class _ExpensesHero extends StatelessWidget {
               ),
             ),
           ),
-          Column(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Expenses',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Expenses',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Track every expense, stay on budget',
+                    style: TextStyle(
+                      color: Color(0xFFF7C859),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Track every expense, stay on budget',
-                style: TextStyle(
-                  color: Color(0xFFF7C859),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Spacer(),
+              const ProfilePill(),
             ],
           ),
         ],

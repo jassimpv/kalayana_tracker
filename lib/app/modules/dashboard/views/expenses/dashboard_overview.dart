@@ -330,7 +330,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
                         ),
                       ),
                     Spacer(),
-                    _ProfilePill(user: user, onTap: onProfileTap),
+                    const ProfilePill(),
                   ],
                 ),
               ),
@@ -431,22 +431,21 @@ class _HeaderCircleButton extends StatelessWidget {
   }
 }
 
-class _ProfilePill extends StatelessWidget {
-  const _ProfilePill({required this.user, required this.onTap});
-
-  final User? user;
-  final VoidCallback onTap;
+class ProfilePill extends StatelessWidget {
+  const ProfilePill({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final controller = Get.find<DashboardController>();
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(26),
       child: InkWell(
-        onTap: onTap,
+        onTap: () => controller.openDashboardTab(5),
         borderRadius: BorderRadius.circular(26),
         child: Ink(
-          height: 50,
+          height: 40,
           padding: const EdgeInsets.fromLTRB(6, 5, 10, 5),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.14),
@@ -460,10 +459,14 @@ class _ProfilePill extends StatelessWidget {
                   user?.displayName ?? user?.email ?? 'J',
                 ),
                 imageUrl: user?.photoURL,
-                size: 40,
+                size: 30,
               ),
-              const SizedBox(width: 6),
-              const Icon(CupertinoIcons.chevron_down, color: Colors.white),
+              const SizedBox(width: 2),
+              const Icon(
+                CupertinoIcons.chevron_down,
+                color: Colors.white,
+                size: 16,
+              ),
             ],
           ),
         ),

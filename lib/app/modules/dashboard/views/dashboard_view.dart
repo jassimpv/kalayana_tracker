@@ -462,10 +462,7 @@ class _DesktopOverviewAppHeader extends StatelessWidget {
                         onTap: () => controller.openDashboardTab(2),
                       ),
                       const SizedBox(width: 10),
-                      _ProfilePill(
-                        user: user,
-                        onTap: () => controller.openDashboardTab(5),
-                      ),
+                      const ProfilePill(),
                       const SizedBox(width: 10),
                       _HeaderCircleButton(
                         icon: Icons.logout_rounded,

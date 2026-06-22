@@ -97,12 +97,12 @@ class ProfilePanel extends GetView<DashboardController> {
                     subtitle: 'Invite and manage members',
                     onTap: controller.openCollaborators,
                   ),
-                  _ProfileMenuRow(
-                    icon: Icons.groups_outlined,
-                    label: 'Guests & RSVP',
-                    subtitle: 'Manage guest list & invitations',
-                    onTap: controller.openGuests,
-                  ),
+                  // _ProfileMenuRow(
+                  //   icon: Icons.groups_outlined,
+                  //   label: 'Guests & RSVP',
+                  //   subtitle: 'Manage guest list & invitations',
+                  //   onTap: controller.openGuests,
+                  // ),
                   _ProfileMenuRow(
                     icon: Icons.help_outline_rounded,
                     label: 'Help & Support',
@@ -508,8 +508,8 @@ class ReportsPanel extends GetView<DashboardController> {
                   children: [
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () => RewardedAdManager.instance
-                            .showForAction(
+                        onPressed: () =>
+                            RewardedAdManager.instance.showForAction(
                               () => _printExpensePdf(context, data.expenses),
                             ),
                         style: FilledButton.styleFrom(
@@ -533,8 +533,8 @@ class ReportsPanel extends GetView<DashboardController> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () => RewardedAdManager.instance
-                            .showForAction(
+                        onPressed: () =>
+                            RewardedAdManager.instance.showForAction(
                               () => _printExpensePaymentsPdf(
                                 context,
                                 data.expenses,

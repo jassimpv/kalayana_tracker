@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/guests_controller.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/dashboard_view.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/guests/event_add.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/guests/events_tab.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/guests/guest_add.dart';
@@ -97,27 +98,34 @@ class _RsvpHero extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.14),
             ),
           ),
-          Column(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'RSVP',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'RSVP',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Track guests, events and confirmations',
+                    style: TextStyle(
+                      color: Color(0xFFF7C859),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Track guests, events and confirmations',
-                style: TextStyle(
-                  color: Color(0xFFF7C859),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              const Spacer(),
+              const ProfilePill(),
             ],
           ),
         ],

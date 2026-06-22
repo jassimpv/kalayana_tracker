@@ -183,31 +183,38 @@ class _ShoppingHero extends StatelessWidget {
               child: CustomPaint(painter: _ShoppingHeaderArtPainter()),
             ),
           ),
-          Column(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Shopping',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const SizedBox(
-                width: 230,
-                child: Text(
-                  'Manage purchases, stay on budget',
-                  style: TextStyle(
-                    color: Color(0xFFF7C859),
-                    fontSize: 11,
-                    height: 1.2,
-                    fontWeight: FontWeight.w600,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Shopping',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  const SizedBox(
+                    width: 230,
+                    child: Text(
+                      'Manage purchases, stay on budget',
+                      style: TextStyle(
+                        color: Color(0xFFF7C859),
+                        fontSize: 11,
+                        height: 1.2,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              Spacer(),
+              const ProfilePill(),
             ],
           ),
         ],

@@ -157,27 +157,34 @@ class _ReminderHero extends StatelessWidget {
             child: _ReminderGlow(size: 154, color: const Color(0xFFC11A4D)),
           ),
           const Positioned(top: 20, right: -28, child: _ReminderHeaderArt()),
-          Column(
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Reminders',
-                style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Reminders',
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Stay on track, never miss a payment',
+                    style: TextStyle(
+                      color: Color(0xFFF7C859),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Stay on track, never miss a payment',
-                style: TextStyle(
-                  color: Color(0xFFF7C859),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Spacer(),
+              const ProfilePill(),
             ],
           ),
         ],
