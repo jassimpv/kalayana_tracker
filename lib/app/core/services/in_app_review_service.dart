@@ -29,8 +29,7 @@ class InAppReviewService {
       );
       if (installDate == null) return;
 
-      final daysSinceInstall =
-          DateTime.now().difference(installDate).inDays;
+      final daysSinceInstall = DateTime.now().difference(installDate).inDays;
       if (daysSinceInstall < _minDaysBeforeReview) return;
 
       final inAppReview = InAppReview.instance;
