@@ -921,10 +921,7 @@ pw.Widget _pdfReportHeader(
             ),
           ),
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(
-              horizontal: 10,
-              vertical: 6,
-            ),
+            padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: pw.BoxDecoration(
               color: _pdfBrandColor,
               borderRadius: pw.BorderRadius.circular(6),
