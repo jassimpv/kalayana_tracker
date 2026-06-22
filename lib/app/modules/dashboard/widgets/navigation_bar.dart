@@ -171,20 +171,33 @@ class DashboardSideMenu extends StatelessWidget {
               const SizedBox(height: 28),
               Obx(
                 () => Column(
-                  children: navDestinations.asMap().entries.map((entry) {
-                    final selected =
-                        controller.selectedIndex.value == entry.key;
-                    final item = entry.value;
-                    return Padding(
+                  children: [
+                    ...navDestinations.asMap().entries.map((entry) {
+                      final selected =
+                          controller.selectedIndex.value == entry.key;
+                      final item = entry.value;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _SideMenuItem(
+                          label: item.label,
+                          icon: selected ? item.selectedIcon : item.icon,
+                          selected: selected,
+                          onTap: () => onItemClick(entry.key),
+                        ),
+                      );
+                    }),
+                    Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: _SideMenuItem(
-                        label: item.label,
-                        icon: selected ? item.selectedIcon : item.icon,
-                        selected: selected,
-                        onTap: () => onItemClick(entry.key),
+                        label: 'Profile',
+                        icon: controller.selectedIndex.value == 5
+                            ? Icons.person_rounded
+                            : Icons.person_outline_rounded,
+                        selected: controller.selectedIndex.value == 5,
+                        onTap: controller.openProfile,
                       ),
-                    );
-                  }).toList(),
+                    ),
+                  ],
                 ),
               ),
               if (kIsWeb) ...[

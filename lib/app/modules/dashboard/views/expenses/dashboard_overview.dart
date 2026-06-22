@@ -434,22 +434,24 @@ class _HeaderCircleButton extends StatelessWidget {
 class ProfilePill extends StatelessWidget {
   const ProfilePill({super.key});
 
+  static const double _height = 50;
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final controller = Get.find<DashboardController>();
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(26),
+      borderRadius: BorderRadius.circular(_height / 2),
       child: InkWell(
         onTap: controller.openProfile,
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(_height / 2),
         child: Ink(
-          height: 40,
-          padding: const EdgeInsets.fromLTRB(6, 5, 10, 5),
+          height: _height,
+          padding: const EdgeInsets.fromLTRB(6, 6, 12, 6),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(26),
+            borderRadius: BorderRadius.circular(_height / 2),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
           ),
           child: Row(
@@ -459,9 +461,9 @@ class ProfilePill extends StatelessWidget {
                   user?.displayName ?? user?.email ?? 'J',
                 ),
                 imageUrl: user?.photoURL,
-                size: 30,
+                size: 38,
               ),
-              const SizedBox(width: 2),
+              const SizedBox(width: 4),
               const Icon(
                 CupertinoIcons.chevron_down,
                 color: Colors.white,
