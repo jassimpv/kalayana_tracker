@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Kalyana Expense Tracker",
-  "short_name": "Kalyana Expense Tracker",
+  "name": "Kalyanam360 – Planner & Budget",
+  "short_name": "Kalyanam360",
   "description": "A Firebase-ready wedding expense, purchase, reminder, and invite tracker.",
   "start_url": ".",
   "scope": ".",
