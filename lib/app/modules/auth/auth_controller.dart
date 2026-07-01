@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kalayanaexpresstracker/app/core/services/account_deletion_service.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
 
@@ -35,7 +36,7 @@ class AuthController extends GetxController {
         await _auth.signOut();
         if (Get.currentRoute != AppRoutes.auth) Get.offAllNamed(AppRoutes.auth);
       } else {
-        Get.offAllNamed(AppRoutes.dashboard);
+        await _openDashboardAfterSignIn(user);
       }
     });
   }
@@ -66,6 +67,7 @@ class AuthController extends GetxController {
         final groomValue = groom.text.trim();
         final brideValue = bride.text.trim();
         final user = createdUser ?? _auth.currentUser!;
+        final regionCurrency = CurrencySymbolApi.fromDeviceRegion();
 
         await _saveUserProfile({
           'fullName': fullNameValue,
@@ -73,8 +75,8 @@ class AuthController extends GetxController {
           'groomName': groomValue.isEmpty ? null : groomValue,
           'brideName': brideValue.isEmpty ? null : brideValue,
           'marriageDate': weddingDate.value?.toIso8601String(),
-          'currencyCode': CurrencySymbolApi.defaultOption.code,
-          'currencySymbol': CurrencySymbolApi.defaultOption.symbol,
+          'currencyCode': regionCurrency.code,
+          'currencySymbol': regionCurrency.symbol,
           'createdAt': FieldValue.serverTimestamp(),
           'updatedAt': FieldValue.serverTimestamp(),
         });
@@ -144,10 +146,16 @@ class AuthController extends GetxController {
         userCredential = await _auth.signInWithCredential(credential);
       }
       final user = userCredential.user ?? _auth.currentUser!;
+      final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
       await _saveUserProfile({
         'fullName': user.displayName,
         'email': user.email,
         'updatedAt': FieldValue.serverTimestamp(),
+        if (isNewUser) ...{
+          'currencyCode': CurrencySymbolApi.fromDeviceRegion().code,
+          'currencySymbol': CurrencySymbolApi.fromDeviceRegion().symbol,
+          'createdAt': FieldValue.serverTimestamp(),
+        },
       });
     } on FirebaseAuthException catch (error) {
       _showError(error.message ?? error.code);
@@ -208,6 +216,19 @@ class AuthController extends GetxController {
     return usesPassword && !user.emailVerified;
   }
 
+  Future<void> _openDashboardAfterSignIn(User user) async {
+    final revoked = await AccountDeletionService.revokeIfScheduled(user);
+    Get.offAllNamed(AppRoutes.dashboard);
+    if (revoked) {
+      Get.snackbar(
+        'Deletion request cancelled',
+        'Your account deletion request was revoked because you signed in.',
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+      );
+    }
+  }
+
   void _showError(String message) {
     if (kDebugMode) debugPrint('Authentication Error: $message');
 
@@ -218,5 +239,4 @@ class AuthController extends GetxController {
       margin: const EdgeInsets.all(16),
     );
   }
-
 }

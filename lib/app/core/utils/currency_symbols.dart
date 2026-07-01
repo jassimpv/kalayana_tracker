@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:kalayanaexpresstracker/app/core/config.dart';
 
 class CurrencyOption {
@@ -195,6 +197,67 @@ class CurrencySymbolApi {
     CurrencyOption(code: 'ZWL', symbol: r'$', name: 'Zimbabwean Dollar'),
   ];
 
+  // ISO 3166-1 alpha-2 country code -> ISO 4217 currency code.
+  static const _currencyByCountry = <String, String>{
+    'AE': 'AED', 'AF': 'AFN', 'AL': 'ALL', 'AM': 'AMD',
+    'CW': 'ANG', 'SX': 'ANG', 'AO': 'AOA', 'AR': 'ARS',
+    'AU': 'AUD', 'AW': 'AWG', 'AZ': 'AZN', 'BA': 'BAM',
+    'BB': 'BBD', 'BD': 'BDT', 'BG': 'BGN', 'BH': 'BHD',
+    'BI': 'BIF', 'BM': 'BMD', 'BN': 'BND', 'BO': 'BOB',
+    'BR': 'BRL', 'BS': 'BSD', 'BT': 'BTN', 'BW': 'BWP',
+    'BY': 'BYN', 'BZ': 'BZD', 'CA': 'CAD', 'CD': 'CDF',
+    'CH': 'CHF', 'LI': 'CHF', 'CL': 'CLP', 'CN': 'CNY',
+    'CO': 'COP', 'CR': 'CRC', 'CU': 'CUP', 'CV': 'CVE',
+    'CZ': 'CZK', 'DJ': 'DJF', 'DK': 'DKK', 'GL': 'DKK',
+    'FO': 'DKK', 'DO': 'DOP', 'DZ': 'DZD', 'EG': 'EGP',
+    'ER': 'ERN', 'ET': 'ETB', 'FJ': 'FJD', 'FK': 'FKP',
+    'GB': 'GBP', 'GG': 'GBP', 'JE': 'GBP', 'IM': 'GBP',
+    'GE': 'GEL', 'GH': 'GHS', 'GI': 'GIP', 'GM': 'GMD',
+    'GN': 'GNF', 'GT': 'GTQ', 'GY': 'GYD', 'HK': 'HKD',
+    'HN': 'HNL', 'HT': 'HTG', 'HU': 'HUF', 'ID': 'IDR',
+    'IL': 'ILS', 'IN': 'INR', 'IQ': 'IQD', 'IR': 'IRR',
+    'IS': 'ISK', 'JM': 'JMD', 'JO': 'JOD', 'JP': 'JPY',
+    'KE': 'KES', 'KG': 'KGS', 'KH': 'KHR', 'KM': 'KMF',
+    'KR': 'KRW', 'KW': 'KWD', 'KY': 'KYD', 'KZ': 'KZT',
+    'LA': 'LAK', 'LB': 'LBP', 'LK': 'LKR', 'LR': 'LRD',
+    'LS': 'LSL', 'LY': 'LYD', 'MA': 'MAD', 'MD': 'MDL',
+    'MG': 'MGA', 'MK': 'MKD', 'MM': 'MMK', 'MN': 'MNT',
+    'MO': 'MOP', 'MR': 'MRU', 'MU': 'MUR', 'MV': 'MVR',
+    'MW': 'MWK', 'MX': 'MXN', 'MY': 'MYR', 'MZ': 'MZN',
+    'NA': 'NAD', 'NG': 'NGN', 'NI': 'NIO', 'NO': 'NOK',
+    'NP': 'NPR', 'NZ': 'NZD', 'OM': 'OMR', 'PA': 'PAB',
+    'PE': 'PEN', 'PG': 'PGK', 'PH': 'PHP', 'PK': 'PKR',
+    'PL': 'PLN', 'PY': 'PYG', 'QA': 'QAR', 'RO': 'RON',
+    'RS': 'RSD', 'RU': 'RUB', 'RW': 'RWF', 'SA': 'SAR',
+    'SB': 'SBD', 'SC': 'SCR', 'SD': 'SDG', 'SE': 'SEK',
+    'SG': 'SGD', 'SH': 'SHP', 'SL': 'SLE', 'SO': 'SOS',
+    'SR': 'SRD', 'SS': 'SSP', 'ST': 'STN', 'SY': 'SYP',
+    'SZ': 'SZL', 'TH': 'THB', 'TJ': 'TJS', 'TM': 'TMT',
+    'TN': 'TND', 'TO': 'TOP', 'TR': 'TRY', 'TT': 'TTD',
+    'TW': 'TWD', 'TZ': 'TZS', 'UA': 'UAH', 'UG': 'UGX',
+    'US': 'USD', 'UY': 'UYU', 'UZ': 'UZS', 'VE': 'VES',
+    'VN': 'VND', 'VU': 'VUV', 'WS': 'WST', 'YE': 'YER',
+    'ZA': 'ZAR', 'ZM': 'ZMW', 'ZW': 'ZWL',
+    // Eurozone.
+    'AT': 'EUR', 'AD': 'EUR', 'BE': 'EUR', 'CY': 'EUR',
+    'EE': 'EUR', 'FI': 'EUR', 'FR': 'EUR', 'DE': 'EUR',
+    'GR': 'EUR', 'IE': 'EUR', 'IT': 'EUR', 'LV': 'EUR',
+    'LT': 'EUR', 'LU': 'EUR', 'MT': 'EUR', 'MC': 'EUR',
+    'ME': 'EUR', 'NL': 'EUR', 'PT': 'EUR', 'SM': 'EUR',
+    'SK': 'EUR', 'SI': 'EUR', 'ES': 'EUR', 'VA': 'EUR',
+    'XK': 'EUR',
+    // CFA franc zones.
+    'CM': 'XAF', 'CF': 'XAF', 'TD': 'XAF', 'CG': 'XAF',
+    'GQ': 'XAF', 'GA': 'XAF',
+    'BJ': 'XOF', 'BF': 'XOF', 'CI': 'XOF', 'GW': 'XOF',
+    'ML': 'XOF', 'NE': 'XOF', 'SN': 'XOF', 'TG': 'XOF',
+    // Eastern Caribbean dollar zone.
+    'AG': 'XCD', 'DM': 'XCD', 'GD': 'XCD', 'KN': 'XCD',
+    'LC': 'XCD', 'VC': 'XCD',
+    // CFP franc zone.
+    'PF': 'XPF', 'NC': 'XPF', 'WF': 'XPF',
+  };
+
   static CurrencyOption fromCode(String? code) {
     final normalized = code?.trim().toUpperCase();
     if (normalized == null || normalized.isEmpty) return defaultOption;
@@ -202,6 +265,18 @@ class CurrencySymbolApi {
       (option) => option.code == normalized,
       orElse: () => defaultOption,
     );
+  }
+
+  /// Guesses the user's currency from the device's region setting
+  /// (e.g. the "Region" in iOS Settings or Android system locale).
+  /// Falls back to [defaultOption] when the region is unset or unmapped.
+  static CurrencyOption fromDeviceRegion() {
+    final countryCode = PlatformDispatcher.instance.locale.countryCode
+        ?.toUpperCase();
+    final currencyCode = countryCode == null
+        ? null
+        : _currencyByCountry[countryCode];
+    return fromCode(currencyCode);
   }
 
   static CurrencyOption fromProfile(Map<String, dynamic> profile) {

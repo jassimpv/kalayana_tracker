@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class AppConfig {
   static const String appName = "Wedding360 – Planner & Budget";
-  static const String appVersion = "1.0.0";
   static String appCurrency = "₹";
   static String appCurrencyCode = "INR";
   static IconData appCurrencyIcon = Icons.currency_rupee_rounded;

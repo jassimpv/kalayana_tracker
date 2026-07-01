@@ -1,15 +1,72 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:kalayanaexpresstracker/app/core/services/account_deletion_service.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/app_bar.dart';
 import 'package:kalayanaexpresstracker/app/routes/app_pages.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 const _webGoogleClientId =
     '1097547412500-kghp41ghv639fqkujrhc91vgpio1cro5.apps.googleusercontent.com';
+const _supportEmail = 'support@wedding360.app';
+final Future<String> _appVersionFuture = _loadAppVersion();
+
+class HelpSupportView extends StatelessWidget {
+  const HelpSupportView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return _LegalScaffold(
+      title: 'Help & Support',
+      subtitle: 'Find answers, contact support, and manage legal settings.',
+      icon: Icons.help_outline_rounded,
+      children: [
+        const _PolicySection(
+          title: 'FAQ',
+          body:
+              'Wedding360 helps you track expenses, payments, reminders, shopping, guests, RSVP responses, and collaborators in one shared planning space. If your data does not appear immediately, check your internet connection and sign in with the same account or shared workspace.',
+        ),
+        const _PolicySection(
+          title: 'Contact / Support Email',
+          body:
+              'For help with your account, data, billing questions, or deletion requests, email $_supportEmail.',
+        ),
+        _SupportLinkTile(
+          icon: Icons.privacy_tip_outlined,
+          title: 'Privacy Policy',
+          subtitle: 'Review how your information is handled',
+          onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+        ),
+        _SupportLinkTile(
+          icon: Icons.description_outlined,
+          title: 'Terms & Conditions',
+          subtitle: 'Read the terms for using the app',
+          onTap: () => Get.toNamed(AppRoutes.termsConditions),
+        ),
+        _SupportLinkTile(
+          icon: Icons.delete_forever_outlined,
+          title: 'Delete Account',
+          subtitle: 'Request account deletion after verification',
+          destructive: true,
+          onTap: () => Get.toNamed(AppRoutes.deleteAccount),
+        ),
+        const SizedBox(height: 4),
+        const _AppVersionSection(),
+      ],
+    );
+  }
+}
+
+Future<String> _loadAppVersion() async {
+  final packageInfo = await PackageInfo.fromPlatform();
+  if (packageInfo.buildNumber.trim().isEmpty) {
+    return packageInfo.version;
+  }
+  return '${packageInfo.version}+${packageInfo.buildNumber}';
+}
 
 class PrivacyPolicyView extends StatelessWidget {
   const PrivacyPolicyView({super.key});
@@ -49,12 +106,12 @@ class PrivacyPolicyView extends StatelessWidget {
         _PolicySection(
           title: 'Data retention',
           body:
-              'We keep your account and planning data while your account remains active. You can request deletion from the Delete Account page, which removes your app profile and saved dashboard data.',
+              'We keep your account and planning data while your account remains active. When you request account deletion, the request is scheduled for 90 days later. If you sign in during that 90-day period, the deletion request is automatically cancelled.',
         ),
         _PolicySection(
           title: 'Your choices',
           body:
-              'You can update profile details in the app, sign out at any time, and delete your account after verification at /delete-account.',
+              'You can update profile details in the app, sign out at any time, and request account deletion after verification at /delete-account. After the 90-day waiting period, account data will be moved to the deleted account database for future reference.',
         ),
         _PolicySection(
           title: 'Contact',
@@ -99,7 +156,7 @@ class TermsConditionsView extends StatelessWidget {
         _PolicySection(
           title: 'Account deletion',
           body:
-              'You can request account deletion from the Delete Account page after verifying your current sign-in method.',
+              'You can request account deletion from the Delete Account page after verifying your current sign-in method. The request is scheduled for 90 days. Signing in again during that period automatically revokes the request, and you must submit a new request if you still want deletion.',
         ),
       ],
     );
@@ -144,9 +201,9 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
       subtitle: 'Verification is required before account deletion.',
       children: [
         _PolicySection(
-          title: 'What will be deleted',
+          title: 'What happens next',
           body:
-              'Deleting your account removes your Firebase Authentication account, app profile, and saved dashboard data including expenses, purchases, reminders, and wedding profile details.',
+              'Your account deletion request will be scheduled for 90 days after verification. During this period you can still sign in. Signing in automatically revokes the deletion request, so you must submit a new request if you still want the account deleted.',
         ),
         if (user == null)
           _SignedOutDeletePanel()
@@ -155,7 +212,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
           const _PolicySection(
             title: 'Verification required',
             body:
-                'For your security, verify your current sign-in method first. The delete button is enabled only after verification succeeds.',
+                'For your security, verify your current sign-in method first. The deletion request button is enabled only after verification succeeds.',
           ),
           if (usesPassword) ...[
             TextField(
@@ -189,7 +246,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
           FilledButton.icon(
             onPressed: _loading || !_verified
                 ? null
-                : () => _confirmDeleteUser(user),
+                : () => _confirmScheduleDeletion(user),
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Theme.of(context).colorScheme.onError,
@@ -201,7 +258,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.delete_forever_rounded),
-            label: const Text('Permanently delete my account'),
+            label: const Text('Request account deletion'),
           ),
           if (_message != null) ...[
             const SizedBox(height: 14),
@@ -258,13 +315,13 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
     });
   }
 
-  Future<void> _confirmDeleteUser(User user) async {
+  Future<void> _confirmScheduleDeletion(User user) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Account'),
+        title: const Text('Request Account Deletion'),
         content: const Text(
-          'This permanently deletes your account and saved dashboard data. Continue?',
+          'Your account will be scheduled for deletion after 90 days. If you sign in during that period, the request will be cancelled. Continue?',
         ),
         actions: [
           TextButton(
@@ -277,37 +334,27 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
               backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
-            child: const Text('Delete'),
+            child: const Text('Request deletion'),
           ),
         ],
       ),
     );
     if (confirmed != true) return;
-    await _deleteUser(user);
+    await _scheduleAccountDeletion(user);
   }
 
-  Future<void> _deleteUser(User user) async {
+  Future<void> _scheduleAccountDeletion(User user) async {
     await _runGuarded(() async {
-      final uid = user.uid;
-      final firestore = FirebaseFirestore.instance;
-      final batch = firestore.batch();
-      batch.delete(
-        firestore
-            .collection('users')
-            .doc(uid)
-            .collection('weddings')
-            .doc('dashboard'),
-      );
-      batch.delete(firestore.collection('users').doc(uid));
-      await batch.commit();
-      await user.delete();
+      final scheduledAt = await AccountDeletionService.scheduleDeletion(user);
       await FirebaseAuth.instance.signOut();
+      if (!kIsWeb) await GoogleSignIn().signOut();
       Get.offAllNamed(AppRoutes.auth);
       Get.snackbar(
-        'Account deleted',
-        'Your account and app data were deleted.',
+        'Deletion requested',
+        'Your account is scheduled for deletion on ${_formatLegalDate(scheduledAt)}. Signing in before then cancels the request.',
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 7),
       );
     });
   }
@@ -336,16 +383,25 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
   }
 }
 
+String _formatLegalDate(DateTime date) {
+  final local = date.toLocal();
+  final month = local.month.toString().padLeft(2, '0');
+  final day = local.day.toString().padLeft(2, '0');
+  return '$day/$month/${local.year}';
+}
+
 class _LegalScaffold extends StatelessWidget {
   const _LegalScaffold({
     required this.title,
     required this.subtitle,
     required this.children,
+    this.icon = Icons.privacy_tip_outlined,
   });
 
   final String title;
   final String subtitle;
   final List<Widget> children;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -369,7 +425,7 @@ class _LegalScaffold extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Icon(
-                            Icons.privacy_tip_outlined,
+                            icon,
                             color: Theme.of(context).colorScheme.primary,
                             size: 40,
                           ),
@@ -400,6 +456,93 @@ class _LegalScaffold extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SupportLinkTile extends StatelessWidget {
+  const _SupportLinkTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = destructive
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.primary;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Icon(icon, color: color),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: destructive ? color : null,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AppVersionSection extends StatelessWidget {
+  const _AppVersionSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: _appVersionFuture,
+      builder: (context, snapshot) {
+        return _PolicySection(
+          title: 'App Version',
+          body: snapshot.data ?? 'Loading...',
+        );
+      },
     );
   }
 }

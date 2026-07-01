@@ -12,6 +12,7 @@ export 'app_routes.dart';
 class AppPages {
   static final pages = [
     GetPage(name: AppRoutes.splash, page: () => const SplashView()),
+    GetPage(name: AppRoutes.helpSupport, page: () => const HelpSupportView()),
     GetPage(
       name: AppRoutes.privacyPolicy,
       page: () => const PrivacyPolicyView(),

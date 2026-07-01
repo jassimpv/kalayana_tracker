@@ -108,7 +108,7 @@ class ProfilePanel extends GetView<DashboardController> {
                       icon: Icons.help_outline_rounded,
                       label: 'Help & Support',
                       subtitle: 'FAQs and contact support',
-                      onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+                      onTap: () => Get.toNamed(AppRoutes.helpSupport),
                     ),
                     _ProfileMenuRow(
                       icon: Icons.rate_review_outlined,
@@ -116,6 +116,31 @@ class ProfilePanel extends GetView<DashboardController> {
                       subtitle: 'Share your thoughts with us',
                       showDivider: false,
                       onTap: () => _showFeedbackSheet(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _ProfileMenuCard(
+                  children: [
+                    _ProfileMenuRow(
+                      icon: Icons.privacy_tip_outlined,
+                      label: 'Privacy Policy',
+                      subtitle: 'How your information is handled',
+                      onTap: () => Get.toNamed(AppRoutes.privacyPolicy),
+                    ),
+                    _ProfileMenuRow(
+                      icon: Icons.description_outlined,
+                      label: 'Terms & Conditions',
+                      subtitle: 'Terms for using the app',
+                      onTap: () => Get.toNamed(AppRoutes.termsConditions),
+                    ),
+                    _ProfileMenuRow(
+                      icon: Icons.delete_forever_outlined,
+                      label: 'Delete Account',
+                      subtitle: 'Request account deletion',
+                      destructive: true,
+                      showDivider: false,
+                      onTap: () => Get.toNamed(AppRoutes.deleteAccount),
                     ),
                   ],
                 ),
