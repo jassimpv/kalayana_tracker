@@ -33,7 +33,7 @@ class KalyanaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Kalyanam360 – Planner & Budget',
+      title: 'Wedding360 – Planner & Budget',
       theme: ThemeColors.lightTheme(context),
       // darkTheme: ThemeColors.darkTheme(context),
       themeMode: ThemeMode.system,
@@ -82,7 +82,7 @@ class FirebaseStartupErrorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Kalyanam360 – Planner & Budget',
+      title: 'Wedding360 – Planner & Budget',
       theme: ThemeColors.lightTheme(context),
       // darkTheme: ThemeColors.darkTheme(context),
       home: Scaffold(

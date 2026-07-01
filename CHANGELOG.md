@@ -2,7 +2,7 @@
 
 ## 1.1.3+6
 
-- Rebranded the app to Kalyanam360 – Planner & Budget across the native app, web app, and marketing/blog pages.
+- Rebranded the app to Wedding360 – Planner & Budget across the native app, web app, and marketing/blog pages.
 
 ## 1.1.1+4
 

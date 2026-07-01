@@ -18,7 +18,7 @@ class PrivacyPolicyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return const _LegalScaffold(
       title: 'Privacy Policy',
-      subtitle: 'How Kalyanam360 – Planner & Budget handles your information.',
+      subtitle: 'How Wedding360 – Planner & Budget handles your information.',
       children: [
         _PolicySection(title: 'Last updated', body: 'May 21, 2026'),
         _PolicySection(
@@ -73,13 +73,13 @@ class TermsConditionsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return const _LegalScaffold(
       title: 'Terms & Conditions',
-      subtitle: 'Terms for using Kalyanam360 – Planner & Budget.',
+      subtitle: 'Terms for using Wedding360 – Planner & Budget.',
       children: [
         _PolicySection(title: 'Last updated', body: 'May 21, 2026'),
         _PolicySection(
           title: 'Use of the app',
           body:
-              'Kalyanam360 – Planner & Budget helps you plan wedding expenses, purchases, reminders, and related dashboard information. You are responsible for the accuracy of the information you enter.',
+              'Wedding360 – Planner & Budget helps you plan wedding expenses, purchases, reminders, and related dashboard information. You are responsible for the accuracy of the information you enter.',
         ),
         _PolicySection(
           title: 'Account access',
@@ -351,10 +351,7 @@ class _LegalScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ThemeColors.scaffoldColor,
-      appBar: CustomAppBar(
-        title: title,
-        onBack: () => Get.back(),
-      ),
+      appBar: CustomAppBar(title: title, onBack: () => Get.back()),
       body: DecoratedBox(
         decoration: BoxDecoration(gradient: ThemeColors.surfaceGradient),
         child: SafeArea(

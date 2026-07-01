@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
-        android:label="Kalyanam360 – Planner &amp; Budget"
+        android:label="Wedding360 – Planner &amp; Budget"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
