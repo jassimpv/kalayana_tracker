@@ -325,7 +325,6 @@ class _DesktopDashboardAppBar extends StatelessWidget {
                   initials: _profileInitials(
                     user?.displayName ?? user?.email ?? 'J',
                   ),
-                  imageUrl: user?.photoURL,
                   size: 40,
                 ),
               ),

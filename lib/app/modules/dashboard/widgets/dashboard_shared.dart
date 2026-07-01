@@ -754,7 +754,6 @@ class _CoupleAvatar extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         _ResilientAvatar(
-          imageUrl: user?.photoURL,
           initials: _initials(name ?? user?.displayName ?? 'KW'),
           size: 58,
         ),
@@ -777,39 +776,17 @@ class _CoupleAvatar extends StatelessWidget {
   }
 }
 
-class _ResilientAvatar extends StatefulWidget {
-  const _ResilientAvatar({
-    required this.initials,
-    required this.size,
-    this.imageUrl,
-  });
+class _ResilientAvatar extends StatelessWidget {
+  const _ResilientAvatar({required this.initials, required this.size});
 
   final String initials;
   final double size;
-  final String? imageUrl;
-
-  @override
-  State<_ResilientAvatar> createState() => _ResilientAvatarState();
-}
-
-class _ResilientAvatarState extends State<_ResilientAvatar> {
-  bool _imageFailed = false;
-
-  @override
-  void didUpdateWidget(covariant _ResilientAvatar oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.imageUrl != widget.imageUrl) {
-      _imageFailed = false;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = widget.imageUrl;
-    final showImage = imageUrl != null && imageUrl.isNotEmpty && !_imageFailed;
     return Container(
-      width: widget.size,
-      height: widget.size,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
@@ -819,22 +796,7 @@ class _ResilientAvatarState extends State<_ResilientAvatar> {
       ),
       clipBehavior: Clip.antiAlias,
       alignment: Alignment.center,
-      child: showImage
-          ? Image.network(
-              imageUrl,
-              width: widget.size,
-              height: widget.size,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                if (!_imageFailed) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) setState(() => _imageFailed = true);
-                  });
-                }
-                return _AvatarInitials(initials: widget.initials);
-              },
-            )
-          : _AvatarInitials(initials: widget.initials),
+      child: _AvatarInitials(initials: initials),
     );
   }
 }

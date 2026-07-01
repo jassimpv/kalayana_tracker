@@ -2168,23 +2168,17 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = photoUrl?.trim();
     return CircleAvatar(
       radius: radius,
       backgroundColor: ThemeColors.logoGold.withValues(alpha: 0.28),
-      backgroundImage: imageUrl == null || imageUrl.isEmpty
-          ? null
-          : NetworkImage(imageUrl),
-      child: imageUrl == null || imageUrl.isEmpty
-          ? Text(
-              _profileInitials(name),
-              style: TextStyle(
-                color: ThemeColors.primary,
-                fontSize: radius * 0.58,
-                fontWeight: FontWeight.w600,
-              ),
-            )
-          : null,
+      child: Text(
+        _profileInitials(name),
+        style: TextStyle(
+          color: ThemeColors.primary,
+          fontSize: radius * 0.58,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }

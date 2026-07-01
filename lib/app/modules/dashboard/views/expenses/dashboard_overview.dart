@@ -460,7 +460,6 @@ class ProfilePill extends StatelessWidget {
                 initials: _profileInitials(
                   user?.displayName ?? user?.email ?? 'J',
                 ),
-                imageUrl: user?.photoURL,
                 size: 38,
               ),
               const SizedBox(width: 4),
