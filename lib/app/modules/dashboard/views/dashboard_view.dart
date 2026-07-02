@@ -321,6 +321,8 @@ class _DesktopDashboardAppBar extends StatelessWidget {
               InkWell(
                 onTap: controller.openProfile,
                 borderRadius: BorderRadius.circular(999),
+                // user?.photoURL is intentionally not passed here; the
+                // avatar always shows themed initials, not a provider photo.
                 child: _ResilientAvatar(
                   initials: _profileInitials(
                     user?.displayName ?? user?.email ?? 'J',

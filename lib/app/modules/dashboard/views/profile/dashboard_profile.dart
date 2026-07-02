@@ -2163,6 +2163,9 @@ class _ProfileAvatar extends StatelessWidget {
   });
 
   final String name;
+  // Unused: intentionally ignored so the avatar always shows themed
+  // initials instead of a provider photo (e.g. Google's auto-generated
+  // monogram, whose color doesn't match the app's branding).
   final String? photoUrl;
   final double radius;
 

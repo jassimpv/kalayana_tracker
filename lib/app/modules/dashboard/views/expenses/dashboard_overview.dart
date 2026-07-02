@@ -456,6 +456,8 @@ class ProfilePill extends StatelessWidget {
           ),
           child: Row(
             children: [
+              // user?.photoURL is intentionally not passed here; the
+              // avatar always shows themed initials, not a provider photo.
               _ResilientAvatar(
                 initials: _profileInitials(
                   user?.displayName ?? user?.email ?? 'J',

@@ -776,6 +776,9 @@ class _CoupleAvatar extends StatelessWidget {
   }
 }
 
+// Deliberately has no photo/imageUrl param: avatars always render themed
+// initials rather than a provider photo (e.g. Google's auto-generated
+// monogram, whose color doesn't match the app's branding).
 class _ResilientAvatar extends StatelessWidget {
   const _ResilientAvatar({required this.initials, required this.size});
 
