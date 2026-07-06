@@ -94,6 +94,7 @@ class DashboardView extends GetView<DashboardController> {
                               CustomAppBar(
                                 title: _dashboardPageTitle(
                                   controller.dashboardPage.value,
+                                  controller.dashboardPageArgument.value,
                                 ),
                                 showGreeting: false,
                                 onBack: controller.closeDashboardSubPage,
@@ -253,7 +254,10 @@ class _DesktopDashboardAppBar extends StatelessWidget {
     return Obx(() {
       final isSubPage = controller.isDashboardSubPage;
       final title = isSubPage
-          ? _dashboardPageTitle(controller.dashboardPage.value)
+          ? _dashboardPageTitle(
+              controller.dashboardPage.value,
+              controller.dashboardPageArgument.value,
+            )
           : _dashboardTabTitle(controller.selectedIndex.value);
       final subtitle = isSubPage
           ? 'Manage ${title.toLowerCase()}'
@@ -558,20 +562,22 @@ class _DashboardBody extends StatelessWidget {
   }
 }
 
-String _dashboardPageTitle(DashboardPageKind page) => switch (page) {
-  DashboardPageKind.expenseAdd => 'Add Expense',
-  DashboardPageKind.reminderAdd => 'Add Reminder',
-  DashboardPageKind.purchaseAdd => 'Add Shopping',
-  DashboardPageKind.expenseDetail => 'Expense Detail',
-  DashboardPageKind.expensePaymentAdd => 'Add Payment',
-  DashboardPageKind.expensePaymentHistory => 'Payment History',
-  DashboardPageKind.repayPersons => 'Pay Back',
-  DashboardPageKind.reports => 'Reports',
-  DashboardPageKind.collaborators => 'Collaborators',
-  DashboardPageKind.activityLog => 'Activity Log',
-  DashboardPageKind.guests => 'Guests & RSVP',
-  DashboardPageKind.tab => 'Dashboard',
-};
+String _dashboardPageTitle(DashboardPageKind page, [String? argument]) =>
+    switch (page) {
+      DashboardPageKind.expenseAdd =>
+        argument?.startsWith('edit:') == true ? 'Edit Expense' : 'Add Expense',
+      DashboardPageKind.reminderAdd => 'Add Reminder',
+      DashboardPageKind.purchaseAdd => 'Add Shopping',
+      DashboardPageKind.expenseDetail => 'Expense Detail',
+      DashboardPageKind.expensePaymentAdd => 'Add Payment',
+      DashboardPageKind.expensePaymentHistory => 'Payment History',
+      DashboardPageKind.repayPersons => 'Pay Back',
+      DashboardPageKind.reports => 'Reports',
+      DashboardPageKind.collaborators => 'Collaborators',
+      DashboardPageKind.activityLog => 'Activity Log',
+      DashboardPageKind.guests => 'Guests & RSVP',
+      DashboardPageKind.tab => 'Dashboard',
+    };
 
 String _dashboardTabTitle(int index) => switch (index) {
   1 => 'Expenses',

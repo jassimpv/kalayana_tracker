@@ -4,7 +4,6 @@ import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
-import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_dialogs.dart';
 
 import '../../widgets/expense_widgets.dart';
 
@@ -141,7 +140,7 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
             _ExpenseDetailIconAction(
               icon: Icons.edit_rounded,
               tooltip: 'Edit',
-              onPressed: () => showExpenseDialog(context, item: item),
+              onPressed: () => controller.openExpenseEdit(item.id),
             ),
             const SizedBox(width: 8),
             _ExpenseDetailIconAction(

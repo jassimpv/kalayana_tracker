@@ -152,6 +152,12 @@ class DashboardController extends GetxController {
   void openExpenseAdd() =>
       _openDashboardSubPage(DashboardPageKind.expenseAdd, selectedTab: 1);
 
+  void openExpenseEdit(String expenseId) => _openDashboardSubPage(
+    DashboardPageKind.expenseAdd,
+    selectedTab: 1,
+    argument: 'edit:$expenseId',
+  );
+
   void openExpenseAddFromPurchase(String purchaseId) => _openDashboardSubPage(
     DashboardPageKind.expenseAdd,
     selectedTab: 1,
@@ -1375,6 +1381,19 @@ String _paidByNameOrSelf(String name) {
   return normalized.isEmpty ? 'Self' : normalized;
 }
 
+String _deriveExpenseStatus(double totalAmount, double paidAmount) {
+  final pendingAmount = (totalAmount - paidAmount)
+      .clamp(0, double.infinity)
+      .toDouble();
+  if (pendingAmount <= 0) {
+    return expenseStatusCompleted;
+  }
+  if (paidAmount > 0) {
+    return expenseStatusPartiallyPaid;
+  }
+  return expenseStatusPending;
+}
+
 void _showDashboardSnack(String title, String message) {
   Get.snackbar(
     title,
@@ -1461,10 +1480,10 @@ ExpenseItem buildExpense({
     pendingAmount: (totalAmount - paidAmount)
         .clamp(0, double.infinity)
         .toDouble(),
-    paymentStatus: existing?.paymentStatus ?? expenseStatusPending,
-    paidBy: '',
-    paidByPersonId: '',
-    paidByPersonName: '',
+    paymentStatus: _deriveExpenseStatus(totalAmount, paidAmount),
+    paidBy: payerName,
+    paidByPersonId: paidByPersonId.trim(),
+    paidByPersonName: payerName,
     repayPerson: repayPerson.trim(),
     needsRepayment: needsRepayment,
     repayAmount: parsedRepayAmount ?? (needsRepayment ? paidAmount : 0),

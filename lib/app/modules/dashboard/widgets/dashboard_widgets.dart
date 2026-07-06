@@ -286,7 +286,7 @@ class ExpenseList extends GetView<DashboardController> {
                                 ),
                                 IconButton(
                                   onPressed: () =>
-                                      showExpenseDialog(context, item: item),
+                                      controller.openExpenseEdit(item.id),
                                   icon: const Icon(Icons.edit_outlined),
                                   tooltip: 'Edit',
                                 ),

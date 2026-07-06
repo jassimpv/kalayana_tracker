@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/dashboard_form_widgets.dart';
@@ -35,6 +36,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
   bool _isSaving = false;
   String _sourceShoppingItemId = '';
   String _sourceReminderId = '';
+  ExpenseItem? _editingExpense;
 
   @override
   void initState() {
@@ -50,7 +52,34 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
     final sourceType = argument.substring(0, separatorIndex);
     final sourceId = argument.substring(separatorIndex + 1);
 
-    if (sourceType == 'purchase') {
+    if (sourceType == 'edit') {
+      final expense = controller.data.value.expenses.firstWhereOrNull(
+        (entry) => entry.id == sourceId,
+      );
+      if (expense == null) return;
+      _editingExpense = expense;
+      _nameController.text = expense.name;
+      _totalController.text = moneyText(expense.totalAmount);
+      _paidController.text = moneyText(expense.paidAmount);
+      _category = expenseCategories.contains(expense.category)
+          ? expense.category
+          : expenseCategories.first;
+      _dueDate = expense.dueDate;
+      _notesController.text = expense.notes;
+      _sourceShoppingItemId = expense.sourceShoppingItemId;
+      _sourceReminderId = expense.sourceReminderId;
+      _paidByPerson = controller.repayPersons.firstWhereOrNull(
+        (person) => person.id == expense.paidByPersonId,
+      );
+      _needsRepayment = expense.needsRepayment;
+      final paidByPersonName = expense.paidByPersonName.trim();
+      if (_paidByPerson == null &&
+          paidByPersonName.isNotEmpty &&
+          paidByPersonName.toLowerCase() != 'self') {
+        _paidByOther = true;
+        _otherPersonNameController.text = paidByPersonName;
+      }
+    } else if (sourceType == 'purchase') {
       final purchase = controller.data.value.purchases.firstWhereOrNull(
         (entry) => entry.id == sourceId,
       );
@@ -126,6 +155,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
     final repaymentPerson = needsRepayment ? paidByPerson?.name ?? '' : '';
 
     final expense = buildExpense(
+      existing: _editingExpense,
       name: _nameController.text,
       category: _category,
       total: _totalController.text,
@@ -143,9 +173,9 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
     );
 
     await controller.saveExpense(expense);
-    if (_sourceShoppingItemId.isNotEmpty) {
+    if (_editingExpense == null && _sourceShoppingItemId.isNotEmpty) {
       await controller.linkPurchaseToExpense(_sourceShoppingItemId, expense.id);
-    } else if (_sourceReminderId.isNotEmpty) {
+    } else if (_editingExpense == null && _sourceReminderId.isNotEmpty) {
       await controller.linkReminderToExpense(_sourceReminderId, expense.id);
     }
     if (!mounted) return;
@@ -196,8 +226,10 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
         children: [
           DashboardFormIntroCard(
             icon: Icons.payments_rounded,
-            title: 'Add Expense',
-            subtitle: _sourceShoppingItemId.isNotEmpty
+            title: _editingExpense == null ? 'Add Expense' : 'Edit Expense',
+            subtitle: _editingExpense != null
+                ? 'Update this expense while keeping its payment history connected.'
+                : _sourceShoppingItemId.isNotEmpty
                 ? 'Review the prefilled details, then save to log this purchase as an expense.'
                 : _sourceReminderId.isNotEmpty
                 ? 'Review the prefilled details, then save to log this reminder as an expense.'
