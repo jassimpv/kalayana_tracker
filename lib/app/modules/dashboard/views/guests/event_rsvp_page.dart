@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -25,7 +26,7 @@ class EventRsvpPage extends StatelessWidget {
           final event = controller.events.firstWhereOrNull(
             (e) => e.id == eventId,
           );
-          return Text(event?.name ?? 'Event RSVP');
+          return LocalizedText(event?.name ?? 'Event RSVP');
         }),
       ),
       body: Obx(() {
@@ -80,7 +81,10 @@ class _GuestRsvpRow extends StatelessWidget {
                   value: status,
                   underline: const SizedBox.shrink(),
                   items: rsvpStatuses
-                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .map(
+                        (s) =>
+                            DropdownMenuItem(value: s, child: LocalizedText(s)),
+                      )
                       .toList(),
                   onChanged: (value) {
                     if (value == null) return;

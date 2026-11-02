@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -156,7 +158,7 @@ class _ExpensePaymentHistoryContentState
                       ),
                     ),
                     icon: const Icon(Icons.add_circle_outline_rounded),
-                    label: const Text(
+                    label: const LocalizedText(
                       'Add Split',
                       style: TextStyle(fontSize: 12),
                     ),
@@ -177,7 +179,7 @@ class _ExpensePaymentHistoryContentState
               children: [
                 Row(
                   children: [
-                    Text(
+                    LocalizedText(
                       'Recent Splits',
                       style: TextStyle(
                         color: ThemeColors.logoDeep,
@@ -186,7 +188,7 @@ class _ExpensePaymentHistoryContentState
                       ),
                     ),
                     const Spacer(),
-                    Text(
+                    LocalizedText(
                       'View All',
                       style: TextStyle(
                         color: ThemeColors.secondaryColor,
@@ -214,7 +216,7 @@ class _ExpensePaymentHistoryContentState
                     ),
                     child: DropdownButtonFormField<String>(
                       initialValue: _paidByFilter,
-                      decoration: const InputDecoration(
+                      decoration: const LocalizedInputDecoration(
                         labelText: 'Filter by Paid By',
                         prefixIcon: Icon(Icons.filter_list_rounded),
                         border: InputBorder.none,
@@ -225,7 +227,7 @@ class _ExpensePaymentHistoryContentState
                           .map(
                             (value) => DropdownMenuItem(
                               value: value,
-                              child: Text(value),
+                              child: LocalizedText(value),
                             ),
                           )
                           .toList(),
@@ -240,7 +242,7 @@ class _ExpensePaymentHistoryContentState
                 if (filteredPayments.isEmpty)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(
+                    child: LocalizedText(
                       'No payments match this person.',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
@@ -374,7 +376,7 @@ class _PaymentLargeMetric extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LocalizedText(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -412,7 +414,7 @@ class _ExpenseHistorySectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(
+        LocalizedText(
           title,
           style: TextStyle(
             color: ThemeColors.logoDeep,
@@ -463,7 +465,7 @@ class _ExpenseNoSplitState extends StatelessWidget {
         children: [
           SoftIcon(icon: Icons.group_add_rounded, color: ThemeColors.primary),
           const SizedBox(height: 10),
-          Text(
+          LocalizedText(
             'No split added',
             style: TextStyle(
               color: ThemeColors.logoDeep,
@@ -472,7 +474,7 @@ class _ExpenseNoSplitState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          LocalizedText(
             item.pendingForSummary == 0
                 ? 'This expense is fully paid.'
                 : 'Add a split to track who paid and what is pending.',
@@ -559,7 +561,7 @@ class _SecurePaymentNote extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Text(
+            child: LocalizedText(
               'All your payments are secure and encrypted.\nWe keep your data safe.',
               style: TextStyle(
                 color: ThemeColors.logoDeep.withValues(alpha: 0.82),
@@ -748,7 +750,7 @@ class _ExpenseSplitAmountCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -825,14 +827,14 @@ class _ExpenseSplitStatusPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = completed ? const Color(0xFF2F7A35) : const Color(0xFFFF8A1F);
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(999),
         ),
-        child: Text(
+        child: LocalizedText(
           label,
           style: TextStyle(
             color: color,
@@ -884,7 +886,7 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   'Paid By: $payer',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -895,10 +897,10 @@ class _ExpensePaymentHistoryRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LocalizedText(
                   payment.notes.trim().isEmpty
-                      ? 'Amount: ${moneyOrDash(payment.amount)} | Date: ${formatDate(payment.date)}'
-                      : 'Amount: ${moneyOrDash(payment.amount)} | Date: ${formatDate(payment.date)} | ${payment.notes.trim()}',
+                      ? 'Amount: ${moneyOrDash(payment.amount)} | Date: ${formatDisplayDate(payment.date)}'
+                      : 'Amount: ${moneyOrDash(payment.amount)} | Date: ${formatDisplayDate(payment.date)} | ${payment.notes.trim()}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -961,18 +963,18 @@ Future<void> _confirmDeletePaymentSplit(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete Split'),
-      content: Text(
+      title: const LocalizedText('Delete Split'),
+      content: LocalizedText(
         'Delete ${moneyOrDash(payment.amount)} paid by ${payment.displayPaidBy}?',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),
@@ -1062,7 +1064,7 @@ Future<void> _showEditSplitGroupDialog(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            LocalizedText(
                               'Edit Split',
                               style: TextStyle(
                                 color: ThemeColors.logoDeep,
@@ -1103,17 +1105,21 @@ Future<void> _showEditSplitGroupDialog(
                         TextFormField(
                           controller: amountController,
                           keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                          decoration: LocalizedInputDecoration(
                             labelText: 'Paid amount',
                             prefixIcon: Icon(AppConfig.appCurrencyIcon),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'This field is required';
+                              return TranslationService.translate(
+                                'This field is required',
+                              );
                             }
                             final parsed = moneyFromText(value) ?? 0;
                             if (parsed <= 0) {
-                              return 'Enter an amount above zero';
+                              return TranslationService.translate(
+                                'Enter an amount above zero',
+                              );
                             }
                             return null;
                           },
@@ -1128,7 +1134,7 @@ Future<void> _showEditSplitGroupDialog(
                         const SizedBox(height: 14),
                         DropdownButtonFormField<String>(
                           initialValue: selectedStatus,
-                          decoration: const InputDecoration(
+                          decoration: const LocalizedInputDecoration(
                             labelText: 'Payment status',
                             prefixIcon: Icon(Icons.fact_check_rounded),
                           ),
@@ -1136,7 +1142,7 @@ Future<void> _showEditSplitGroupDialog(
                               .map(
                                 (status) => DropdownMenuItem(
                                   value: status,
-                                  child: Text(status),
+                                  child: LocalizedText(status),
                                 ),
                               )
                               .toList(),
@@ -1193,7 +1199,7 @@ Future<void> _showEditSplitGroupDialog(
                                   ),
                                 )
                               : const Icon(Icons.done_rounded),
-                          label: Text(saving ? 'Saving' : 'Done'),
+                          label: LocalizedText(saving ? 'Saving' : 'Done'),
                           style: FilledButton.styleFrom(
                             backgroundColor: ThemeColors.primary,
                             foregroundColor: Colors.white,
@@ -1227,18 +1233,18 @@ Future<void> _confirmDeleteSplitGroup(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete Split'),
-      content: Text(
+      title: const LocalizedText('Delete Split'),
+      content: LocalizedText(
         'Delete all split payments by ${split.name} worth ${moneyOrDash(split.paid)}?',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),

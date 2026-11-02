@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/guests/public_rsvp_page.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/modules/auth/auth_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/auth/auth_view.dart';
@@ -11,6 +12,7 @@ export 'app_routes.dart';
 
 class AppPages {
   static final pages = [
+    GetPage(name: AppRoutes.guestRsvp, page: () => const PublicRsvpPage()),
     GetPage(name: AppRoutes.splash, page: () => const SplashView()),
     GetPage(name: AppRoutes.helpSupport, page: () => const HelpSupportView()),
     GetPage(

@@ -1,3 +1,6 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -16,8 +19,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    await TranslationService.init();
     await AppBootstrap.load();
-    AppBootstrap.loadAds();
+    if (Uri.tryParse(Uri.base.fragment)?.path != AppRoutes.guestRsvp) {
+      AppBootstrap.loadAds();
+    }
     runApp(const KalyanaApp());
   } catch (error, stackTrace) {
     debugPrint('Firebase startup failed: $error');
@@ -32,15 +38,26 @@ class KalyanaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      translations: TranslationService(),
+      fallbackLocale: TranslationService.fallbackLocale,
       debugShowCheckedModeBanner: false,
       title: 'Wedding360 – Planner & Budget',
+      locale: TranslationService.currentLocale,
+      supportedLocales: TranslationService.supportedLocales,
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: ThemeColors.lightTheme(context),
       // darkTheme: ThemeColors.darkTheme(context),
       themeMode: ThemeMode.system,
-      initialRoute: AppRoutes.splash,
+      initialRoute: Uri.tryParse(Uri.base.fragment)?.path == AppRoutes.guestRsvp
+          ? Uri.base.fragment
+          : AppRoutes.splash,
       getPages: AppPages.pages,
-      builder: (context, child) =>
-          PwaInstallBanner(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => Directionality(
+        textDirection: Localizations.localeOf(context).languageCode == 'ar'
+            ? TextDirection.rtl
+            : TextDirection.ltr,
+        child: PwaInstallBanner(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }
@@ -101,14 +118,14 @@ class FirebaseStartupErrorApp extends StatelessWidget {
                       color: Color(0xFFB45309),
                     ),
                     const SizedBox(height: 16),
-                    Text(
+                    LocalizedText(
                       'Firebase setup needs attention',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LocalizedText(
                       error.toString(),
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(

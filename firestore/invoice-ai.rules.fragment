@@ -1,0 +1,14 @@
+// Merge inside the existing /databases/{database}/documents match.
+// Ensure no broader rule permits client writes: Firestore allows access when
+// ANY matching allow rule succeeds. Manage this document via Firebase console
+// or a trusted Admin SDK. Signed-in clients can retrieve the shared key.
+match /appConfig/invoiceAi {
+  allow get: if request.auth != null;
+  allow list, create, update, delete: if false;
+}
+
+// Retire personal key storage; remove any older matching allow rule as well.
+// Previously stored personal keys can be deleted through Firebase console.
+match /users/{uid}/private/invoiceAi {
+  allow read, write: if false;
+}

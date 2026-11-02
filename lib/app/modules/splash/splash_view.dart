@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -116,8 +117,8 @@ class _SplashViewState extends State<SplashView>
                           showBackground: false,
                         ),
                         const SizedBox(height: 28),
-                        Text(
-                          'Kalyana',
+                        LocalizedText(
+                          'Wedding360',
                           style: Theme.of(context).textTheme.displaySmall
                               ?.copyWith(
                                 color: Colors.white,
@@ -126,8 +127,8 @@ class _SplashViewState extends State<SplashView>
                               ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          'EXPENSE TRACKER',
+                        LocalizedText(
+                          'PLANNER & BUDGET',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.70),
                             fontSize: 13,

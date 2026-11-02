@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -23,7 +25,7 @@ class GuestDetailPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
-        title: const Text('Guest Details'),
+        title: const LocalizedText('Guest Details'),
       ),
       body: Obx(() {
         final guest = controller.guests.firstWhereOrNull(
@@ -48,12 +50,15 @@ class GuestDetailPage extends StatelessWidget {
             const SizedBox(height: 12),
             DashboardFormCard(
               children: [
-                if (guest.phone.isNotEmpty) Text('Phone: ${guest.phone}'),
+                if (guest.phone.isNotEmpty)
+                  LocalizedText('Phone: ${guest.phone}'),
                 if (guest.whatsapp.isNotEmpty)
-                  Text('WhatsApp: ${guest.whatsapp}'),
-                Text('Invited: ${guest.numberInvited}'),
-                if (guest.address.isNotEmpty) Text('Address: ${guest.address}'),
-                if (guest.notes.isNotEmpty) Text('Notes: ${guest.notes}'),
+                  LocalizedText('WhatsApp: ${guest.whatsapp}'),
+                LocalizedText('Invited: ${guest.numberInvited}'),
+                if (guest.address.isNotEmpty)
+                  LocalizedText('Address: ${guest.address}'),
+                if (guest.notes.isNotEmpty)
+                  LocalizedText('Notes: ${guest.notes}'),
                 if (guest.tags.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -75,7 +80,7 @@ class GuestDetailPage extends StatelessWidget {
                           ),
                         ),
                         icon: const Icon(Icons.edit_rounded),
-                        label: const Text('Edit'),
+                        label: const LocalizedText('Edit'),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -87,7 +92,7 @@ class GuestDetailPage extends StatelessWidget {
                         onPressed: () =>
                             _confirmDelete(context, controller, guestId),
                         icon: const Icon(Icons.delete_outline_rounded),
-                        label: const Text('Delete'),
+                        label: const LocalizedText('Delete'),
                       ),
                     ),
                   ],
@@ -95,7 +100,7 @@ class GuestDetailPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 14),
-            const Text(
+            const LocalizedText(
               'RSVP by Event',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
             ),
@@ -125,16 +130,18 @@ Future<void> _confirmDelete(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete guest'),
-      content: const Text('This will remove the guest and their RSVP history.'),
+      title: const LocalizedText('Delete guest'),
+      content: const LocalizedText(
+        'This will remove the guest and their RSVP history.',
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),
@@ -159,6 +166,8 @@ class _EventRsvpEditorState extends State<_EventRsvpEditor> {
   late final TextEditingController _specialController;
   late final FocusNode _attendeeFocus;
   late final FocusNode _specialFocus;
+
+  bool _linkBusy = false;
 
   GuestsController get _ctrl => Get.find<GuestsController>();
 
@@ -198,13 +207,45 @@ class _EventRsvpEditorState extends State<_EventRsvpEditor> {
     if (!_specialFocus.hasFocus) _saveSpecial();
   }
 
+  Future<void> _manageLink(bool revoke) async {
+    setState(() => _linkBusy = true);
+    try {
+      await _ctrl.manageRsvpLink(
+        widget.guestId,
+        widget.event.id,
+        revoke: revoke,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: LocalizedText(
+              revoke
+                  ? 'RSVP link revoked.'
+                  : 'RSVP link copied. Valid for 30 days; previous links are revoked.',
+            ),
+          ),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: LocalizedText(error.toString())));
+      }
+    } finally {
+      if (mounted) setState(() => _linkBusy = false);
+    }
+  }
+
   void _saveAttendee() {
     final response = _ctrl.responseFor(widget.guestId, widget.event.id);
     _ctrl.setRsvp(
       guestId: widget.guestId,
       eventId: widget.event.id,
       status: response?.status ?? rsvpStatusPending,
-      attendeeCount: int.tryParse(_attendeeController.text.trim()) ?? 0,
+      attendeeCount:
+          int.tryParse(normalizeNumberInput(_attendeeController.text.trim())) ??
+          0,
       specialRequirements: response?.specialRequirements ?? '',
     );
   }
@@ -233,13 +274,30 @@ class _EventRsvpEditorState extends State<_EventRsvpEditor> {
               widget.event.name,
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
+            Wrap(
+              spacing: 8,
+              children: [
+                TextButton.icon(
+                  onPressed: _linkBusy ? null : () => _manageLink(false),
+                  icon: const Icon(Icons.link),
+                  label: const LocalizedText('Copy RSVP link'),
+                ),
+                TextButton(
+                  onPressed: _linkBusy ? null : () => _manageLink(true),
+                  child: const LocalizedText('Revoke link'),
+                ),
+              ],
+            ),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8,
               children: rsvpStatuses
                   .map(
                     (s) => ChoiceChip(
-                      label: Text(s, style: const TextStyle(fontSize: 11.5)),
+                      label: LocalizedText(
+                        s,
+                        style: const TextStyle(fontSize: 11.5),
+                      ),
                       selected: status == s,
                       selectedColor: ThemeColors.primary,
                       labelStyle: TextStyle(
@@ -253,7 +311,12 @@ class _EventRsvpEditorState extends State<_EventRsvpEditor> {
                         eventId: widget.event.id,
                         status: s,
                         attendeeCount:
-                            int.tryParse(_attendeeController.text.trim()) ?? 0,
+                            int.tryParse(
+                              normalizeNumberInput(
+                                _attendeeController.text.trim(),
+                              ),
+                            ) ??
+                            0,
                         specialRequirements: _specialController.text.trim(),
                       ),
                     ),
@@ -266,7 +329,7 @@ class _EventRsvpEditorState extends State<_EventRsvpEditor> {
               focusNode: _attendeeFocus,
               textInputAction: TextInputAction.done,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
+              decoration: const LocalizedInputDecoration(
                 labelText: 'Attendee Count',
                 isDense: true,
               ),
@@ -277,7 +340,7 @@ class _EventRsvpEditorState extends State<_EventRsvpEditor> {
               controller: _specialController,
               focusNode: _specialFocus,
               textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(
+              decoration: const LocalizedInputDecoration(
                 labelText: 'Special Requirements',
                 isDense: true,
               ),

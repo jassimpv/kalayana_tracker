@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
@@ -6,6 +7,11 @@ import 'package:kalayanaexpresstracker/app/data/models/wedding_data.dart';
 abstract class WeddingRepository {
   Stream<WeddingData> watch();
   Future<void> save(WeddingData data);
+  Future<void> saveChanges(
+    WeddingData before,
+    WeddingData after, {
+    String? expectedWorkspaceId,
+  });
   Future<void> seedIfEmpty();
   Stream<List<RepayPerson>> getRepayPersons();
   Future<void> addRepayPerson(RepayPerson person);
@@ -105,29 +111,99 @@ class FirestoreWeddingRepository implements WeddingRepository {
     ).set({...data.toJson(), 'updatedAt': FieldValue.serverTimestamp()});
   }
 
+  /// Apply only changed records against the current server snapshot. Concurrent
+  /// edits to different records survive; an edit to the same record is rejected.
+  @override
+  Future<void> saveChanges(
+    WeddingData before,
+    WeddingData after, {
+    String? expectedWorkspaceId,
+  }) async {
+    final workspaceId = await _workspaceId();
+    if (expectedWorkspaceId != null && workspaceId != expectedWorkspaceId) {
+      throw StateError('Workspace changed. Please retry.');
+    }
+    final ref = _doc(workspaceId);
+    final oldJson = before.toJson();
+    final newJson = after.toJson();
+    await _firestore.runTransaction((transaction) async {
+      final user = _auth.currentUser;
+      if (user == null) throw StateError('Sign in again.');
+      final profile = await transaction.get(
+        _firestore.collection('users').doc(user.uid),
+      );
+      if (profile.data()?['workspaceId'] != workspaceId) {
+        throw StateError('Workspace changed. Please retry.');
+      }
+      final snapshot = await transaction.get(ref);
+      final current = WeddingData.fromJson(snapshot.data() ?? {}).toJson();
+      bool same(Object? a, Object? b) => jsonEncode(a) == jsonEncode(b);
+      for (final key in ['expenses', 'reminders', 'purchases', 'planning']) {
+        final previous = {
+          for (final row in oldJson[key] as List) row['id'] as String: row,
+        };
+        final desired = {
+          for (final row in newJson[key] as List) row['id'] as String: row,
+        };
+        final latest = {
+          for (final row in current[key] as List) row['id'] as String: row,
+        };
+        for (final id in {...previous.keys, ...desired.keys}) {
+          if (same(previous[id], desired[id])) continue;
+          if (!same(latest[id], previous[id]) &&
+              !same(latest[id], desired[id])) {
+            throw StateError(
+              'This record changed on another device. Review the latest data and try again.',
+            );
+          }
+          if (desired.containsKey(id)) {
+            latest[id] = desired[id];
+          } else {
+            latest.remove(id);
+          }
+        }
+        current[key] = latest.values.toList();
+      }
+      if (oldJson['budgetGoal'] != newJson['budgetGoal']) {
+        if (current['budgetGoal'] != oldJson['budgetGoal'] &&
+            current['budgetGoal'] != newJson['budgetGoal']) {
+          throw StateError(
+            'The budget changed on another device. Please try again.',
+          );
+        }
+        current['budgetGoal'] = newJson['budgetGoal'];
+      }
+      WeddingData.fromJson(current).validatePlanning();
+      if (utf8.encode(jsonEncode(current)).length > 850000) {
+        throw StateError(
+          'Workspace storage is nearly full. Export a backup and archive older entries.',
+        );
+      }
+      transaction.set(ref, {
+        ...current,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    });
+  }
+
   @override
   Future<void> seedIfEmpty() async {
     final workspaceId = await _workspaceId();
-    final snapshot = await _doc(workspaceId).get();
-    if (!snapshot.exists) {
-      final legacySnapshot = await _legacyDoc.get();
-      final legacyData = legacySnapshot.data();
-      await save(
-        legacyData == null
-            ? WeddingData.withDefaultExpenses()
-            : WeddingData.fromJson(legacyData),
-      );
-      return;
-    }
-    final data = WeddingData.fromJson(snapshot.data() ?? {});
-    if (data.expenses.isEmpty || data.reminders.isEmpty) {
-      await save(
-        data.copyWith(
-          expenses: data.expenses.isEmpty ? [] : data.expenses,
-          reminders: data.reminders.isEmpty ? [] : data.reminders,
-        ),
-      );
-    }
+    final ref = _doc(workspaceId);
+    if ((await ref.get()).exists) return;
+    final legacySnapshot = await _legacyDoc.get();
+    final legacyData = legacySnapshot.data();
+    await _firestore.runTransaction((transaction) async {
+      final existing = await transaction.get(ref);
+      if (existing.exists) return;
+      final data = legacyData == null
+          ? WeddingData.withDefaultExpenses()
+          : WeddingData.fromJson(legacyData);
+      transaction.set(ref, {
+        ...data.toJson(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 
   @override

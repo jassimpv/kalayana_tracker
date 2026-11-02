@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -79,14 +80,14 @@ class PageTitle extends StatelessWidget {
         final heading = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            LocalizedText(
               title,
               style: Theme.of(
                 context,
               ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
-            Text(
+            LocalizedText(
               subtitle,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.outline,
@@ -180,7 +181,7 @@ class _MetricTile extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(
+                  LocalizedText(
                     data.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -212,7 +213,7 @@ class ExpandedPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            LocalizedText(
               title,
               style: Theme.of(
                 context,
@@ -242,13 +243,13 @@ class ExpenseList extends GetView<DashboardController> {
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 columns: const [
-                  DataColumn(label: Text('Item')),
-                  DataColumn(label: Text('Category')),
-                  DataColumn(label: Text('Total'), numeric: true),
-                  DataColumn(label: Text('Paid'), numeric: true),
-                  DataColumn(label: Text('Pending'), numeric: true),
-                  DataColumn(label: Text('Status')),
-                  DataColumn(label: Text('Paid by')),
+                  DataColumn(label: LocalizedText('Item')),
+                  DataColumn(label: LocalizedText('Category')),
+                  DataColumn(label: LocalizedText('Total'), numeric: true),
+                  DataColumn(label: LocalizedText('Paid'), numeric: true),
+                  DataColumn(label: LocalizedText('Pending'), numeric: true),
+                  DataColumn(label: LocalizedText('Status')),
+                  DataColumn(label: LocalizedText('Paid by')),
                   DataColumn(label: Text('')),
                 ],
                 rows: expenses
@@ -264,7 +265,7 @@ class ExpenseList extends GetView<DashboardController> {
                               ),
                             ),
                           ),
-                          DataCell(Text(item.category)),
+                          DataCell(LocalizedText(item.category)),
                           DataCell(Text(moneyOrDash(item.totalAmount))),
                           DataCell(Text(moneyOrDash(item.paidAmount))),
                           DataCell(Text(moneyOrDash(item.displayPending))),
@@ -366,7 +367,7 @@ class _ExpenseCard extends GetView<DashboardController> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    LocalizedText(
                       'Due ${moneyOrDash(item.displayPending)}',
                       style: TextStyle(
                         color: Theme.of(context).textTheme.bodySmall?.color,
@@ -418,7 +419,7 @@ class _ExpenseMetric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LocalizedText(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(
@@ -466,7 +467,7 @@ class ReminderList extends GetView<DashboardController> {
               value: item.isDone,
               onChanged: (_) => controller.toggleReminder(item),
             ),
-            title: Text(
+            title: LocalizedText(
               item.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -478,10 +479,10 @@ class ReminderList extends GetView<DashboardController> {
             subtitle: Wrap(
               spacing: 8,
               children: [
-                Text(formatDate(item.dueDate)),
-                Text(item.category),
+                Text(formatDisplayDate(item.dueDate)),
+                LocalizedText(item.category),
                 if (overdue)
-                  Text(
+                  LocalizedText(
                     'Overdue',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.tertiary,
@@ -629,16 +630,16 @@ Future<bool?> _confirmDeleteAction(
   return showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(title),
-      content: Text(message),
+      title: LocalizedText(title),
+      content: LocalizedText(message),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),
@@ -700,7 +701,7 @@ class InfoRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      title: Text(label),
+      title: LocalizedText(label),
       subtitle: Text(
         value,
         style: const TextStyle(fontWeight: FontWeight.w600),
@@ -722,7 +723,7 @@ class StatusPill extends StatelessWidget {
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
+      child: LocalizedText(
         label,
         style: TextStyle(
           color: color,
@@ -747,7 +748,7 @@ class LabelPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
-      child: Text(
+      child: LocalizedText(
         label,
         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11),
       ),
@@ -794,7 +795,7 @@ class EmptyState extends StatelessWidget {
             child: Icon(icon, size: 30, color: ThemeColors.primary),
           ),
           const SizedBox(height: 10),
-          Text(
+          LocalizedText(
             label,
             textAlign: TextAlign.center,
             style: TextStyle(

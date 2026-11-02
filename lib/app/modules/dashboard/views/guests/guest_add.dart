@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -59,7 +61,10 @@ class _GuestAddPageState extends State<GuestAddPage> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      Get.snackbar('Name required', 'Please enter the guest\'s name.');
+      Get.snackbar(
+        TranslationService.translate('Name required'),
+        TranslationService.translate('Please enter the guest\'s name.'),
+      );
       return;
     }
     setState(() => _saving = true);
@@ -84,7 +89,10 @@ class _GuestAddPageState extends State<GuestAddPage> {
       }
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
-      Get.snackbar('Could not save guest', error.toString());
+      Get.snackbar(
+        TranslationService.translate('Could not save guest'),
+        TranslationService.translate(error.toString()),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -107,7 +115,7 @@ class _GuestAddPageState extends State<GuestAddPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
-        title: Text(_isEditing ? 'Edit Guest' : 'Add Guest'),
+        title: LocalizedText(_isEditing ? 'Edit Guest' : 'Add Guest'),
       ),
       body: DashboardFormPage(
         footer: FilledButton(
@@ -125,26 +133,30 @@ class _GuestAddPageState extends State<GuestAddPage> {
                     color: Colors.white,
                   ),
                 )
-              : Text(_isEditing ? 'Save Changes' : 'Add Guest'),
+              : LocalizedText(_isEditing ? 'Save Changes' : 'Add Guest'),
         ),
         children: [
           DashboardFormCard(
             children: [
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Guest Name'),
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Guest Name',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Phone Number'),
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Phone Number',
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _whatsappController,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'WhatsApp Number (optional)',
                 ),
               ),
@@ -155,18 +167,26 @@ class _GuestAddPageState extends State<GuestAddPage> {
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _side,
-                decoration: const InputDecoration(labelText: 'Side'),
+                decoration: const LocalizedInputDecoration(labelText: 'Side'),
                 items: guestSides
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .map(
+                      (s) =>
+                          DropdownMenuItem(value: s, child: LocalizedText(s)),
+                    )
                     .toList(),
                 onChanged: (value) => setState(() => _side = value ?? _side),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _category,
-                decoration: const InputDecoration(labelText: 'Category'),
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Category',
+                ),
                 items: guestCategories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .map(
+                      (c) =>
+                          DropdownMenuItem(value: c, child: LocalizedText(c)),
+                    )
                     .toList(),
                 onChanged: (value) =>
                     setState(() => _category = value ?? _category),
@@ -175,7 +195,7 @@ class _GuestAddPageState extends State<GuestAddPage> {
               Row(
                 children: [
                   const Expanded(
-                    child: Text(
+                    child: LocalizedText(
                       'Number Invited',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
@@ -204,7 +224,7 @@ class _GuestAddPageState extends State<GuestAddPage> {
               TextField(
                 controller: _addressController,
                 maxLines: 2,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Address (optional)',
                 ),
               ),
@@ -212,7 +232,7 @@ class _GuestAddPageState extends State<GuestAddPage> {
               TextField(
                 controller: _notesController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Notes'),
+                decoration: const LocalizedInputDecoration(labelText: 'Notes'),
               ),
               const SizedBox(height: 12),
               Row(
@@ -220,7 +240,9 @@ class _GuestAddPageState extends State<GuestAddPage> {
                   Expanded(
                     child: TextField(
                       controller: _tagController,
-                      decoration: const InputDecoration(labelText: 'Add tag'),
+                      decoration: const LocalizedInputDecoration(
+                        labelText: 'Add tag',
+                      ),
                       onSubmitted: (_) => _addTag(),
                     ),
                   ),

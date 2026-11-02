@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -97,7 +98,7 @@ class _ActivityLogTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${entry.actorName} ${entry.action}',
+                  '${entry.actorName} ${TranslationService.translate(entry.action)}',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -108,7 +109,7 @@ class _ActivityLogTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${formatDate(entry.createdAt)} · ${_formatTime(entry.createdAt)}',
+                  '${formatDisplayDate(entry.createdAt)} · ${_formatTime(entry.createdAt)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

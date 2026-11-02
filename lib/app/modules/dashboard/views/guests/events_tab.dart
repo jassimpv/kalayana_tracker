@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -113,7 +114,7 @@ class _EventCard extends GetView<GuestsController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        LocalizedText(
                           event.name.isEmpty ? 'Unnamed event' : event.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -209,7 +210,7 @@ class _EventsEmptyState extends StatelessWidget {
             size: 34,
           ),
           const SizedBox(height: 10),
-          const Text(
+          const LocalizedText(
             'No wedding events yet',
             style: TextStyle(
               color: ThemeColors.logoDeep,
@@ -217,7 +218,7 @@ class _EventsEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          const LocalizedText(
             'Add Engagement, Mehndi, Nikah, Reception and more.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -227,7 +228,7 @@ class _EventsEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(onPressed: onTap, child: const Text('Add Event')),
+          TextButton(onPressed: onTap, child: const LocalizedText('Add Event')),
         ],
       ),
     );
@@ -250,7 +251,7 @@ class _EventTag extends StatelessWidget {
             : ThemeColors.logoGold.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
+      child: LocalizedText(
         text,
         style: TextStyle(
           fontSize: 10.5,
@@ -268,7 +269,7 @@ class _SwipeDeleteBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      alignment: Alignment.centerRight,
+      alignment: AlignmentDirectional.centerEnd,
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration: BoxDecoration(
         color: const Color(0xFFC30B4A),
@@ -279,7 +280,7 @@ class _SwipeDeleteBackground extends StatelessWidget {
         children: [
           Icon(CupertinoIcons.delete, color: Colors.white, size: 22),
           const SizedBox(height: 3),
-          Text(
+          LocalizedText(
             'Delete',
             style: TextStyle(
               color: Colors.white,
@@ -300,22 +301,22 @@ Future<bool> _confirmDeleteEvent(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Delete event'),
-      content: Text(
+      title: const LocalizedText('Delete event'),
+      content: LocalizedText(
         'Delete ${event.name.isEmpty ? 'this event' : event.name}? '
         'This removes its RSVP responses too.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFC30B4A),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),

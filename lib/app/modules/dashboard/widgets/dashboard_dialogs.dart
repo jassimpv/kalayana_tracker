@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
@@ -10,7 +12,7 @@ import 'package:kalayanaexpresstracker/app/data/models/purchase_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/repay_person_picker.dart';
-import 'package:kalayanaexpresstracker/gemini.dart';
+import 'package:kalayanaexpresstracker/app/core/services/zai_invoice_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 Future<void> showExpenseDialog(
@@ -47,7 +49,7 @@ Future<void> showExpenseDialog(
         actions: [
           TextButton(
             onPressed: Navigator.of(context).pop,
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () async {
@@ -73,7 +75,7 @@ Future<void> showExpenseDialog(
               );
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('Save'),
+            child: const LocalizedText('Save'),
           ),
         ],
         child: Form(
@@ -113,7 +115,7 @@ Future<void> showExpenseDialog(
               ],
               TextFormField(
                 controller: name,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Expense name',
                   prefixIcon: Icon(Icons.storefront_rounded),
                 ),
@@ -123,14 +125,16 @@ Future<void> showExpenseDialog(
               DropdownButtonFormField<String>(
                 key: ValueKey(category),
                 initialValue: category,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Category',
                   prefixIcon: Icon(Icons.category_rounded),
                 ),
                 items: expenseCategories
                     .map(
-                      (value) =>
-                          DropdownMenuItem(value: value, child: Text(value)),
+                      (value) => DropdownMenuItem(
+                        value: value,
+                        child: LocalizedText(value),
+                      ),
                     )
                     .toList(),
                 onChanged: (value) => category = value ?? category,
@@ -138,7 +142,7 @@ Future<void> showExpenseDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: total,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Total amount',
                   prefixIcon: Icon(Icons.account_balance_wallet_rounded),
                 ),
@@ -148,7 +152,7 @@ Future<void> showExpenseDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: paid,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Paid amount',
                   prefixIcon: Icon(Icons.paid_rounded),
                 ),
@@ -164,7 +168,7 @@ Future<void> showExpenseDialog(
                 color: Colors.transparent,
                 child: SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('I owe this person'),
+                  title: const LocalizedText('I owe this person'),
                   value: needsRepayment,
                   onChanged: (value) => setState(() => needsRepayment = value),
                 ),
@@ -173,7 +177,7 @@ Future<void> showExpenseDialog(
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: repayPerson,
-                  decoration: const InputDecoration(
+                  decoration: const LocalizedInputDecoration(
                     labelText: 'Owed to',
                     prefixIcon: Icon(Icons.person_add_alt_1_rounded),
                   ),
@@ -181,7 +185,7 @@ Future<void> showExpenseDialog(
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: repayAmount,
-                  decoration: InputDecoration(
+                  decoration: LocalizedInputDecoration(
                     labelText: 'Amount owed',
                     prefixIcon: Icon(AppConfig.appCurrencyIcon),
                   ),
@@ -192,7 +196,9 @@ Future<void> showExpenseDialog(
               _DatePickerTile(
                 icon: Icons.event_rounded,
                 title: 'Due date',
-                value: dueDate == null ? 'Not set' : formatDate(dueDate!),
+                value: dueDate == null
+                    ? 'Not set'
+                    : formatDisplayDate(dueDate!),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -206,7 +212,7 @@ Future<void> showExpenseDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: notes,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Notes',
                   prefixIcon: Icon(Icons.notes_rounded),
                 ),
@@ -237,11 +243,11 @@ Future<void> _scanInvoice(
     imageQuality: 82,
     maxWidth: 1600,
   );
-  if (picked == null) return;
+  if (picked == null || !context.mounted) return;
 
   setState(() => setLoading(true));
   try {
-    final invoice = await GeminiInovieAppData().extractInvoice(
+    final invoice = await ZaiInvoiceService().extractInvoice(
       await picked.readAsBytes(),
     );
     if (!invoice.isInvoice) {
@@ -249,6 +255,7 @@ Future<void> _scanInvoice(
         'The selected image does not look like a bill.',
       );
     }
+    if (!context.mounted) return;
     final category = expenseCategories.contains(invoice.category)
         ? invoice.category
         : expenseCategories.first;
@@ -264,21 +271,21 @@ Future<void> _scanInvoice(
     });
     if (!context.mounted) return;
     Get.snackbar(
-      'Invoice scanned',
-      'Review the bill details, then tap Save.',
+      TranslationService.translate('Invoice scanned'),
+      TranslationService.translate('Review the bill details, then tap Save.'),
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
     );
   } catch (error) {
     if (!context.mounted) return;
     Get.snackbar(
-      'Invoice scan failed',
-      error.toString(),
+      TranslationService.translate('Invoice scan failed'),
+      TranslationService.translate(error.toString()),
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
     );
   } finally {
-    setState(() => setLoading(false));
+    if (context.mounted) setState(() => setLoading(false));
   }
 }
 
@@ -312,7 +319,7 @@ class _InvoiceScanPanel extends StatelessWidget {
               Icon(Icons.document_scanner_rounded, color: scheme.primary),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
+                child: LocalizedText(
                   loading ? 'Reading invoice...' : 'Scan invoice to fill bill',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
@@ -331,7 +338,7 @@ class _InvoiceScanPanel extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: loading ? null : onCamera,
                   icon: const Icon(Icons.photo_camera_rounded),
-                  label: const Text('Camera'),
+                  label: const LocalizedText('Camera'),
                 ),
               ),
               const SizedBox(width: 10),
@@ -339,7 +346,7 @@ class _InvoiceScanPanel extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: loading ? null : onGallery,
                   icon: const Icon(Icons.photo_library_rounded),
-                  label: const Text('Gallery'),
+                  label: const LocalizedText('Gallery'),
                 ),
               ),
             ],
@@ -371,7 +378,7 @@ Future<void> showAddExpensePaymentDialog(
         actions: [
           TextButton(
             onPressed: Navigator.of(context).pop,
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () async {
@@ -386,7 +393,7 @@ Future<void> showAddExpensePaymentDialog(
               );
               if (context.mounted && saved) Navigator.pop(context);
             },
-            child: const Text('Save payment'),
+            child: const LocalizedText('Save payment'),
           ),
         ],
         child: Form(
@@ -396,7 +403,7 @@ Future<void> showAddExpensePaymentDialog(
             children: [
               TextFormField(
                 controller: amount,
-                decoration: InputDecoration(
+                decoration: LocalizedInputDecoration(
                   labelText: 'Payment amount',
                   prefixIcon: Icon(AppConfig.appCurrencyIcon),
                 ),
@@ -405,9 +412,15 @@ Future<void> showAddExpensePaymentDialog(
                   final requiredError = _required(value);
                   if (requiredError != null) return requiredError;
                   final parsed = moneyFromText(value ?? '') ?? 0;
-                  if (parsed <= 0) return 'Enter an amount above zero';
+                  if (parsed <= 0) {
+                    return TranslationService.translate(
+                      'Enter an amount above zero',
+                    );
+                  }
                   if (parsed > item.pendingForSummary) {
-                    return 'Cannot exceed pending balance';
+                    return TranslationService.translate(
+                      'Cannot exceed pending balance',
+                    );
                   }
                   return null;
                 },
@@ -421,7 +434,7 @@ Future<void> showAddExpensePaymentDialog(
               _DatePickerTile(
                 icon: Icons.calendar_month_rounded,
                 title: 'Payment date',
-                value: formatDate(date),
+                value: formatDisplayDate(date),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -435,7 +448,7 @@ Future<void> showAddExpensePaymentDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: notes,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Payment notes',
                   prefixIcon: Icon(Icons.notes_rounded),
                   hintText: 'Transfer ref, cash note, installment detail...',
@@ -475,7 +488,7 @@ Future<void> showReminderDialog(
         actions: [
           TextButton(
             onPressed: Navigator.of(context).pop,
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () async {
@@ -491,7 +504,7 @@ Future<void> showReminderDialog(
               );
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('Save'),
+            child: const LocalizedText('Save'),
           ),
         ],
         child: Form(
@@ -507,7 +520,7 @@ Future<void> showReminderDialog(
               const SizedBox(height: 12),
               TextFormField(
                 controller: title,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Reminder title',
                   prefixIcon: Icon(Icons.title_rounded),
                 ),
@@ -518,14 +531,16 @@ Future<void> showReminderDialog(
                 initialValue: reminderCategories.contains(category)
                     ? category
                     : reminderCategories.first,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Category',
                   prefixIcon: Icon(Icons.category_rounded),
                 ),
                 items: reminderCategories
                     .map(
-                      (value) =>
-                          DropdownMenuItem(value: value, child: Text(value)),
+                      (value) => DropdownMenuItem(
+                        value: value,
+                        child: LocalizedText(value),
+                      ),
                     )
                     .toList(),
                 onChanged: (value) => category = value ?? category,
@@ -533,7 +548,7 @@ Future<void> showReminderDialog(
               const SizedBox(height: 12),
               TextFormField(
                 controller: amount,
-                decoration: InputDecoration(
+                decoration: LocalizedInputDecoration(
                   labelText: 'Amount (optional)',
                   prefixIcon: Icon(AppConfig.appCurrencyIcon),
                 ),
@@ -543,7 +558,7 @@ Future<void> showReminderDialog(
               _DatePickerTile(
                 icon: Icons.calendar_month_rounded,
                 title: 'Due date',
-                value: formatDate(dueDate),
+                value: formatDisplayDate(dueDate),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -578,112 +593,147 @@ Future<void> showPurchaseDialog(
         : '',
   );
   final note = TextEditingController(text: purchase?.note ?? '');
+  DateTime? dueDate = purchase?.dueDate;
   var status = purchase?.status ?? purchaseStatuses.first;
   final formKey = GlobalKey<FormState>();
 
   await showDialog<void>(
     context: context,
-    builder: (context) => _PlannerDialog(
-      icon: Icons.shopping_bag_rounded,
-      title: purchase == null ? 'Add purchase' : 'Edit purchase',
-      subtitle: 'Keep shopping items organized and clear.',
-      actions: [
-        TextButton(
-          onPressed: Navigator.of(context).pop,
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () async {
-            if (!formKey.currentState!.validate()) return;
-            await controller.savePurchase(
-              buildPurchase(
-                existing: purchase,
-                name: name.text,
-                category: category,
-                amount: amount.text,
-                status: status,
-                note: note.text,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => _PlannerDialog(
+        icon: Icons.shopping_bag_rounded,
+        title: purchase == null ? 'Add purchase' : 'Edit purchase',
+        subtitle: 'Keep shopping items organized and clear.',
+        actions: [
+          TextButton(
+            onPressed: Navigator.of(context).pop,
+            child: const LocalizedText('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              await controller.savePurchase(
+                buildPurchase(
+                  existing: purchase,
+                  name: name.text,
+                  category: category,
+                  amount: amount.text,
+                  status: status,
+                  note: note.text,
+                ).copyWith(dueDate: dueDate, clearDueDate: dueDate == null),
+              );
+              if (context.mounted) Navigator.pop(context);
+            },
+            child: const LocalizedText('Save'),
+          ),
+        ],
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const _DialogIntroCard(
+                icon: Icons.shopping_bag_rounded,
+                title: 'Shopping item',
+                subtitle: 'Add the item, category, amount, status, and note.',
               ),
-            );
-            if (context.mounted) Navigator.pop(context);
-          },
-          child: const Text('Save'),
-        ),
-      ],
-      child: Form(
-        key: formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const _DialogIntroCard(
-              icon: Icons.shopping_bag_rounded,
-              title: 'Shopping item',
-              subtitle: 'Add the item, category, amount, status, and note.',
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: name,
-              decoration: const InputDecoration(
-                labelText: 'Item name',
-                prefixIcon: Icon(Icons.shopping_basket_rounded),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: name,
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Item name',
+                  prefixIcon: Icon(Icons.shopping_basket_rounded),
+                ),
+                validator: _required,
               ),
-              validator: _required,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: category,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                prefixIcon: Icon(Icons.category_rounded),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: category,
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(Icons.category_rounded),
+                ),
+                items: purchaseCategories
+                    .map(
+                      (value) => DropdownMenuItem(
+                        value: value,
+                        child: LocalizedText(value),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) => category = value ?? category,
               ),
-              items: purchaseCategories
-                  .map(
-                    (value) =>
-                        DropdownMenuItem(value: value, child: Text(value)),
-                  )
-                  .toList(),
-              onChanged: (value) => category = value ?? category,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: amount,
-              decoration: InputDecoration(
-                labelText: 'Amount',
-                prefixIcon: Icon(AppConfig.appCurrencyIcon),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: amount,
+                decoration: LocalizedInputDecoration(
+                  labelText: 'Amount',
+                  prefixIcon: Icon(AppConfig.appCurrencyIcon),
+                ),
+                keyboardType: TextInputType.number,
               ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              initialValue: purchaseStatuses.contains(status)
-                  ? status
-                  : purchaseStatuses.first,
-              decoration: const InputDecoration(
-                labelText: 'Status',
-                prefixIcon: Icon(Icons.flag_rounded),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: purchaseStatuses.contains(status)
+                    ? status
+                    : purchaseStatuses.first,
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Status',
+                  prefixIcon: Icon(Icons.flag_rounded),
+                ),
+                items: purchaseStatuses
+                    .map(
+                      (value) => DropdownMenuItem(
+                        value: value,
+                        child: LocalizedText(value),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) => status = value ?? status,
               ),
-              items: purchaseStatuses
-                  .map(
-                    (value) =>
-                        DropdownMenuItem(value: value, child: Text(value)),
-                  )
-                  .toList(),
-              onChanged: (value) => status = value ?? status,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: note,
-              decoration: const InputDecoration(
-                labelText: 'Note',
-                prefixIcon: Icon(Icons.notes_rounded),
+              const SizedBox(height: 12),
+              ListTile(
+                title: LocalizedText(
+                  dueDate == null
+                      ? 'Shopping due date'
+                      : formatDisplayDate(dueDate!),
+                ),
+                leading: const Icon(Icons.event),
+                trailing: dueDate == null
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () => setState(() => dueDate = null),
+                      ),
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: dueDate ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null && context.mounted) {
+                    setState(() => dueDate = picked);
+                  }
+                },
               ),
-              maxLines: 3,
-            ),
-          ],
+              TextFormField(
+                controller: note,
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Note',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                ),
+                maxLines: 3,
+              ),
+            ],
+          ),
         ),
       ),
     ),
   );
+  name.dispose();
+  amount.dispose();
+  note.dispose();
 }
 
 Future<void> showConvertPurchaseToExpenseDialog(
@@ -715,7 +765,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
         actions: [
           TextButton(
             onPressed: Navigator.of(context).pop,
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () async {
@@ -739,7 +789,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
               );
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('Convert'),
+            child: const LocalizedText('Convert'),
           ),
         ],
         child: Form(
@@ -750,7 +800,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
               TextFormField(
                 initialValue: purchase.name,
                 enabled: false,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Item',
                   prefixIcon: Icon(Icons.shopping_bag_rounded),
                 ),
@@ -758,14 +808,16 @@ Future<void> showConvertPurchaseToExpenseDialog(
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
                 initialValue: category,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Expense category',
                   prefixIcon: Icon(Icons.category_rounded),
                 ),
                 items: expenseCategories
                     .map(
-                      (value) =>
-                          DropdownMenuItem(value: value, child: Text(value)),
+                      (value) => DropdownMenuItem(
+                        value: value,
+                        child: LocalizedText(value),
+                      ),
                     )
                     .toList(),
                 onChanged: (value) => category = value ?? category,
@@ -773,7 +825,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: total,
-                decoration: InputDecoration(
+                decoration: LocalizedInputDecoration(
                   labelText: 'Bill amount',
                   prefixIcon: Icon(AppConfig.appCurrencyIcon),
                 ),
@@ -783,7 +835,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: paid,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Paid amount',
                   prefixIcon: Icon(Icons.paid_rounded),
                 ),
@@ -798,7 +850,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
               _DatePickerTile(
                 icon: Icons.event_rounded,
                 title: 'Due date',
-                value: formatDate(dueDate),
+                value: formatDisplayDate(dueDate),
                 onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -812,7 +864,7 @@ Future<void> showConvertPurchaseToExpenseDialog(
               const SizedBox(height: 14),
               TextFormField(
                 controller: notes,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Notes',
                   prefixIcon: Icon(Icons.notes_rounded),
                 ),
@@ -847,7 +899,7 @@ Future<void> showProfileDialog(BuildContext context) async {
         actions: [
           TextButton(
             onPressed: Navigator.of(context).pop,
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () async {
@@ -858,12 +910,11 @@ Future<void> showProfileDialog(BuildContext context) async {
                 currency: currency,
               );
               final parsedBudget =
-                  double.tryParse(budget.text.trim().replaceAll(',', '')) ??
-                  0;
+                  double.tryParse(budget.text.trim().replaceAll(',', '')) ?? 0;
               await controller.setBudgetGoal(parsedBudget);
               if (context.mounted) Navigator.pop(context);
             },
-            child: const Text('Save'),
+            child: const LocalizedText('Save'),
           ),
         ],
         child: Column(
@@ -877,7 +928,7 @@ Future<void> showProfileDialog(BuildContext context) async {
                 Expanded(
                   child: TextFormField(
                     controller: groom,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       hintText: 'Groom',
                       prefixIcon: Icon(Icons.person_rounded),
                     ),
@@ -887,7 +938,7 @@ Future<void> showProfileDialog(BuildContext context) async {
                 Expanded(
                   child: TextFormField(
                     controller: bride,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       hintText: 'Bride',
                       prefixIcon: Icon(Icons.person_2_rounded),
                     ),
@@ -902,7 +953,7 @@ Future<void> showProfileDialog(BuildContext context) async {
               icon: Icons.calendar_month_rounded,
               title: weddingDate == null
                   ? 'Select date'
-                  : formatDate(weddingDate!),
+                  : formatDisplayDate(weddingDate!),
               value: weddingDate == null
                   ? 'Tap to set your wedding date'
                   : 'Tap to change',
@@ -939,11 +990,10 @@ Future<void> showProfileDialog(BuildContext context) async {
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              decoration: InputDecoration(
+              decoration: LocalizedInputDecoration(
                 hintText: 'Set a budget goal',
                 prefixIcon: Icon(AppConfig.appCurrencyIcon),
-                helperText:
-                    'Leave empty to use the total of all expenses.',
+                helperText: 'Leave empty to use the total of all expenses.',
               ),
             ),
           ],
@@ -964,7 +1014,7 @@ Future<CurrencyOption?> showCurrencySelectionDialog(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => AlertDialog(
-        title: const Text('Select currency'),
+        title: const LocalizedText('Select currency'),
         content: SizedBox(
           width: double.maxFinite,
           height: 420,
@@ -973,7 +1023,7 @@ Future<CurrencyOption?> showCurrencySelectionDialog(
               TextField(
                 controller: search,
                 autofocus: true,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Search currency',
                   hintText: 'USD, Euro, ₹',
                   prefixIcon: Icon(Icons.search_rounded),
@@ -995,7 +1045,7 @@ Future<CurrencyOption?> showCurrencySelectionDialog(
                         option.symbol,
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      title: Text('${option.code}  ${option.name}'),
+                      title: Text('${option.code}  ${TranslationService.translate(option.name)}'),
                       trailing: selected
                           ? Icon(
                               Icons.check_circle_rounded,
@@ -1014,7 +1064,7 @@ Future<CurrencyOption?> showCurrencySelectionDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
         ],
       ),
@@ -1024,7 +1074,7 @@ Future<CurrencyOption?> showCurrencySelectionDialog(
 }
 
 Widget _dialogLabel(String text) {
-  return Text(
+  return LocalizedText(
     text,
     style: TextStyle(
       color: ThemeColors.onSurfaceSecondary,
@@ -1109,7 +1159,7 @@ class _PlannerDialog extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          LocalizedText(
                             title,
                             style: theme.textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
@@ -1118,7 +1168,7 @@ class _PlannerDialog extends StatelessWidget {
                           ),
                           if (subtitle != null) ...[
                             const SizedBox(height: 4),
-                            Text(
+                            LocalizedText(
                               subtitle!,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: scheme.outline,
@@ -1197,7 +1247,7 @@ class _DialogIntroCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   title,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
@@ -1206,7 +1256,7 @@ class _DialogIntroCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LocalizedText(
                   subtitle,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: ThemeColors.textSecondary,
@@ -1267,7 +1317,7 @@ class _DatePickerTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     title,
                     style: theme.textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w600,
@@ -1293,5 +1343,6 @@ class _DatePickerTile extends StatelessWidget {
   }
 }
 
-String? _required(String? value) =>
-    value == null || value.trim().isEmpty ? 'Required' : null;
+String? _required(String? value) => value == null || value.trim().isEmpty
+    ? TranslationService.translate('Required')
+    : null;

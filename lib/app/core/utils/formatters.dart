@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
@@ -51,8 +52,19 @@ int? daysUntilDate(DateTime? date, {DateTime? from}) {
   return target.difference(today).inDays;
 }
 
+/// Accept Arabic-Indic digits without changing canonical stored amounts.
+String normalizeNumberInput(String text) => String.fromCharCodes(
+  text.runes.map((rune) {
+    if (rune >= 0x660 && rune <= 0x669) return 0x30 + rune - 0x660;
+    if (rune >= 0x6f0 && rune <= 0x6f9) return 0x30 + rune - 0x6f0;
+    if (rune == 0x66b) return 0x2e;
+    if (rune == 0x66c) return 0x2c;
+    return rune;
+  }),
+);
+
 double? moneyFromText(String text) {
-  final cleaned = text.replaceAll(',', '').trim();
+  final cleaned = normalizeNumberInput(text).replaceAll(',', '').trim();
   if (cleaned.isEmpty) return null;
   return double.tryParse(cleaned);
 }
@@ -96,6 +108,9 @@ const months = [
 
 String formatDate(DateTime date) =>
     '${months[date.month - 1]} ${date.day}, ${date.year}';
+
+String formatDisplayDate(DateTime date) =>
+    '${TranslationService.translate(months[date.month - 1])} ${date.day}, ${date.year}';
 
 String formatPercent(double ratio) {
   final percent = ratio * 100;

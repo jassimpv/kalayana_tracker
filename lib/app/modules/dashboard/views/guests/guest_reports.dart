@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -29,7 +31,7 @@ class GuestReportActions extends GetView<GuestsController> {
             buildPdf: () => _buildGuestListPdf(controller.guests),
           ),
           icon: const Icon(Icons.list_alt_rounded, size: 18),
-          label: const Text('Guest List PDF'),
+          label: const LocalizedText('Guest List PDF'),
         ),
         OutlinedButton.icon(
           onPressed: () => _showReportActionSheet(
@@ -39,7 +41,7 @@ class GuestReportActions extends GetView<GuestsController> {
             buildPdf: () => _buildRsvpSummaryPdf(controller),
           ),
           icon: const Icon(Icons.fact_check_rounded, size: 18),
-          label: const Text('RSVP Summary PDF'),
+          label: const LocalizedText('RSVP Summary PDF'),
         ),
         OutlinedButton.icon(
           onPressed: () => _showReportActionSheet(
@@ -49,12 +51,12 @@ class GuestReportActions extends GetView<GuestsController> {
             buildPdf: () => _buildEventAttendancePdf(controller),
           ),
           icon: const Icon(Icons.event_available_rounded, size: 18),
-          label: const Text('Event Attendance PDF'),
+          label: const LocalizedText('Event Attendance PDF'),
         ),
         OutlinedButton.icon(
           onPressed: () => _exportGuestListCsv(context, controller.guests),
           icon: const Icon(Icons.table_view_rounded, size: 18),
-          label: const Text('Export Guest List CSV'),
+          label: const LocalizedText('Export Guest List CSV'),
         ),
       ],
     );
@@ -79,17 +81,17 @@ Future<void> _showReportActionSheet({
         children: [
           ListTile(
             leading: const Icon(Icons.visibility_outlined),
-            title: const Text('View report'),
+            title: const LocalizedText('View report'),
             onTap: () => Navigator.pop(sheetContext, _ReportAction.view),
           ),
           ListTile(
             leading: const Icon(Icons.ios_share_rounded),
-            title: const Text('Share report'),
+            title: const LocalizedText('Share report'),
             onTap: () => Navigator.pop(sheetContext, _ReportAction.share),
           ),
           ListTile(
             leading: const Icon(Icons.download_rounded),
-            title: const Text('Download report'),
+            title: const LocalizedText('Download report'),
             onTap: () => Navigator.pop(sheetContext, _ReportAction.download),
           ),
         ],
@@ -116,16 +118,16 @@ Future<void> _showReportActionSheet({
         );
         if (!context.mounted || savedPath == null) return;
         Get.snackbar(
-          'Report downloaded',
-          'Saved to $savedPath',
+          TranslationService.translate('Report downloaded'),
+          TranslationService.translate('Saved to $savedPath'),
           snackPosition: SnackPosition.BOTTOM,
         );
     }
   } catch (error) {
     if (!context.mounted) return;
     Get.snackbar(
-      'PDF export failed',
-      error.toString(),
+      TranslationService.translate('PDF export failed'),
+      TranslationService.translate(error.toString()),
       snackPosition: SnackPosition.BOTTOM,
     );
   }
@@ -141,7 +143,7 @@ class _ReportPreviewPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: LocalizedText(title),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: PdfPreview(
@@ -472,15 +474,15 @@ Future<void> _exportGuestListCsv(
     );
     if (!context.mounted || savedPath == null) return;
     Get.snackbar(
-      'CSV exported',
-      'Saved to $savedPath',
+      TranslationService.translate('CSV exported'),
+      TranslationService.translate('Saved to $savedPath'),
       snackPosition: SnackPosition.BOTTOM,
     );
   } catch (error) {
     if (!context.mounted) return;
     Get.snackbar(
-      'CSV export failed',
-      error.toString(),
+      TranslationService.translate('CSV export failed'),
+      TranslationService.translate(error.toString()),
       snackPosition: SnackPosition.BOTTOM,
     );
   }

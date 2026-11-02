@@ -1,3 +1,6 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
+import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
@@ -21,6 +24,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
   String _category = purchaseCategories.first;
   String _status = purchaseStatuses.first;
   bool _isSaving = false;
+  DateTime? _dueDate;
 
   @override
   void dispose() {
@@ -33,18 +37,28 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
   Future<void> _savePurchase() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-    await controller.savePurchase(
-      buildPurchase(
-        name: _nameController.text,
-        category: _category,
-        amount: _amountController.text,
-        status: _status,
-        note: _noteController.text,
-      ),
-    );
-    if (!mounted) return;
-    setState(() => _isSaving = false);
-    controller.closeDashboardSubPage();
+    try {
+      await controller.savePurchase(
+        buildPurchase(
+          name: _nameController.text,
+          category: _category,
+          amount: _amountController.text,
+          status: _status,
+          note: _noteController.text,
+        ).copyWith(dueDate: _dueDate),
+      );
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      controller.closeDashboardSubPage();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: LocalizedText('Unable to save: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -64,7 +78,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                   ),
                 )
               : const Icon(Icons.check_rounded),
-          label: Text(_isSaving ? 'Saving' : 'Save Shopping'),
+          label: LocalizedText(_isSaving ? 'Saving' : 'Save Shopping'),
         ),
       ),
       children: [
@@ -82,7 +96,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                 children: [
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       labelText: 'Item name',
                       prefixIcon: Icon(Icons.shopping_basket_rounded),
                     ),
@@ -91,7 +105,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: _category,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       labelText: 'Category',
                       prefixIcon: Icon(Icons.category_rounded),
                     ),
@@ -99,7 +113,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                         .map(
                           (value) => DropdownMenuItem(
                             value: value,
-                            child: Text(value),
+                            child: LocalizedText(value),
                           ),
                         )
                         .toList(),
@@ -109,9 +123,31 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                     },
                   ),
                   const SizedBox(height: 12),
+                  DashboardDatePickerTile(
+                    icon: Icons.event,
+                    title: 'Shopping due date',
+                    value: _dueDate == null
+                        ? 'Choose date'
+                        : formatDisplayDate(_dueDate!),
+                    onClear: _dueDate == null
+                        ? null
+                        : () => setState(() => _dueDate = null),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _dueDate ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null && mounted) {
+                        setState(() => _dueDate = picked);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _amountController,
-                    decoration: InputDecoration(
+                    decoration: LocalizedInputDecoration(
                       labelText: 'Amount',
                       prefixIcon: Icon(AppConfig.appCurrencyIcon),
                     ),
@@ -120,7 +156,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: _status,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       labelText: 'Status',
                       prefixIcon: Icon(Icons.flag_rounded),
                     ),
@@ -128,7 +164,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                         .map(
                           (value) => DropdownMenuItem(
                             value: value,
-                            child: Text(value),
+                            child: LocalizedText(value),
                           ),
                         )
                         .toList(),
@@ -143,7 +179,7 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
                     minLines: 3,
                     maxLines: 5,
                     textAlignVertical: TextAlignVertical.top,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       labelText: 'Note',
                       alignLabelWithHint: true,
                     ),
@@ -159,6 +195,8 @@ class _PurchaseAddPageState extends State<PurchaseAddPage> {
 }
 
 String? _required(String? value) {
-  if (value == null || value.trim().isEmpty) return 'This field is required';
+  if (value == null || value.trim().isEmpty) {
+    return TranslationService.translate('This field is required');
+  }
   return null;
 }

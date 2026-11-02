@@ -920,7 +920,7 @@ class _SectionHeader extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(
+          child: LocalizedText(
             title,
             style: Theme.of(
               context,
@@ -954,7 +954,7 @@ class _LegendRow extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
+          child: LocalizedText(
             label,
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,

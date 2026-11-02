@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
@@ -37,7 +38,7 @@ class RepayPersonPicker extends GetView<DashboardController> {
 
       if (controller.repayPersonsLoading.value) {
         return InputDecorator(
-          decoration: InputDecoration(
+          decoration: LocalizedInputDecoration(
             labelText: labelText,
             prefixIcon: const Icon(Icons.person_rounded),
           ),
@@ -48,7 +49,7 @@ class RepayPersonPicker extends GetView<DashboardController> {
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
               SizedBox(width: 12),
-              Text('Loading people...'),
+              LocalizedText('Loading people...'),
             ],
           ),
         );
@@ -56,18 +57,18 @@ class RepayPersonPicker extends GetView<DashboardController> {
 
       if (controller.repayPersonsError.value != null) {
         return InputDecorator(
-          decoration: InputDecoration(
+          decoration: LocalizedInputDecoration(
             labelText: labelText,
             prefixIcon: const Icon(Icons.error_outline_rounded),
           ),
-          child: Text(controller.repayPersonsError.value!),
+          child: LocalizedText(controller.repayPersonsError.value!),
         );
       }
 
       return DropdownButtonFormField<String>(
         key: ValueKey(selected),
         initialValue: selected,
-        decoration: InputDecoration(
+        decoration: LocalizedInputDecoration(
           labelText: labelText,
           prefixIcon: const Icon(Icons.person_rounded),
           helperText: people.isEmpty
@@ -75,13 +76,19 @@ class RepayPersonPicker extends GetView<DashboardController> {
               : helperText,
         ),
         items: [
-          const DropdownMenuItem(value: _selfValue, child: Text('Self')),
+          const DropdownMenuItem(
+            value: _selfValue,
+            child: LocalizedText('Self'),
+          ),
           ...people.map(
             (person) =>
                 DropdownMenuItem(value: person.id, child: Text(person.name)),
           ),
           if (allowOther)
-            const DropdownMenuItem(value: _otherValue, child: Text('Other')),
+            const DropdownMenuItem(
+              value: _otherValue,
+              child: LocalizedText('Other'),
+            ),
         ],
         onChanged: (id) {
           if (id == _selfValue) {

@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
@@ -83,8 +84,10 @@ class AuthController extends GetxController {
         await user.sendEmailVerification();
         await _auth.signOut();
         Get.snackbar(
-          'Verify your email',
-          'We sent a verification link to ${user.email ?? emailValue}. Please verify your email before signing in.',
+          TranslationService.translate('Verify your email'),
+          TranslationService.translate(
+            'We sent a verification link to ${user.email ?? emailValue}. Please verify your email before signing in.',
+          ),
           snackPosition: SnackPosition.BOTTOM,
           margin: const EdgeInsets.all(16),
           duration: const Duration(seconds: 6),
@@ -176,8 +179,10 @@ class AuthController extends GetxController {
     try {
       await _auth.sendPasswordResetEmail(email: emailValue);
       Get.snackbar(
-        'Password reset',
-        'A reset link has been sent to $emailValue.',
+        TranslationService.translate('Password reset'),
+        TranslationService.translate(
+          'A reset link has been sent to $emailValue.',
+        ),
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
@@ -221,8 +226,10 @@ class AuthController extends GetxController {
     Get.offAllNamed(AppRoutes.dashboard);
     if (revoked) {
       Get.snackbar(
-        'Deletion request cancelled',
-        'Your account deletion request was revoked because you signed in.',
+        TranslationService.translate('Deletion request cancelled'),
+        TranslationService.translate(
+          'Your account deletion request was revoked because you signed in.',
+        ),
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
@@ -233,8 +240,8 @@ class AuthController extends GetxController {
     if (kDebugMode) debugPrint('Authentication Error: $message');
 
     Get.snackbar(
-      'Authentication',
-      message,
+      TranslationService.translate('Authentication'),
+      TranslationService.translate(message),
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
     );

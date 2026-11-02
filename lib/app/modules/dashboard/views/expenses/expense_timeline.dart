@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
@@ -23,7 +24,7 @@ class ExpenseDetailTimeline extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LocalizedText(
                 'Payment Timeline',
                 style: TextStyle(
                   color: ThemeColors.logoDeep,
@@ -39,7 +40,7 @@ class ExpenseDetailTimeline extends StatelessWidget {
                   title: moneyOrDash(item.pendingForSummary),
                   subtitle: item.dueDate == null
                       ? 'No due date'
-                      : 'Due on ${formatDate(item.dueDate!)}',
+                      : 'Due on ${formatDisplayDate(item.dueDate!)}',
                   isLast: true,
                 )
               else ...[
@@ -47,7 +48,7 @@ class ExpenseDetailTimeline extends StatelessWidget {
                   final payment = entry.value;
                   return _ExpenseTimelineRow(
                     markerColor: ThemeColors.logoGold,
-                    date: formatDate(payment.date),
+                    date: formatDisplayDate(payment.date),
                     title: 'Paid ${moneyOrDash(payment.amount)}',
                     subtitle: 'Paid By: ${payment.displayPaidBy}',
                     isLast: false,
@@ -60,7 +61,7 @@ class ExpenseDetailTimeline extends StatelessWidget {
                     title: moneyOrDash(item.pendingForSummary),
                     subtitle: item.dueDate == null
                         ? 'Pending balance'
-                        : 'Due on ${formatDate(item.dueDate!)}',
+                        : 'Due on ${formatDisplayDate(item.dueDate!)}',
                     isLast: true,
                   ),
               ],
@@ -135,7 +136,7 @@ class _ExpenseTimelineRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -146,7 +147,7 @@ class _ExpenseTimelineRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(
+                  LocalizedText(
                     subtitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

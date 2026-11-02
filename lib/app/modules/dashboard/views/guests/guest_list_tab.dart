@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -91,7 +92,7 @@ class _GuestSearchPanel extends GetView<GuestsController> {
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
-            decoration: InputDecoration(
+            decoration: LocalizedInputDecoration(
               hintText: 'Search guests by name or phone',
               hintStyle: TextStyle(
                 color: ThemeColors.logoDeep.withValues(alpha: 0.36),
@@ -250,7 +251,7 @@ class _GuestFilterChip extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                LocalizedText(
                   label,
                   style: TextStyle(
                     color: selected ? Colors.white : ThemeColors.primary,
@@ -299,7 +300,7 @@ class _GuestsEmptyState extends StatelessWidget {
         children: [
           Icon(CupertinoIcons.person_2, color: ThemeColors.primary, size: 34),
           const SizedBox(height: 10),
-          Text(
+          LocalizedText(
             hasFilters ? 'No guests match your filters' : 'No guests yet',
             style: const TextStyle(
               color: ThemeColors.logoDeep,
@@ -307,7 +308,7 @@ class _GuestsEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          LocalizedText(
             hasFilters
                 ? 'Try clearing the search or filters above.'
                 : 'Add guests to start tracking invitations and RSVPs.',
@@ -319,7 +320,7 @@ class _GuestsEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(onPressed: onTap, child: const Text('Add Guest')),
+          TextButton(onPressed: onTap, child: const LocalizedText('Add Guest')),
         ],
       ),
     );
@@ -393,7 +394,7 @@ class _GuestCard extends GetView<GuestsController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
+                        LocalizedText(
                           guest.name.isEmpty ? 'Unnamed guest' : guest.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -439,7 +440,7 @@ class _SwipeDeleteBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      alignment: Alignment.centerRight,
+      alignment: AlignmentDirectional.centerEnd,
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration: BoxDecoration(
         color: const Color(0xFFC30B4A),
@@ -450,7 +451,7 @@ class _SwipeDeleteBackground extends StatelessWidget {
         children: [
           Icon(CupertinoIcons.delete, color: Colors.white, size: 22),
           const SizedBox(height: 3),
-          Text(
+          LocalizedText(
             'Delete',
             style: TextStyle(
               color: Colors.white,
@@ -468,22 +469,22 @@ Future<bool> _confirmDeleteGuest(BuildContext context, Guest guest) async {
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Delete guest'),
-      content: Text(
+      title: const LocalizedText('Delete guest'),
+      content: LocalizedText(
         'Delete ${guest.name.isEmpty ? 'this guest' : guest.name}? '
         'This removes their RSVP history too.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFC30B4A),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),
@@ -507,7 +508,7 @@ class _Tag extends StatelessWidget {
             : ThemeColors.logoGold.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
+      child: LocalizedText(
         text,
         style: TextStyle(
           fontSize: 10.5,

@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -59,7 +61,10 @@ class _EventAddPageState extends State<EventAddPage> {
   Future<void> _save() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      Get.snackbar('Name required', 'Please enter an event name.');
+      Get.snackbar(
+        TranslationService.translate('Name required'),
+        TranslationService.translate('Please enter an event name.'),
+      );
       return;
     }
     setState(() => _saving = true);
@@ -81,7 +86,10 @@ class _EventAddPageState extends State<EventAddPage> {
       }
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
-      Get.snackbar('Could not save event', error.toString());
+      Get.snackbar(
+        TranslationService.translate('Could not save event'),
+        TranslationService.translate(error.toString()),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -95,7 +103,7 @@ class _EventAddPageState extends State<EventAddPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,
-        title: Text(_isEditing ? 'Edit Event' : 'Add Event'),
+        title: LocalizedText(_isEditing ? 'Edit Event' : 'Add Event'),
       ),
       body: DashboardFormPage(
         footer: FilledButton(
@@ -113,16 +121,21 @@ class _EventAddPageState extends State<EventAddPage> {
                     color: Colors.white,
                   ),
                 )
-              : Text(_isEditing ? 'Save Changes' : 'Add Event'),
+              : LocalizedText(_isEditing ? 'Save Changes' : 'Add Event'),
         ),
         children: [
           DashboardFormCard(
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _type,
-                decoration: const InputDecoration(labelText: 'Event Type'),
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Event Type',
+                ),
                 items: weddingEventTypes
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .map(
+                      (t) =>
+                          DropdownMenuItem(value: t, child: LocalizedText(t)),
+                    )
                     .toList(),
                 onChanged: (value) {
                   if (value == null) return;
@@ -139,7 +152,9 @@ class _EventAddPageState extends State<EventAddPage> {
               const SizedBox(height: 12),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Event Name'),
+                decoration: const LocalizedInputDecoration(
+                  labelText: 'Event Name',
+                ),
               ),
               const SizedBox(height: 12),
               DashboardDatePickerTile(
@@ -160,13 +175,13 @@ class _EventAddPageState extends State<EventAddPage> {
             children: [
               TextField(
                 controller: _venueController,
-                decoration: const InputDecoration(labelText: 'Venue'),
+                decoration: const LocalizedInputDecoration(labelText: 'Venue'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _mapUrlController,
                 keyboardType: TextInputType.url,
-                decoration: const InputDecoration(
+                decoration: const LocalizedInputDecoration(
                   labelText: 'Google Maps URL',
                   hintText: 'https://maps.app.goo.gl/...',
                 ),
@@ -175,7 +190,7 @@ class _EventAddPageState extends State<EventAddPage> {
               TextField(
                 controller: _notesController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Notes'),
+                decoration: const LocalizedInputDecoration(labelText: 'Notes'),
               ),
             ],
           ),

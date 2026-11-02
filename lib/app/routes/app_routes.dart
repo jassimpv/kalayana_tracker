@@ -1,4 +1,5 @@
 class AppRoutes {
+  static const guestRsvp = '/guest-rsvp';
   static const splash = '/splash';
   static const auth = '/auth';
   static const dashboard = '/dashboard';

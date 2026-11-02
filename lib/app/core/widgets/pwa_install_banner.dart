@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:kalayanaexpresstracker/app/core/services/external_link_service.dart';
@@ -49,7 +50,8 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
       case TargetPlatform.android:
         return _InstallCard(
           icon: Icons.shop_rounded,
-          message: 'Get the Kalyana app on Google Play for the full experience.',
+          message:
+              'Get the Kalyana app on Google Play for the full experience.',
           actionLabel: 'Play Store',
           onAction: () =>
               ExternalLinkService.instance.openInNewTab(_playStoreUrl),
@@ -109,7 +111,7 @@ class _InstallCard extends StatelessWidget {
               Icon(icon, color: Colors.white),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LocalizedText(
                   message,
                   style: const TextStyle(
                     color: Colors.white,

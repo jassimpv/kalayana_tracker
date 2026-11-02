@@ -163,7 +163,7 @@ class _ReminderHero extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     'Reminders',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
@@ -173,7 +173,7 @@ class _ReminderHero extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  const LocalizedText(
                     'Stay on track, never miss a payment',
                     style: TextStyle(
                       color: Color(0xFFF7C859),
@@ -416,7 +416,7 @@ class _ReminderStatTile extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 3),
-        Text(
+        LocalizedText(
           stat.label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -468,7 +468,7 @@ class _PaymentEmptyCallout extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -479,7 +479,7 @@ class _PaymentEmptyCallout extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
+                LocalizedText(
                   subtitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -606,7 +606,7 @@ class _AddReminderButton extends StatelessWidget {
             children: [
               Icon(CupertinoIcons.plus, color: Colors.white, size: 16),
               SizedBox(width: 6),
-              Text(
+              LocalizedText(
                 'Add Reminder',
                 style: TextStyle(
                   color: Colors.white,
@@ -636,7 +636,7 @@ class _ReminderTaskHeader extends StatelessWidget {
     return Row(
       children: [
         const Expanded(
-          child: Text(
+          child: LocalizedText(
             'Wedding Tasks',
             style: TextStyle(
               color: ThemeColors.logoDeep,
@@ -652,7 +652,7 @@ class _ReminderTaskHeader extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
             child: Row(
               children: [
-                Text(
+                LocalizedText(
                   showingCompleted ? 'Completed' : 'Upcoming',
                   style: const TextStyle(
                     color: Color(0xFFD17B14),
@@ -703,7 +703,7 @@ class _ReminderEmptyTasks extends StatelessWidget {
             size: 34,
           ),
           const SizedBox(height: 10),
-          const Text(
+          const LocalizedText(
             'No wedding tasks yet',
             style: TextStyle(
               color: ThemeColors.logoDeep,
@@ -711,7 +711,10 @@ class _ReminderEmptyTasks extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(onPressed: onTap, child: const Text('Add Reminder')),
+          TextButton(
+            onPressed: onTap,
+            child: const LocalizedText('Add Reminder'),
+          ),
         ],
       ),
     );
@@ -737,7 +740,7 @@ class _WeddingTaskCard extends GetView<DashboardController> {
       child: Dismissible(
         key: ValueKey(item.id),
         background: _SwipeActionBackground(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           color: const Color(0xFF0D7A3A),
           icon: item.isDone
               ? CupertinoIcons.arrow_counterclockwise
@@ -745,7 +748,7 @@ class _WeddingTaskCard extends GetView<DashboardController> {
           label: item.isDone ? 'Mark not done' : 'Mark done',
         ),
         secondaryBackground: const _SwipeActionBackground(
-          alignment: Alignment.centerRight,
+          alignment: AlignmentDirectional.centerEnd,
           color: Color(0xFFC30B4A),
           icon: CupertinoIcons.delete,
           label: 'Delete',
@@ -817,7 +820,7 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
+                      LocalizedText(
                         item.title.isEmpty ? 'Untitled task' : item.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -843,7 +846,7 @@ class _WeddingTaskCard extends GetView<DashboardController> {
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
-                              formatDate(item.dueDate),
+                              formatDisplayDate(item.dueDate),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -890,7 +893,7 @@ class _SwipeActionBackground extends StatelessWidget {
     required this.label,
   });
 
-  final Alignment alignment;
+  final AlignmentGeometry alignment;
   final Color color;
   final IconData icon;
   final String label;
@@ -909,7 +912,7 @@ class _SwipeActionBackground extends StatelessWidget {
         children: [
           Icon(icon, color: Colors.white, size: 22),
           const SizedBox(height: 3),
-          Text(
+          LocalizedText(
             label,
             style: const TextStyle(
               color: Colors.white,
@@ -969,7 +972,7 @@ class _DaysLeftPill extends StatelessWidget {
               size: 20,
             )
           else
-            Text(
+            LocalizedText(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1025,8 +1028,8 @@ Future<void> _showReminderActions(BuildContext context, EventReminder item) {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
               child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
+                alignment: AlignmentDirectional.centerStart,
+                child: LocalizedText(
                   item.title.isEmpty ? 'Untitled task' : item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1045,7 +1048,9 @@ Future<void> _showReminderActions(BuildContext context, EventReminder item) {
                     : CupertinoIcons.check_mark_circled_solid,
                 color: const Color(0xFF0D7A3A),
               ),
-              title: Text(item.isDone ? 'Mark as not done' : 'Mark as done'),
+              title: LocalizedText(
+                item.isDone ? 'Mark as not done' : 'Mark as done',
+              ),
               onTap: () {
                 Navigator.pop(sheetContext);
                 controller.toggleReminder(item);
@@ -1057,7 +1062,7 @@ Future<void> _showReminderActions(BuildContext context, EventReminder item) {
                   Icons.receipt_long_rounded,
                   color: ThemeColors.primary,
                 ),
-                title: const Text('Add to Expense'),
+                title: const LocalizedText('Add to Expense'),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   controller.openExpenseAddFromReminder(item.id);
@@ -1065,7 +1070,7 @@ Future<void> _showReminderActions(BuildContext context, EventReminder item) {
               ),
             ListTile(
               leading: Icon(CupertinoIcons.pencil, color: ThemeColors.primary),
-              title: const Text('Edit reminder'),
+              title: const LocalizedText('Edit reminder'),
               onTap: () {
                 Navigator.pop(sheetContext);
                 showReminderDialog(context, reminder: item);
@@ -1076,7 +1081,7 @@ Future<void> _showReminderActions(BuildContext context, EventReminder item) {
                 CupertinoIcons.delete,
                 color: Color(0xFFC30B4A),
               ),
-              title: const Text('Delete reminder'),
+              title: const LocalizedText('Delete reminder'),
               onTap: () async {
                 Navigator.pop(sheetContext);
                 final confirmed = await _confirmDeleteReminder(context, item);
@@ -1097,22 +1102,22 @@ Future<bool?> _confirmDeleteReminder(BuildContext context, EventReminder item) {
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Delete reminder'),
-      content: Text(
+      title: const LocalizedText('Delete reminder'),
+      content: LocalizedText(
         'Delete ${item.title.isEmpty ? 'this reminder' : item.title}? '
         'This cannot be undone.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFC30B4A),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),

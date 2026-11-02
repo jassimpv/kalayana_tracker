@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
@@ -104,7 +105,7 @@ class _RsvpHero extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     'RSVP',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
@@ -114,7 +115,7 @@ class _RsvpHero extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  const LocalizedText(
                     'Track guests, events and confirmations',
                     style: TextStyle(
                       color: Color(0xFFF7C859),
@@ -178,7 +179,7 @@ class _GuestsTabBar extends GetView<GuestsController> {
                       color: ThemeColors.primary.withValues(alpha: 0.16),
                     ),
                   ),
-                  child: Text(
+                  child: LocalizedText(
                     entry.value,
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -370,7 +371,7 @@ class _StatCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 1),
-          Text(
+          LocalizedText(
             data.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -414,7 +415,7 @@ class _SurfaceCard extends StatelessWidget {
             children: [
               Icon(icon, color: ThemeColors.logoGold, size: 18),
               const SizedBox(width: 8),
-              Text(
+              LocalizedText(
                 title,
                 style: const TextStyle(
                   fontSize: 13.5,
@@ -465,7 +466,7 @@ class _ConfirmationRateRow extends StatelessWidget {
         ),
         const SizedBox(width: 16),
         const Expanded(
-          child: Text(
+          child: LocalizedText(
             'Share of all guest-event RSVP slots that have been confirmed so far.',
             style: TextStyle(
               fontSize: 12,
@@ -546,7 +547,7 @@ class _EventAttendanceRow extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(
+              LocalizedText(
                 '${summary.expectedAttendees} attending',
                 style: TextStyle(
                   fontSize: 11.5,

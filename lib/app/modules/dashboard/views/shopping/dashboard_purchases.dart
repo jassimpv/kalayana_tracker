@@ -189,7 +189,7 @@ class _ShoppingHero extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     'Shopping',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
@@ -201,7 +201,7 @@ class _ShoppingHero extends StatelessWidget {
                   const SizedBox(height: 4),
                   const SizedBox(
                     width: 230,
-                    child: Text(
+                    child: LocalizedText(
                       'Manage purchases, stay on budget',
                       style: TextStyle(
                         color: Color(0xFFF7C859),
@@ -431,7 +431,7 @@ class _PurchaseSearchField extends StatelessWidget {
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
-      decoration: InputDecoration(
+      decoration: LocalizedInputDecoration(
         hintText: 'Search items, vendors, categories...',
         hintStyle: TextStyle(
           color: ThemeColors.logoDeep.withValues(alpha: 0.36),
@@ -537,7 +537,7 @@ class _PurchaseFilterChip extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                LocalizedText(
                   label,
                   style: TextStyle(
                     color: selected ? Colors.white : ThemeColors.primary,
@@ -606,7 +606,7 @@ class _WishlistCallout extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   'No wishlist items yet',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -617,7 +617,7 @@ class _WishlistCallout extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 4),
-                Text(
+                LocalizedText(
                   'Add outfits, gifts, jewelry, decor, and booking purchases.',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -672,7 +672,7 @@ class _AddWishlistButton extends StatelessWidget {
             children: [
               Icon(CupertinoIcons.plus, color: Colors.white, size: 16),
               SizedBox(width: 6),
-              Text(
+              LocalizedText(
                 'Add Wishlist',
                 style: TextStyle(
                   color: Colors.white,
@@ -698,7 +698,7 @@ class _ShoppingListHeader extends StatelessWidget {
     return Row(
       children: [
         const Expanded(
-          child: Text(
+          child: LocalizedText(
             'Shopping List',
             style: TextStyle(
               color: ThemeColors.logoDeep,
@@ -740,7 +740,7 @@ class _ShoppingEmptyState extends StatelessWidget {
         children: [
           Icon(CupertinoIcons.bag, color: ThemeColors.primary, size: 34),
           const SizedBox(height: 10),
-          Text(
+          LocalizedText(
             title,
             style: const TextStyle(
               color: ThemeColors.logoDeep,
@@ -748,7 +748,10 @@ class _ShoppingEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(onPressed: onTap, child: const Text('Add Wishlist')),
+          TextButton(
+            onPressed: onTap,
+            child: const LocalizedText('Add Wishlist'),
+          ),
         ],
       ),
     );
@@ -773,7 +776,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
       child: Dismissible(
         key: ValueKey(item.id),
         background: _SwipeActionBackground(
-          alignment: Alignment.centerLeft,
+          alignment: AlignmentDirectional.centerStart,
           color: const Color(0xFF0D7A3A),
           icon: purchased
               ? CupertinoIcons.arrow_counterclockwise
@@ -781,7 +784,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
           label: purchased ? 'Mark pending' : 'Mark purchased',
         ),
         secondaryBackground: const _SwipeActionBackground(
-          alignment: Alignment.centerRight,
+          alignment: AlignmentDirectional.centerEnd,
           color: Color(0xFFC30B4A),
           icon: CupertinoIcons.delete,
           label: 'Delete',
@@ -845,7 +848,7 @@ class _PurchaseListCard extends GetView<DashboardController> {
                       Row(
                         children: [
                           Expanded(
-                            child: Text(
+                            child: LocalizedText(
                               item.name.isEmpty ? 'Untitled item' : item.name,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -946,7 +949,7 @@ class _CategoryPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: ThemeColors.primary.withValues(alpha: 0.16)),
       ),
-      child: Text(
+      child: LocalizedText(
         label.isEmpty ? 'General' : label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -992,7 +995,7 @@ class _ShoppingStatusPill extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Flexible(
-            child: Text(
+            child: LocalizedText(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1116,8 +1119,8 @@ Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
               child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
+                alignment: AlignmentDirectional.centerStart,
+                child: LocalizedText(
                   item.name.isEmpty ? 'Untitled item' : item.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1136,7 +1139,9 @@ Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
                     : CupertinoIcons.check_mark_circled_solid,
                 color: const Color(0xFF0D7A3A),
               ),
-              title: Text(purchased ? 'Mark as pending' : 'Mark as purchased'),
+              title: LocalizedText(
+                purchased ? 'Mark as pending' : 'Mark as purchased',
+              ),
               onTap: () {
                 Navigator.pop(sheetContext);
                 controller.togglePurchase(item);
@@ -1148,7 +1153,7 @@ Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
                   Icons.receipt_long_rounded,
                   color: ThemeColors.primary,
                 ),
-                title: const Text('Add to Expense'),
+                title: const LocalizedText('Add to Expense'),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   controller.openExpenseAddFromPurchase(item.id);
@@ -1156,7 +1161,7 @@ Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
               ),
             ListTile(
               leading: Icon(CupertinoIcons.pencil, color: ThemeColors.primary),
-              title: const Text('Edit item'),
+              title: const LocalizedText('Edit item'),
               onTap: () {
                 Navigator.pop(sheetContext);
                 showPurchaseDialog(context, purchase: item);
@@ -1167,7 +1172,7 @@ Future<void> _showPurchaseActions(BuildContext context, PurchaseItem item) {
                 CupertinoIcons.delete,
                 color: Color(0xFFC30B4A),
               ),
-              title: const Text('Delete item'),
+              title: const LocalizedText('Delete item'),
               onTap: () async {
                 Navigator.pop(sheetContext);
                 final confirmed = await _confirmDeletePurchase(context, item);
@@ -1188,22 +1193,22 @@ Future<bool?> _confirmDeletePurchase(BuildContext context, PurchaseItem item) {
   return showDialog<bool>(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      title: const Text('Delete item'),
-      content: Text(
+      title: const LocalizedText('Delete item'),
+      content: LocalizedText(
         'Delete ${item.name.isEmpty ? 'this item' : item.name}? '
         'This cannot be undone.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: const Color(0xFFC30B4A),
           ),
           onPressed: () => Navigator.pop(dialogContext, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),

@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/services/guest_rsvp_service.dart';
+import 'package:kalayanaexpresstracker/app/core/services/notification_service.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
@@ -64,6 +66,12 @@ class GuestsController extends GetxController {
   void _bindWorkspace(String? workspaceId) {
     if (workspaceId == null || workspaceId == _workspaceId) return;
     _workspaceId = workspaceId;
+    final dashboard = Get.find<DashboardController>();
+    NotificationService.instance.syncSchedule(
+      dashboard.data.value,
+      enabled: dashboard.notificationsEnabled,
+      events: const [],
+    );
     loading.value = true;
     _guestsSub?.cancel();
     _eventsSub?.cancel();
@@ -74,6 +82,12 @@ class GuestsController extends GetxController {
     }, onError: (e) => error.value = e.toString());
     _eventsSub = _repository.watchEvents(workspaceId).listen((value) {
       events.assignAll(value);
+      final dashboard = Get.find<DashboardController>();
+      NotificationService.instance.syncSchedule(
+        dashboard.data.value,
+        enabled: dashboard.notificationsEnabled,
+        events: value,
+      );
       if (selectedEventId.value == null && value.isNotEmpty) {
         selectedEventId.value = value.first.id;
       }
@@ -308,13 +322,37 @@ class GuestsController extends GetxController {
         "Please let us know if you'll be able to join us. We'd love to have you there!$mapsUrl";
   }
 
+  Future<void> manageRsvpLink(
+    String guestId,
+    String eventId, {
+    bool revoke = false,
+  }) async {
+    final workspace = _requireWorkspaceId;
+    final guest = guests.firstWhereOrNull((entry) => entry.id == guestId);
+    final event = events.firstWhereOrNull((entry) => entry.id == eventId);
+    if (guest == null || event == null) {
+      throw StateError('Guest or event is no longer available.');
+    }
+    final link = await GuestRsvpService.rotate(
+      workspace,
+      guest,
+      event,
+      revoke: revoke,
+    );
+    if (_requireWorkspaceId != workspace) {
+      throw StateError('Workspace changed.');
+    }
+    if (link != null) await Clipboard.setData(ClipboardData(text: link));
+  }
+
   Future<void> sendWhatsAppReminder(Guest guest, WeddingEvent event) async {
     final number = guest.effectiveWhatsapp.replaceAll(RegExp(r'[^0-9+]'), '');
     final message = buildReminderMessage(guest, event);
     final uri = Uri.parse(
       'https://wa.me/$number?text=${Uri.encodeComponent(message)}',
     );
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened) throw StateError('Unable to open WhatsApp.');
     await markReminderSent(guest.id, event.id);
   }
 

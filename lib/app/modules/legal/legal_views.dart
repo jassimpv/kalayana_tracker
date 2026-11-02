@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -77,11 +79,11 @@ class PrivacyPolicyView extends StatelessWidget {
       title: 'Privacy Policy',
       subtitle: 'How Wedding360 – Planner & Budget handles your information.',
       children: [
-        _PolicySection(title: 'Last updated', body: 'May 21, 2026'),
+        _PolicySection(title: 'Last updated', body: 'November 2, 2026'),
         _PolicySection(
           title: 'Information we collect',
           body:
-              'We collect the information you add to your account, including your name, email address, wedding profile details, expenses, reminders, purchases, notes, and optional invoice or receipt images that you choose to scan.',
+              'We collect the information you add to your account, including your name, email address, wedding profile details, expenses, reminders, purchases, guest and RSVP details, vendor contacts, checklists, gift money, family contributions, repayments, document links, notes, and optional invoice or receipt images that you choose to scan.',
         ),
         _PolicySection(
           title: 'How we use information',
@@ -96,12 +98,17 @@ class PrivacyPolicyView extends StatelessWidget {
         _PolicySection(
           title: 'Third-party processing',
           body:
-              'When you scan an invoice or receipt, the selected image may be sent to Google Gemini so invoice fields can be extracted for your expense entry. Google sign in and Firebase services are also provided by Google.',
+              'When you scan an invoice or receipt, the selected image may be sent to Z.ai so invoice fields can be extracted for your expense entry. Z.ai processes invoice images using an app-wide API key managed by the app owner. Invoice scanning configuration is stored in Firestore. Google sign in and Firebase services are provided by Google.',
         ),
         _PolicySection(
           title: 'Sharing',
           body:
               'We do not sell your personal information. Your data is used to provide the app features and may be processed by service providers needed to run authentication, cloud storage, and invoice extraction.',
+        ),
+        _PolicySection(
+          title: 'Guest invitation links and shared workspaces',
+          body:
+              'Planning records, including gifts and contributions, are visible to members of your shared workspace. Anyone with a guest RSVP link can view that invitation and submit a response for that guest. Links expire after 30 days and can be revoked or replaced by workspace members. Document links use your chosen storage provider and its access settings. Workspace backups contain personal planning data; save and share them privately.',
         ),
         _PolicySection(
           title: 'Data retention',
@@ -132,7 +139,7 @@ class TermsConditionsView extends StatelessWidget {
       title: 'Terms & Conditions',
       subtitle: 'Terms for using Wedding360 – Planner & Budget.',
       children: [
-        _PolicySection(title: 'Last updated', body: 'May 21, 2026'),
+        _PolicySection(title: 'Last updated', body: 'November 2, 2026'),
         _PolicySection(
           title: 'Use of the app',
           body:
@@ -219,7 +226,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
               controller: _passwordController,
               obscureText: true,
               enabled: !_loading && !_verified,
-              decoration: const InputDecoration(
+              decoration: const LocalizedInputDecoration(
                 labelText: 'Current password',
                 prefixIcon: Icon(Icons.lock_outline_rounded),
               ),
@@ -230,7 +237,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                   ? null
                   : () => _verifyWithPassword(user),
               icon: const Icon(Icons.verified_user_outlined),
-              label: Text(_verified ? 'Verified' : 'Verify password'),
+              label: LocalizedText(_verified ? 'Verified' : 'Verify password'),
             ),
           ],
           if (usesGoogle) ...[
@@ -239,7 +246,9 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                   ? null
                   : () => _verifyWithGoogle(user),
               icon: const Icon(Icons.g_mobiledata_rounded),
-              label: Text(_verified ? 'Verified' : 'Verify with Google'),
+              label: LocalizedText(
+                _verified ? 'Verified' : 'Verify with Google',
+              ),
             ),
           ],
           const SizedBox(height: 18),
@@ -258,7 +267,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.delete_forever_rounded),
-            label: const Text('Request account deletion'),
+            label: const LocalizedText('Request account deletion'),
           ),
           if (_message != null) ...[
             const SizedBox(height: 14),
@@ -319,14 +328,14 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Request Account Deletion'),
-        content: const Text(
+        title: const LocalizedText('Request Account Deletion'),
+        content: const LocalizedText(
           'Your account will be scheduled for deletion after 90 days. If you sign in during that period, the request will be cancelled. Continue?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -334,7 +343,7 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
               backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
-            child: const Text('Request deletion'),
+            child: const LocalizedText('Request deletion'),
           ),
         ],
       ),
@@ -350,8 +359,10 @@ class _DeleteAccountViewState extends State<DeleteAccountView> {
       if (!kIsWeb) await GoogleSignIn().signOut();
       Get.offAllNamed(AppRoutes.auth);
       Get.snackbar(
-        'Deletion requested',
-        'Your account is scheduled for deletion on ${_formatLegalDate(scheduledAt)}. Signing in before then cancels the request.',
+        TranslationService.translate('Deletion requested'),
+        TranslationService.translate(
+          'Your account is scheduled for deletion on ${_formatLegalDate(scheduledAt)}. Signing in before then cancels the request.',
+        ),
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 7),
@@ -430,13 +441,13 @@ class _LegalScaffold extends StatelessWidget {
                             size: 40,
                           ),
                           const SizedBox(height: 14),
-                          Text(
+                          LocalizedText(
                             title,
                             style: Theme.of(context).textTheme.headlineMedium
                                 ?.copyWith(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 8),
-                          Text(
+                          LocalizedText(
                             subtitle,
                             style: Theme.of(context).textTheme.bodyLarge
                                 ?.copyWith(
@@ -500,7 +511,7 @@ class _SupportLinkTile extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LocalizedText(
                         title,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: destructive ? color : null,
@@ -508,7 +519,7 @@ class _SupportLinkTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 3),
-                      Text(
+                      LocalizedText(
                         subtitle,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.outline,
@@ -560,14 +571,14 @@ class _PolicySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LocalizedText(
             title,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
-          Text(
+          LocalizedText(
             body,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               height: 1.45,
@@ -626,7 +637,7 @@ class _SignedOutDeletePanel extends StatelessWidget {
         FilledButton.icon(
           onPressed: () => Get.toNamed(AppRoutes.auth),
           icon: const Icon(Icons.login_rounded),
-          label: const Text('Sign in to continue'),
+          label: const LocalizedText('Sign in to continue'),
         ),
       ],
     );

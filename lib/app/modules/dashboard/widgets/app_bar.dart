@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 
@@ -87,11 +88,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         SizedBox(height: topInset),
                         if (showGreeting) ...[
                           Align(
-                            alignment: Alignment.centerLeft,
+                            alignment: AlignmentDirectional.centerStart,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                LocalizedText(
                                   greeting,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -103,7 +104,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                Text(
+                                LocalizedText(
                                   subtitle,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -129,7 +130,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                         horizontal: onBack == null ? 0 : 56,
                                       ),
                                       child: Center(
-                                        child: Text(
+                                        child: LocalizedText(
                                           title,
                                           textAlign: TextAlign.center,
                                           maxLines: 1,
@@ -145,7 +146,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   ),
                                   if (onBack != null)
                                     Align(
-                                      alignment: Alignment.centerLeft,
+                                      alignment:
+                                          AlignmentDirectional.centerStart,
                                       child: _HeaderIconButton(
                                         icon: Icons.arrow_back_rounded,
                                         tooltip: 'Overview',

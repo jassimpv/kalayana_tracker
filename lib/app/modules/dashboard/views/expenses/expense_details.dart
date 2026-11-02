@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -76,11 +77,11 @@ class ExpenseDetailPage extends GetView<DashboardController> {
                       tabs: const [
                         SizedBox(
                           height: 40,
-                          child: Center(child: Text('Overview')),
+                          child: Center(child: LocalizedText('Overview')),
                         ),
                         SizedBox(
                           height: 40,
-                          child: Center(child: Text('Timeline')),
+                          child: Center(child: LocalizedText('Timeline')),
                         ),
                       ],
                     ),

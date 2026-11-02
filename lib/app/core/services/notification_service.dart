@@ -1,3 +1,6 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/data/models/planning_entry.dart';
+import 'package:kalayanaexpresstracker/app/data/models/wedding_event.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -24,6 +27,8 @@ class NotificationService {
 
   final _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+  List<WeddingEvent> _events = const [];
+  Future<void> _scheduleQueue = Future.value();
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -56,9 +61,9 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >();
     await androidPlugin?.createNotificationChannel(
-      const AndroidNotificationChannel(
+      AndroidNotificationChannel(
         _channelId,
-        _channelName,
+        TranslationService.translate(_channelName),
         description: 'Upcoming reminders and pending payment due dates',
       ),
     );
@@ -80,11 +85,32 @@ class NotificationService {
   }
 
   Future<void> cancelAll() {
+    _events = const [];
     if (kIsWeb) return Future.value();
     return _plugin.cancelAll();
   }
 
-  Future<void> syncSchedule(WeddingData data, {required bool enabled}) async {
+  Future<void> syncSchedule(
+    WeddingData data, {
+    required bool enabled,
+    List<WeddingEvent>? events,
+  }) {
+    if (events != null) _events = List.of(events);
+    final eventSnapshot = List<WeddingEvent>.of(_events);
+    final operation = _scheduleQueue.then(
+      (_) => _syncSchedule(data, enabled: enabled, events: eventSnapshot),
+    );
+    _scheduleQueue = operation.catchError((Object error) {
+      debugPrint('Notification scheduling failed: $error');
+    });
+    return _scheduleQueue;
+  }
+
+  Future<void> _syncSchedule(
+    WeddingData data, {
+    required bool enabled,
+    required List<WeddingEvent> events,
+  }) async {
     if (kIsWeb) return;
     await _plugin.cancelAll();
     if (!enabled) return;
@@ -92,7 +118,7 @@ class NotificationService {
     for (final reminder in data.reminders) {
       if (reminder.isDone) continue;
       await _scheduleSlots(
-        itemId: reminder.id,
+        itemId: 'reminder:${reminder.id}',
         dueDate: reminder.dueDate,
         dayBeforeSlot: _slotReminderDayBefore,
         sameDaySlot: _slotReminderSameDay,
@@ -101,12 +127,56 @@ class NotificationService {
       );
     }
 
+    for (final purchase in data.purchases) {
+      if (purchase.dueDate == null ||
+          purchase.status == 'Purchased' ||
+          purchase.status == 'Cancelled') {
+        continue;
+      }
+      await _scheduleSlots(
+        itemId: 'purchase:${purchase.id}',
+        dueDate: purchase.dueDate!,
+        dayBeforeSlot: 0,
+        sameDaySlot: 1,
+        title: 'Shopping due: ${purchase.name}',
+        body: purchase.category,
+      );
+    }
+    for (final entry in data.planning) {
+      if (entry.date == null ||
+          entry.isDone ||
+          (entry.kind != PlanningKind.task &&
+              entry.kind != PlanningKind.vendor)) {
+        continue;
+      }
+      await _scheduleSlots(
+        itemId: '${entry.kind.name}:${entry.id}',
+        dueDate: entry.date!,
+        dayBeforeSlot: 0,
+        sameDaySlot: 1,
+        title:
+            '${entry.kind == PlanningKind.task ? 'Task' : 'Vendor follow-up'}: ${entry.name}',
+        body: entry.notes,
+      );
+    }
+    for (final event in events) {
+      if (event.date == null) continue;
+      await _scheduleSlots(
+        itemId: 'event:${event.id}',
+        dueDate: event.date!,
+        dayBeforeSlot: 0,
+        sameDaySlot: 1,
+        title: 'Wedding event: ${event.name}',
+        body: event.venue,
+      );
+    }
+
     for (final expense in data.expenses) {
       if (expense.isPaid) continue;
       final dueDate = expense.dueDate;
       if (dueDate == null) continue;
       await _scheduleSlots(
-        itemId: expense.id,
+        itemId: 'expense:${expense.id}',
         dueDate: dueDate,
         dayBeforeSlot: _slotExpenseDayBefore,
         sameDaySlot: _slotExpenseSameDay,
@@ -149,8 +219,8 @@ class NotificationService {
     if (when.isBefore(DateTime.now())) return;
     await _plugin.zonedSchedule(
       id: id,
-      title: title,
-      body: body,
+      title: TranslationService.translate(title),
+      body: TranslationService.translate(body),
       scheduledDate: tz.TZDateTime.from(when, tz.local),
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(_channelId, _channelName),
@@ -161,7 +231,10 @@ class NotificationService {
   }
 
   int _idFor(String itemId, int slot) {
-    final base = itemId.hashCode & 0x0FFFFFFF;
-    return base * 4 + slot;
+    var hash = 2166136261;
+    for (final unit in '$itemId:$slot'.codeUnits) {
+      hash = ((hash ^ unit) * 16777619) & 0x7fffffff;
+    }
+    return hash;
   }
 }

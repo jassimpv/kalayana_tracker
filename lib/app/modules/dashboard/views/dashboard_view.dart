@@ -1,3 +1,8 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/language_widget.dart';
+import 'package:kalayanaexpresstracker/app/data/models/planning_entry.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/planning/planning_page.dart';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -237,7 +242,7 @@ class _DesktopDashboardScaffold extends StatelessWidget {
                 foregroundColor: Colors.white,
                 elevation: 10,
                 icon: const Icon(CupertinoIcons.plus),
-                label: const Text('Add'),
+                label: const LocalizedText('Add'),
               ),
       ),
     );
@@ -297,7 +302,7 @@ class _DesktopDashboardAppBar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LocalizedText(
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -308,7 +313,7 @@ class _DesktopDashboardAppBar extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    LocalizedText(
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -440,7 +445,7 @@ class _DesktopOverviewAppHeader extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            LocalizedText(
                               'Hi ${firstName == '-' ? 'Jassim' : firstName}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -452,7 +457,7 @@ class _DesktopOverviewAppHeader extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
+                            LocalizedText(
                               "Let's plan your perfect day",
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.92),
@@ -478,7 +483,7 @@ class _DesktopOverviewAppHeader extends StatelessWidget {
                   ),
                   const Spacer(),
                   Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: AlignmentDirectional.centerStart,
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 760),
                       child: _WeddingIdentityCard(
@@ -680,14 +685,14 @@ class _StatusScaffold extends StatelessWidget {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(height: 14),
-                  Text(
+                  LocalizedText(
                     title,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(message, textAlign: TextAlign.center),
+                  LocalizedText(message, textAlign: TextAlign.center),
                 ],
               ),
             ),

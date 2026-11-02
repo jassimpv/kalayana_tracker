@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -98,7 +99,7 @@ class BottomNav extends StatelessWidget {
                                 ? FontWeight.w600
                                 : FontWeight.w500,
                           ),
-                          child: Text(
+                          child: LocalizedText(
                             item.label,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -155,7 +156,7 @@ class DashboardSideMenu extends StatelessWidget {
                   const AppLogo(size: 48, padding: 4),
                   const SizedBox(width: 12),
                   const Expanded(
-                    child: Text(
+                    child: LocalizedText(
                       'Kalyana',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -275,7 +276,7 @@ class _SideMenuItem extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LocalizedText(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

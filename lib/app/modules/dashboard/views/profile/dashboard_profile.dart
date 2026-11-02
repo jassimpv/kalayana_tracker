@@ -54,6 +54,12 @@ class ProfilePanel extends GetView<DashboardController> {
                           ? () => showProfileDialog(context)
                           : null,
                     ),
+                    const _ProfileMenuRow(
+                      icon: Icons.language,
+                      label: 'Language',
+                      subtitle: 'English / العربية',
+                      trailing: LanguageWidget(),
+                    ),
                     _ProfileMenuRow(
                       icon: AppConfig.appCurrencyIcon,
                       label: 'Currency',
@@ -82,6 +88,29 @@ class ProfilePanel extends GetView<DashboardController> {
                         trailing: Switch(
                           value: controller.notificationsEnabled,
                           onChanged: controller.setNotificationsEnabled,
+                        ),
+                      ),
+                    ),
+                    _ProfileMenuRow(
+                      icon: Icons.card_giftcard,
+                      label: 'Gift Money Received',
+                      subtitle: 'Record gifts and see total money received',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const PlanningPage(
+                            initialKind: PlanningKind.gift,
+                          ),
+                        ),
+                      ),
+                    ),
+                    _ProfileMenuRow(
+                      icon: Icons.checklist_rounded,
+                      label: 'Wedding Planning',
+                      subtitle:
+                          'Vendors, checklist, contributions, documents & budgets',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const PlanningPage(),
                         ),
                       ),
                     ),
@@ -182,16 +211,16 @@ Future<void> _confirmLogout(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Logout'),
-      content: const Text('Are you sure you want to sign out?'),
+      title: const LocalizedText('Logout'),
+      content: const LocalizedText('Are you sure you want to sign out?'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Logout'),
+          child: const LocalizedText('Logout'),
         ),
       ],
     ),
@@ -201,8 +230,8 @@ Future<void> _confirmLogout(
     await controller.logout();
   } catch (error) {
     Get.snackbar(
-      'Logout failed',
-      error.toString(),
+      TranslationService.translate('Logout failed'),
+      TranslationService.translate(error.toString()),
       snackPosition: SnackPosition.BOTTOM,
     );
   }
@@ -230,8 +259,10 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
     final message = _controller.text.trim();
     if (message.isEmpty) {
       Get.snackbar(
-        'Required',
-        'Please write your feedback before submitting.',
+        TranslationService.translate('Required'),
+        TranslationService.translate(
+          'Please write your feedback before submitting.',
+        ),
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -250,15 +281,17 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
       });
       if (mounted) Navigator.pop(context);
       Get.snackbar(
-        'Thank you!',
-        'Your feedback has been submitted.',
+        TranslationService.translate('Thank you!'),
+        TranslationService.translate('Your feedback has been submitted.'),
         snackPosition: SnackPosition.BOTTOM,
       );
     } catch (_, e) {
       setState(() => _submitting = false);
       Get.snackbar(
-        'Error',
-        'Failed to submit feedback. Please try again. $e',
+        TranslationService.translate('Error'),
+        TranslationService.translate(
+          'Failed to submit feedback. Please try again. $e',
+        ),
         snackPosition: SnackPosition.BOTTOM,
       );
     }
@@ -288,14 +321,14 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
+          LocalizedText(
             'Send Feedback',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
-          Text(
+          LocalizedText(
             'How would you rate your experience?',
             style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
           ),
@@ -326,7 +359,7 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
             maxLines: 4,
             minLines: 3,
             maxLength: 500,
-            decoration: InputDecoration(
+            decoration: LocalizedInputDecoration(
               hintText: 'Share your thoughts, suggestions or issues…',
               filled: true,
               fillColor: const Color(0xFFFAF5F2),
@@ -367,7 +400,7 @@ class _FeedbackSheetState extends State<_FeedbackSheet> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Submit Feedback'),
+                  : const LocalizedText('Submit Feedback'),
             ),
           ),
         ],
@@ -477,7 +510,7 @@ class ReportsPanel extends GetView<DashboardController> {
                                             ),
                                           ),
                                         ),
-                                        Text(
+                                        LocalizedText(
                                           'Total',
                                           style: TextStyle(
                                             color: ThemeColors.logoDeep
@@ -749,7 +782,7 @@ class _ReportExportActions extends StatelessWidget {
             ),
             style: _reportExportButtonStyle(),
             icon: const Icon(Icons.receipt_long_rounded, size: 18),
-            label: const Text(
+            label: const LocalizedText(
               'Expenses',
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
@@ -763,7 +796,7 @@ class _ReportExportActions extends StatelessWidget {
             ),
             style: _reportExportButtonStyle(),
             icon: const Icon(Icons.payments_rounded, size: 18),
-            label: const Text(
+            label: const LocalizedText(
               'Payment Expenses',
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
             ),
@@ -872,7 +905,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
+                        LocalizedText(
                           'Share this key with family or friends to sync one wedding plan.',
                           style: TextStyle(
                             color: ThemeColors.logoDeep.withValues(alpha: 0.72),
@@ -888,7 +921,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                                     ? null
                                     : () => _copyJoinKey(joinKey),
                                 icon: const Icon(Icons.ios_share_rounded),
-                                label: const Text('Share'),
+                                label: const LocalizedText('Share'),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: ThemeColors.primary,
                                   foregroundColor: Colors.white,
@@ -911,7 +944,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                                       ? null
                                       : () => _showJoinWorkspaceDialog(context),
                                   icon: const Icon(Icons.group_add_outlined),
-                                  label: const Text('Join'),
+                                  label: const LocalizedText('Join'),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: ThemeColors.primary,
                                     minimumSize: const Size.fromHeight(46),
@@ -960,7 +993,7 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
+                  child: const LocalizedText(
                     'View Activity Logs',
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
                   ),
@@ -1354,7 +1387,7 @@ class _ProfileMenuRow extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LocalizedText(
                           label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1366,7 +1399,7 @@ class _ProfileMenuRow extends StatelessWidget {
                         ),
                         if (subtitle != null) ...[
                           const SizedBox(height: 3),
-                          Text(
+                          LocalizedText(
                             subtitle!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -1505,7 +1538,7 @@ class _ReportHeroCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              const LocalizedText(
                 'Total Budget',
                 style: TextStyle(
                   color: Colors.white,
@@ -1611,7 +1644,7 @@ class _HeroStat extends StatelessWidget {
           children: [
             Icon(icon, color: Colors.white.withValues(alpha: 0.85), size: 13),
             const SizedBox(width: 4),
-            Text(
+            LocalizedText(
               label,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.78),
@@ -1661,7 +1694,7 @@ class _ReportTitle extends StatelessWidget {
           ),
           const SizedBox(width: 10),
         ],
-        Text(
+        LocalizedText(
           text,
           style: const TextStyle(
             fontSize: 14,
@@ -1775,7 +1808,7 @@ class _ReportInfoTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   item.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1928,7 +1961,7 @@ class _ReportListRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1938,7 +1971,7 @@ class _ReportListRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
+                LocalizedText(
                   subtitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -2009,7 +2042,7 @@ class _CategoryLegend extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LocalizedText(
                   entry.label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -2105,7 +2138,7 @@ class _CollaboratorList extends StatelessWidget {
                     ),
                     const SizedBox(width: 14),
                     Expanded(
-                      child: Text(
+                      child: LocalizedText(
                         isSelf
                             ? '${collaborator.name} (You)'
                             : collaborator.name,
@@ -2136,7 +2169,7 @@ class _CollaboratorList extends StatelessWidget {
                           foregroundColor: ThemeColors.primary,
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                         ),
-                        child: Text(canRemove ? 'Remove' : 'Leave'),
+                        child: LocalizedText(canRemove ? 'Remove' : 'Leave'),
                       ),
                     ],
                   ],
@@ -2361,11 +2394,11 @@ Future<void> _showJoinWorkspaceDialog(BuildContext context) async {
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Join Workspace'),
+        title: const LocalizedText('Join Workspace'),
         content: TextField(
           controller: codeController,
           textCapitalization: TextCapitalization.characters,
-          decoration: const InputDecoration(
+          decoration: const LocalizedInputDecoration(
             labelText: 'Join code',
             hintText: 'KALY-XXXX-XXXX',
           ),
@@ -2373,7 +2406,7 @@ Future<void> _showJoinWorkspaceDialog(BuildContext context) async {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () {
@@ -2381,7 +2414,7 @@ Future<void> _showJoinWorkspaceDialog(BuildContext context) async {
               Navigator.of(context).pop();
               controller.joinWorkspace(code);
             },
-            child: const Text('Join'),
+            child: const LocalizedText('Join'),
           ),
         ],
       );
@@ -2397,19 +2430,19 @@ Future<void> _confirmRegenerateJoinKey(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Generate new join key?'),
-      content: const Text(
+      title: const LocalizedText('Generate new join key?'),
+      content: const LocalizedText(
         'The current join key will stop working. Anyone you previously '
         'shared it with will no longer be able to use it to join.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Generate'),
+          child: const LocalizedText('Generate'),
         ),
       ],
     ),
@@ -2426,19 +2459,19 @@ Future<void> _confirmLeaveWorkspace(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Leave workspace?'),
-      content: const Text(
+      title: const LocalizedText('Leave workspace?'),
+      content: const LocalizedText(
         "You'll lose access to this shared wedding plan until you rejoin "
         'with a join key.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Leave'),
+          child: const LocalizedText('Leave'),
         ),
       ],
     ),
@@ -2456,18 +2489,18 @@ Future<void> _confirmRemoveCollaborator(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('Remove ${collaborator.name}?'),
-      content: const Text(
+      title: LocalizedText('Remove ${collaborator.name}?'),
+      content: const LocalizedText(
         'They will lose access to this shared wedding plan immediately.',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Remove'),
+          child: const LocalizedText('Remove'),
         ),
       ],
     ),
@@ -2609,7 +2642,21 @@ class _CurrencyPickerPanelState extends State<_CurrencyPickerPanel> {
             child: _CurrencySearchField(
               controller: _search,
               onChanged: (value) {
-                setState(() => _results = CurrencySymbolApi.search(value));
+                setState(() {
+                  final query = value.trim().toLowerCase();
+                  final canonical = CurrencySymbolApi.search(
+                    value,
+                  ).map((option) => option.code).toSet();
+                  _results = CurrencySymbolApi.options
+                      .where(
+                        (option) =>
+                            canonical.contains(option.code) ||
+                            TranslationService.translate(
+                              option.name,
+                            ).toLowerCase().contains(query),
+                      )
+                      .toList();
+                });
               },
             ),
           ),
@@ -2698,7 +2745,7 @@ class _CurrencyPickerHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   'Choose currency',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -2710,7 +2757,7 @@ class _CurrencyPickerHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  '${current.code}  ${current.name}',
+                  '${current.code}  ${TranslationService.translate(current.name)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -2720,7 +2767,7 @@ class _CurrencyPickerHeader extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LocalizedText(
                   'Currently active across your budget',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -2760,7 +2807,7 @@ class _CurrencySearchField extends StatelessWidget {
         fontSize: 13,
         fontWeight: FontWeight.w600,
       ),
-      decoration: InputDecoration(
+      decoration: LocalizedInputDecoration(
         hintText: 'Search code, name, or symbol',
         hintStyle: TextStyle(
           color: ThemeColors.logoDeep.withValues(alpha: 0.42),
@@ -2881,7 +2928,7 @@ class _CurrencyOptionTile extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
+                          child: LocalizedText(
                             currency.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -2897,7 +2944,7 @@ class _CurrencyOptionTile extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 5),
-                    Text(
+                    LocalizedText(
                       'Symbol ${currency.symbol}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -2952,7 +2999,7 @@ class _CurrencyEmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            const LocalizedText(
               'No currency found',
               style: TextStyle(
                 color: ThemeColors.logoDeep,
@@ -2960,7 +3007,7 @@ class _CurrencyEmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 5),
-            Text(
+            LocalizedText(
               'Try searching by code, country currency name, or symbol.',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -2978,8 +3025,8 @@ class _CurrencyEmptyState extends StatelessWidget {
 
 void _showProfileSnack(String message) {
   Get.snackbar(
-    'Profile',
-    message,
+    TranslationService.translate('Profile'),
+    TranslationService.translate(message),
     snackPosition: SnackPosition.BOTTOM,
     margin: const EdgeInsets.all(16),
   );

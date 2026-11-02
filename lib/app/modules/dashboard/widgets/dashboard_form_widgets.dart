@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
@@ -204,7 +205,7 @@ class DashboardFormIntroCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   title,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: ThemeColors.textPrimary,
@@ -213,7 +214,7 @@ class DashboardFormIntroCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
+                LocalizedText(
                   subtitle,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: ThemeColors.textSecondary,
@@ -301,7 +302,7 @@ class DashboardDatePickerTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     title,
                     style: theme.textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.w600,

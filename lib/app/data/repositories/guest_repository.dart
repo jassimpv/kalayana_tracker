@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:kalayanaexpresstracker/app/core/services/guest_rsvp_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:kalayanaexpresstracker/app/data/models/guest.dart';
 import 'package:kalayanaexpresstracker/app/data/models/rsvp_response.dart';
@@ -103,18 +105,61 @@ class FirestoreGuestRepository implements GuestRepository {
 
   @override
   Stream<List<RsvpResponse>> watchResponses(String workspaceId) {
-    return _responsesCollection(workspaceId).snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => RsvpResponse.fromJson(doc.data()))
-          .toList();
-    });
+    late final StreamController<List<RsvpResponse>> output;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? manualSub;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? publicSub;
+    var manual = <RsvpResponse>[];
+    var guestResponses = <RsvpResponse>[];
+    void emit() {
+      final combined = {
+        for (final response in manual)
+          RsvpResponse.docId(response.guestId, response.eventId): response,
+      };
+      for (final response in guestResponses) {
+        final id = RsvpResponse.docId(response.guestId, response.eventId);
+        final existing = combined[id];
+        if (existing == null ||
+            existing.responseDate == null ||
+            response.responseDate!.isAfter(existing.responseDate!)) {
+          combined[id] = response.copyWith(
+            lastReminderSentAt: existing?.lastReminderSentAt,
+          );
+        }
+      }
+      if (!output.isClosed) output.add(combined.values.toList());
+    }
+
+    output = StreamController<List<RsvpResponse>>(
+      onListen: () {
+        manualSub = _responsesCollection(workspaceId).snapshots().listen((
+          snapshot,
+        ) {
+          manual = snapshot.docs
+              .map((doc) => RsvpResponse.fromJson(doc.data()))
+              .toList();
+          emit();
+        }, onError: output.addError);
+        publicSub = GuestRsvpService.invitations
+            .where('workspaceId', isEqualTo: workspaceId)
+            .snapshots()
+            .listen((snapshot) {
+              guestResponses = snapshot.docs
+                  .map((doc) => GuestRsvpService.response(doc.data()))
+                  .whereType<RsvpResponse>()
+                  .toList();
+              emit();
+            }, onError: output.addError);
+      },
+      onCancel: () async {
+        await manualSub?.cancel();
+        await publicSub?.cancel();
+      },
+    );
+    return output.stream;
   }
 
   @override
-  Future<void> upsertResponse(
-    String workspaceId,
-    RsvpResponse response,
-  ) async {
+  Future<void> upsertResponse(String workspaceId, RsvpResponse response) async {
     await _responsesCollection(workspaceId)
         .doc(RsvpResponse.docId(response.guestId, response.eventId))
         .set(response.toJson(), SetOptions(merge: true));

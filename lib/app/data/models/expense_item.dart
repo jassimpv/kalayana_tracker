@@ -22,6 +22,8 @@ class ExpenseItem {
   final List<PaymentSplit> paymentSplit;
   final String sourceShoppingItemId;
   final String sourceReminderId;
+  final String vendorId;
+  final double repaymentPaidAmount;
 
   ExpenseItem({
     this.id = '',
@@ -45,6 +47,8 @@ class ExpenseItem {
     this.paymentSplit = const [],
     this.sourceShoppingItemId = '',
     this.sourceReminderId = '',
+    this.vendorId = '',
+    this.repaymentPaidAmount = 0,
   }) : createdDate = createdDate ?? DateTime.now(),
        updatedDate = updatedDate ?? createdDate ?? DateTime.now();
 
@@ -118,6 +122,8 @@ class ExpenseItem {
       paymentSplit: paymentSplit,
       sourceShoppingItemId: json['sourceShoppingItemId']?.toString() ?? '',
       sourceReminderId: json['sourceReminderId']?.toString() ?? '',
+      vendorId: json['vendorId']?.toString() ?? '',
+      repaymentPaidAmount: _toDouble(json['repaymentPaidAmount']),
     );
   }
 
@@ -148,6 +154,8 @@ class ExpenseItem {
       'paymentSplit': paymentSplit.map((item) => item.toJson()).toList(),
       'sourceShoppingItemId': sourceShoppingItemId,
       'sourceReminderId': sourceReminderId,
+      'vendorId': vendorId,
+      'repaymentPaidAmount': repaymentPaidAmount,
     };
   }
 
@@ -182,7 +190,9 @@ class ExpenseItem {
       return 0;
     }
 
-    return repaymentAmount;
+    return (repaymentAmount - repaymentPaidAmount)
+        .clamp(0, double.infinity)
+        .toDouble();
   }
 
   double get repaymentAmount =>
@@ -270,6 +280,8 @@ class ExpenseItem {
     List<PaymentSplit>? paymentSplit,
     String? sourceShoppingItemId,
     String? sourceReminderId,
+    String? vendorId,
+    double? repaymentPaidAmount,
   }) {
     return ExpenseItem(
       id: id ?? this.id,
@@ -293,6 +305,8 @@ class ExpenseItem {
       paymentSplit: paymentSplit ?? this.paymentSplit,
       sourceShoppingItemId: sourceShoppingItemId ?? this.sourceShoppingItemId,
       sourceReminderId: sourceReminderId ?? this.sourceReminderId,
+      vendorId: vendorId ?? this.vendorId,
+      repaymentPaidAmount: repaymentPaidAmount ?? this.repaymentPaidAmount,
     );
   }
 }

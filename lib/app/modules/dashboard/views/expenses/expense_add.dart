@@ -1,3 +1,7 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/invoice_scanner_card.dart';
+import 'package:kalayanaexpresstracker/app/data/models/planning_entry.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
@@ -29,11 +33,13 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
   final _otherPersonNameController = TextEditingController();
 
   String _category = expenseCategories.first;
+  String _vendorId = '';
   DateTime? _dueDate;
   RepayPerson? _paidByPerson;
   bool _needsRepayment = false;
   bool _paidByOther = false;
   bool _isSaving = false;
+  bool _isScanning = false;
   String _sourceShoppingItemId = '';
   String _sourceReminderId = '';
   ExpenseItem? _editingExpense;
@@ -58,6 +64,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
       );
       if (expense == null) return;
       _editingExpense = expense;
+      _vendorId = expense.vendorId;
       _nameController.text = expense.name;
       _totalController.text = moneyText(expense.totalAmount);
       _paidController.text = moneyText(expense.paidAmount);
@@ -137,50 +144,62 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
   Future<void> _saveExpense() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-
-    var paidByPerson = _paidByPerson;
-    var needsRepayment = _needsRepayment;
-    if (_paidByOther) {
-      paidByPerson = await controller.findOrCreateRepayPerson(
-        _otherPersonNameController.text,
-      );
-      if (paidByPerson == null) {
-        if (!mounted) return;
-        setState(() => _isSaving = false);
-        return;
+    try {
+      var paidByPerson = _paidByPerson;
+      var needsRepayment = _needsRepayment;
+      if (_paidByOther) {
+        paidByPerson = await controller.findOrCreateRepayPerson(
+          _otherPersonNameController.text,
+        );
+        if (paidByPerson == null) {
+          if (!mounted) return;
+          setState(() => _isSaving = false);
+          return;
+        }
+        needsRepayment = true;
       }
-      needsRepayment = true;
+
+      final repaymentPerson = needsRepayment ? paidByPerson?.name ?? '' : '';
+
+      final expense = buildExpense(
+        existing: _editingExpense,
+        name: _nameController.text,
+        category: _category,
+        total: _totalController.text,
+        paid: _paidController.text,
+        paidBy: paidByPerson?.name ?? '',
+        paidByPersonId: paidByPerson?.id ?? '',
+        paidByPersonName: paidByPerson?.name ?? '',
+        repayPerson: repaymentPerson,
+        needsRepayment: needsRepayment,
+        repayAmount: '',
+        dueDate: _dueDate,
+        notes: _notesController.text,
+        sourceShoppingItemId: _sourceShoppingItemId,
+        sourceReminderId: _sourceReminderId,
+      ).copyWith(vendorId: _vendorId);
+
+      await controller.saveExpense(expense, expected: _editingExpense);
+      if (_editingExpense == null && _sourceShoppingItemId.isNotEmpty) {
+        await controller.linkPurchaseToExpense(
+          _sourceShoppingItemId,
+          expense.id,
+        );
+      } else if (_editingExpense == null && _sourceReminderId.isNotEmpty) {
+        await controller.linkReminderToExpense(_sourceReminderId, expense.id);
+      }
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      controller.closeDashboardSubPage();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: LocalizedText('Unable to save: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
-
-    final repaymentPerson = needsRepayment ? paidByPerson?.name ?? '' : '';
-
-    final expense = buildExpense(
-      existing: _editingExpense,
-      name: _nameController.text,
-      category: _category,
-      total: _totalController.text,
-      paid: _paidController.text,
-      paidBy: paidByPerson?.name ?? '',
-      paidByPersonId: paidByPerson?.id ?? '',
-      paidByPersonName: paidByPerson?.name ?? '',
-      repayPerson: repaymentPerson,
-      needsRepayment: needsRepayment,
-      repayAmount: '',
-      dueDate: _dueDate,
-      notes: _notesController.text,
-      sourceShoppingItemId: _sourceShoppingItemId,
-      sourceReminderId: _sourceReminderId,
-    );
-
-    await controller.saveExpense(expense);
-    if (_editingExpense == null && _sourceShoppingItemId.isNotEmpty) {
-      await controller.linkPurchaseToExpense(_sourceShoppingItemId, expense.id);
-    } else if (_editingExpense == null && _sourceReminderId.isNotEmpty) {
-      await controller.linkReminderToExpense(_sourceReminderId, expense.id);
-    }
-    if (!mounted) return;
-    setState(() => _isSaving = false);
-    controller.closeDashboardSubPage();
   }
 
   String get _repaymentToText {
@@ -209,7 +228,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
         footer: SizedBox(
           height: 50,
           child: FilledButton.icon(
-            onPressed: _isSaving ? null : _saveExpense,
+            onPressed: _isSaving || _isScanning ? null : _saveExpense,
             icon: _isSaving
                 ? const SizedBox(
                     height: 18,
@@ -220,7 +239,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                     ),
                   )
                 : const Icon(Icons.check_rounded),
-            label: Text(_isSaving ? 'Saving' : 'Save Expense'),
+            label: LocalizedText(_isSaving ? 'Saving' : 'Save Expense'),
           ),
         ),
         children: [
@@ -236,6 +255,25 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                 : 'Track totals, paid amount, due date, and money owed.',
           ),
           const SizedBox(height: 12),
+          InvoiceScannerCard(
+            enabled: !_isSaving,
+            onBusyChanged: (value) {
+              if (mounted) setState(() => _isScanning = value);
+            },
+            onScanned: (invoice) => setState(() {
+              _nameController.text = invoice.expenseName;
+              _totalController.text = moneyText(invoice.totalAmount);
+              _paidController.text = moneyText(
+                invoice.paidAmount.clamp(0, invoice.totalAmount).toDouble(),
+              );
+              _notesController.text = invoice.billNotes;
+              _category = expenseCategories.contains(invoice.category)
+                  ? invoice.category
+                  : expenseCategories.first;
+              _dueDate = invoice.dueDate ?? invoice.invoiceDate;
+            }),
+          ),
+          const SizedBox(height: 12),
           DashboardFormCard(
             children: [
               Form(
@@ -244,7 +282,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                   children: [
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
+                      decoration: const LocalizedInputDecoration(
                         labelText: 'Expense name',
                         prefixIcon: Icon(Icons.storefront_rounded),
                       ),
@@ -253,7 +291,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
                       initialValue: _category,
-                      decoration: const InputDecoration(
+                      decoration: const LocalizedInputDecoration(
                         labelText: 'Category',
                         prefixIcon: Icon(Icons.category_rounded),
                       ),
@@ -261,7 +299,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                           .map(
                             (value) => DropdownMenuItem(
                               value: value,
-                              child: Text(value),
+                              child: LocalizedText(value),
                             ),
                           )
                           .toList(),
@@ -276,7 +314,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: InputDecoration(
+                      decoration: LocalizedInputDecoration(
                         labelText: 'Total amount',
                         prefixIcon: Icon(AppConfig.appCurrencyIcon),
                       ),
@@ -288,7 +326,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: const LocalizedInputDecoration(
                         labelText: 'Paid amount',
                         prefixIcon: Icon(Icons.payments_rounded),
                       ),
@@ -322,7 +360,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                       TextFormField(
                         controller: _otherPersonNameController,
                         textCapitalization: TextCapitalization.words,
-                        decoration: const InputDecoration(
+                        decoration: const LocalizedInputDecoration(
                           labelText: 'Person name',
                           hintText: 'Enter person name',
                           prefixIcon: Icon(Icons.person_add_alt_1_rounded),
@@ -342,7 +380,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                         color: Colors.transparent,
                         child: SwitchListTile(
                           contentPadding: EdgeInsets.zero,
-                          title: const Text('I owe this person'),
+                          title: const LocalizedText('I owe this person'),
                           value: _needsRepayment,
                           onChanged: (value) =>
                               setState(() => _needsRepayment = value),
@@ -362,19 +400,47 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
                       title: 'Due date',
                       value: _dueDate == null
                           ? 'Choose due date'
-                          : formatDate(_dueDate!),
+                          : formatDisplayDate(_dueDate!),
                       onTap: _pickDueDate,
                       onClear: _dueDate == null
                           ? null
                           : () => setState(() => _dueDate = null),
                     ),
                     const SizedBox(height: 12),
+                    Obx(() {
+                      final vendors = controller.data.value.entries(
+                        PlanningKind.vendor,
+                      );
+                      return DropdownButtonFormField<String>(
+                        initialValue:
+                            vendors.any((entry) => entry.id == _vendorId)
+                            ? _vendorId
+                            : '',
+                        decoration: const LocalizedInputDecoration(
+                          labelText: 'Vendor',
+                        ),
+                        items: [
+                          const DropdownMenuItem(
+                            value: '',
+                            child: LocalizedText('No vendor'),
+                          ),
+                          ...vendors.map(
+                            (entry) => DropdownMenuItem(
+                              value: entry.id,
+                              child: Text(entry.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: (value) => _vendorId = value ?? '',
+                      );
+                    }),
+                    const SizedBox(height: 12),
                     TextFormField(
                       controller: _notesController,
                       minLines: 3,
                       maxLines: 5,
                       textAlignVertical: TextAlignVertical.top,
-                      decoration: const InputDecoration(
+                      decoration: const LocalizedInputDecoration(
                         labelText: 'Notes',
                         alignLabelWithHint: true,
                       ),
@@ -459,7 +525,7 @@ class _RepaymentAutoRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LocalizedText(
                 label,
                 style: TextStyle(
                   color: scheme.outline,
@@ -487,7 +553,7 @@ class _RepaymentAutoRow extends StatelessWidget {
 
 String? _required(String? value) {
   if (value == null || value.trim().isEmpty) {
-    return 'This field is required';
+    return TranslationService.translate('This field is required');
   }
   return null;
 }

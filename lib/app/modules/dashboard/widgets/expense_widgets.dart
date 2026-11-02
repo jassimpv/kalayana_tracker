@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
@@ -36,12 +37,12 @@ class PremiumEmptyState extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   title,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LocalizedText(
                   subtitle,
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
@@ -140,7 +141,7 @@ class ExpenseStatusBadge extends StatelessWidget {
         color: color.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
+      child: LocalizedText(
         label,
         style: TextStyle(
           color: color,

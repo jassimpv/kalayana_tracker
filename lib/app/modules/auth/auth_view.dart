@@ -1,3 +1,6 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/language_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -24,63 +27,79 @@ class AuthView extends GetView<AuthController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _authCream,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.light,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final topInset = MediaQuery.paddingOf(context).top;
-            final safeTopInset = topInset == 0 ? 52.0 : topInset;
-            final compact = constraints.maxHeight < 740;
-            final heroHeight = compact ? 318.0 : 398.0;
-            final sheetLift = compact ? -42.0 : -80.0;
-            final desktop = isDesktop(context);
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: SystemUiOverlayStyle.light,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final topInset = MediaQuery.paddingOf(context).top;
+                  final safeTopInset = topInset == 0 ? 52.0 : topInset;
+                  final compact = constraints.maxHeight < 740;
+                  final heroHeight = compact ? 318.0 : 398.0;
+                  final sheetLift = compact ? -42.0 : -80.0;
+                  final desktop = isDesktop(context);
 
-            return DecoratedBox(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFFFF2E2), Color(0xFFFFFBF5)],
-                ),
-              ),
-              child: desktop
-                  ? _DesktopAuthLayout(formKey: _formKey, compact: compact)
-                  : SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
-                      padding: EdgeInsets.only(
-                        bottom: 22 + MediaQuery.paddingOf(context).bottom,
+                  return DecoratedBox(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFFFFF2E2), Color(0xFFFFFBF5)],
                       ),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 430),
-                          child: Column(
-                            children: [
-                              _HeroSection(
-                                height: heroHeight,
-                                topInset: safeTopInset,
-                                compact: compact,
-                              ),
-                              Transform.translate(
-                                offset: Offset(0, sheetLift),
+                    ),
+                    child: desktop
+                        ? _DesktopAuthLayout(
+                            formKey: _formKey,
+                            compact: compact,
+                          )
+                        : SingleChildScrollView(
+                            physics: const ClampingScrollPhysics(),
+                            padding: EdgeInsets.only(
+                              bottom: 22 + MediaQuery.paddingOf(context).bottom,
+                            ),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 430,
+                                ),
                                 child: Column(
                                   children: [
-                                    _AuthForm(
-                                      formKey: _formKey,
+                                    _HeroSection(
+                                      height: heroHeight,
+                                      topInset: safeTopInset,
                                       compact: compact,
                                     ),
-                                    SizedBox(height: compact ? 8 : 12),
-                                    const _LegalFooter(),
+                                    Transform.translate(
+                                      offset: Offset(0, sheetLift),
+                                      child: Column(
+                                        children: [
+                                          _AuthForm(
+                                            formKey: _formKey,
+                                            compact: compact,
+                                          ),
+                                          SizedBox(height: compact ? 8 : 12),
+                                          const _LegalFooter(),
+                                        ],
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-            );
-          },
-        ),
+                  );
+                },
+              ),
+            ),
+          ),
+          PositionedDirectional(
+            top: MediaQuery.paddingOf(context).top + 4,
+            end: 12,
+            child: const LanguageWidget(),
+          ),
+        ],
       ),
     );
   }
@@ -187,7 +206,7 @@ class _DesktopHeroPanel extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              const LocalizedText(
                 'Plan your wedding budget with clarity',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -199,7 +218,7 @@ class _DesktopHeroPanel extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              LocalizedText(
                 'Track expenses, reminders, shopping, and shared payments in one calm planning space.',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -305,8 +324,8 @@ class _HeroBrand extends StatelessWidget {
           filterQuality: FilterQuality.high,
         ),
         SizedBox(height: compact ? 6 : 8),
-        Text(
-          'Kalyana',
+        LocalizedText(
+          'Wedding360',
           style: Theme.of(context).textTheme.displaySmall?.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -315,8 +334,8 @@ class _HeroBrand extends StatelessWidget {
           ),
         ),
         SizedBox(height: compact ? 2 : 4),
-        Text(
-          'Expense Tracker',
+        LocalizedText(
+          'Planner & Budget',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             color: const Color(0xFFFFD783),
             fontWeight: FontWeight.w500,
@@ -339,7 +358,7 @@ class _HeroCopy extends StatelessWidget {
       () => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LocalizedText(
             Get.find<AuthController>().isCreate.value
                 ? 'Begin Your Plan'
                 : 'Welcome Back ✨',
@@ -352,7 +371,7 @@ class _HeroCopy extends StatelessWidget {
             ).copyWith(fontSize: compact ? 20 : 22),
           ),
           SizedBox(height: compact ? 4 : 6),
-          Text(
+          LocalizedText(
             Get.find<AuthController>().isCreate.value
                 ? 'Create your wedding command center'
                 : 'Plan your forever beautifully',
@@ -466,7 +485,7 @@ class _AuthForm extends GetView<AuthController> {
                   ),
                   if (!controller.isCreate.value) ...[
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerEnd,
                       child: TextButton(
                         onPressed: controller.loading.value
                             ? null
@@ -477,7 +496,7 @@ class _AuthForm extends GetView<AuthController> {
                           minimumSize: const Size(0, 36),
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        child: const Text(
+                        child: const LocalizedText(
                           'Forgot password?',
                           style: TextStyle(
                             fontSize: 13,
@@ -497,7 +516,7 @@ class _AuthForm extends GetView<AuthController> {
                       decoration: _authInputDecoration(
                         hintText: controller.weddingDate.value == null
                             ? 'Wedding date'
-                            : formatDate(controller.weddingDate.value!),
+                            : formatDisplayDate(controller.weddingDate.value!),
                         icon: Icons.calendar_month_outlined,
                         compact: compact,
                       ),
@@ -550,7 +569,7 @@ class _AuthForm extends GetView<AuthController> {
     Widget? suffix,
     bool compact = false,
   }) {
-    return InputDecoration(
+    return LocalizedInputDecoration(
       hintText: hintText,
       filled: true,
       fillColor: Colors.white.withValues(alpha: 0.64),
@@ -589,8 +608,9 @@ class _AuthForm extends GetView<AuthController> {
     );
   }
 
-  String? _required(String? value) =>
-      value == null || value.trim().isEmpty ? 'Required' : null;
+  String? _required(String? value) => value == null || value.trim().isEmpty
+      ? TranslationService.translate('Required')
+      : null;
 }
 
 class _InputIcon extends StatelessWidget {
@@ -667,7 +687,7 @@ class _PrimaryActionButton extends GetView<AuthController> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
+                          LocalizedText(
                             controller.isCreate.value
                                 ? 'Create account'
                                 : 'Login',
@@ -717,7 +737,7 @@ class _GoogleButton extends GetView<AuthController> {
             _GoogleGlyph(),
             SizedBox(width: 16),
             Flexible(
-              child: Text(
+              child: LocalizedText(
                 'Continue with Google',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
@@ -742,7 +762,7 @@ class _AccountSwitch extends GetView<AuthController> {
         alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Text(
+          LocalizedText(
             controller.isCreate.value
                 ? 'Already have an account? '
                 : "Don’t have an account? ",
@@ -757,7 +777,7 @@ class _AccountSwitch extends GetView<AuthController> {
             onTap: controller.loading.value ? null : controller.isCreate.toggle,
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Text(
+              child: LocalizedText(
                 controller.isCreate.value ? 'Sign in' : 'Sign up',
                 style: TextStyle(
                   color: _authGoldDeep,
@@ -817,7 +837,7 @@ class _FooterLink extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-        child: Text(
+        child: LocalizedText(
           label,
           style: const TextStyle(
             color: _authInk,
@@ -839,7 +859,7 @@ class _FieldLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, bottom: 2),
-      child: Text(
+      child: LocalizedText(
         text,
         style: const TextStyle(
           color: _authInk,
@@ -861,7 +881,7 @@ class _DividerLabel extends StatelessWidget {
         Expanded(child: Divider(color: _authGold.withValues(alpha: 0.42))),
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text(
+          child: LocalizedText(
             'or continue with',
             style: TextStyle(
               color: _authGoldDeep,

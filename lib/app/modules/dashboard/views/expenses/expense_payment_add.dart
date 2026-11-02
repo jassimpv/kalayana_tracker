@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
@@ -109,7 +111,7 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
                     TextFormField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
+                      decoration: LocalizedInputDecoration(
                         labelText: 'Payment amount',
                         prefixIcon: Icon(AppConfig.appCurrencyIcon),
                       ),
@@ -117,9 +119,15 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
                         final requiredError = _required(value);
                         if (requiredError != null) return requiredError;
                         final parsed = moneyFromText(value ?? '') ?? 0;
-                        if (parsed <= 0) return 'Enter an amount above zero';
+                        if (parsed <= 0) {
+                          return TranslationService.translate(
+                            'Enter an amount above zero',
+                          );
+                        }
                         if (parsed > item.pendingForSummary) {
-                          return 'Cannot exceed pending balance';
+                          return TranslationService.translate(
+                            'Cannot exceed pending balance',
+                          );
                         }
                         return null;
                       },
@@ -135,7 +143,7 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
                     DashboardDatePickerTile(
                       icon: Icons.calendar_month_rounded,
                       title: 'Payment date',
-                      value: formatDate(_paymentDate),
+                      value: formatDisplayDate(_paymentDate),
                       onTap: _pickPaymentDate,
                     ),
                     const SizedBox(height: 12),
@@ -143,7 +151,7 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
                       controller: _notesController,
                       minLines: 3,
                       maxLines: 5,
-                      decoration: const InputDecoration(
+                      decoration: const LocalizedInputDecoration(
                         labelText: 'Payment notes',
                         alignLabelWithHint: true,
                         prefixIcon: Icon(Icons.notes_rounded),
@@ -170,7 +178,7 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
                       ),
                     )
                   : const Icon(Icons.check_rounded),
-              label: Text(_isSaving ? 'Saving' : 'Save Payment'),
+              label: LocalizedText(_isSaving ? 'Saving' : 'Save Payment'),
             ),
           ),
         ],
@@ -180,6 +188,8 @@ class _ExpensePaymentAddPageState extends State<ExpensePaymentAddPage> {
 }
 
 String? _required(String? value) {
-  if (value == null || value.trim().isEmpty) return 'This field is required';
+  if (value == null || value.trim().isEmpty) {
+    return TranslationService.translate('This field is required');
+  }
   return null;
 }

@@ -128,6 +128,24 @@ class _DashboardOverviewScreen extends StatelessWidget {
       onViewReports: onViewReports,
     );
 
+    final gifts = Card(
+      child: ListTile(
+        leading: const Icon(Icons.card_giftcard),
+        title: LocalizedText(
+          'Gift money received · ${AppConfig.appCurrency}${formatMoney(data.giftsReceived)}',
+        ),
+        subtitle: LocalizedText(
+          'Family contributions · ${AppConfig.appCurrency}${formatMoney(data.contributionsReceived)}',
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => const PlanningPage(initialKind: PlanningKind.gift),
+          ),
+        ),
+      ),
+    );
+
     final compact = isMobile(context) || isTablet(context);
 
     return DecoratedBox(
@@ -166,6 +184,8 @@ class _DashboardOverviewScreen extends StatelessWidget {
                         budget,
                         const SizedBox(height: 12),
                         metrics,
+                        const SizedBox(height: 10),
+                        gifts,
                         const SizedBox(height: 18),
                         pulse,
                         _RsvpHomeSummaryStrip(onTap: onShowRsvp),
@@ -189,6 +209,8 @@ class _DashboardOverviewScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         metrics,
+                        const SizedBox(height: 10),
+                        gifts,
                         _RsvpHomeSummaryStrip(onTap: onShowRsvp),
                         const SizedBox(height: 20),
                         actions,
@@ -304,7 +326,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            LocalizedText(
                               'Hi $firstName 👋',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -316,7 +338,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
+                            LocalizedText(
                               "Let's plan your perfect day",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -538,7 +560,7 @@ class _WeddingIdentityCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                const LocalizedText(
                   'Your Wedding',
                   style: TextStyle(
                     color: Color(0xFFB87A25),
@@ -582,14 +604,14 @@ class _WeddingIdentityCard extends StatelessWidget {
                 ),
                 FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Row(
                     children: [
                       _WeddingMetaChip(
                         icon: CupertinoIcons.calendar,
                         text: weddingDate == null
                             ? 'Set date'
-                            : formatDate(weddingDate!),
+                            : formatDisplayDate(weddingDate!),
                       ),
                       Container(
                         width: 1,
@@ -626,7 +648,7 @@ class _WeddingMetaChip extends StatelessWidget {
       children: [
         Icon(icon, size: 15, color: const Color(0xFF9D1740)),
         const SizedBox(width: 6),
-        Text(
+        LocalizedText(
           text,
           style: const TextStyle(
             color: Color(0xFF9D1740),
@@ -696,7 +718,7 @@ class _BudgetHeroCard extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LocalizedText(
                         'Total Wedding Budget',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -712,7 +734,7 @@ class _BudgetHeroCard extends StatelessWidget {
                   SizedBox(height: 15),
                   FittedBox(
                     fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
+                    alignment: AlignmentDirectional.centerStart,
                     child: Text(
                       '${AppConfig.appCurrency}${formatMoney(total)}',
                       style: TextStyle(
@@ -743,7 +765,7 @@ class _BudgetHeroCard extends StatelessWidget {
                             size: 13,
                           ),
                           const SizedBox(width: 6),
-                          Text(
+                          LocalizedText(
                             '${AppConfig.appCurrency}${formatMoney(overBudgetAmount)} over budget',
                             style: const TextStyle(
                               color: Color(0xFFFFD9DC),
@@ -755,7 +777,7 @@ class _BudgetHeroCard extends StatelessWidget {
                       ),
                     )
                   else
-                    Text(
+                    LocalizedText(
                       'Overall allocation across\nall expenses and vendors',
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -793,7 +815,7 @@ class _BudgetHeroCard extends StatelessWidget {
                               height: 0.94,
                             ),
                           ),
-                          const Text(
+                          const LocalizedText(
                             'paid',
                             style: TextStyle(
                               color: Colors.white,
@@ -1152,7 +1174,7 @@ class _MetricTile extends StatelessWidget {
           child: Icon(spec.icon, color: ThemeColors.primary, size: 22),
         ),
         const SizedBox(height: 8),
-        Text(
+        LocalizedText(
           spec.label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -1247,7 +1269,7 @@ class _PaymentPulseCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LocalizedText(
                       '$days days left',
                       maxLines: narrow ? 2 : 1,
                       overflow: TextOverflow.ellipsis,
@@ -1259,7 +1281,7 @@ class _PaymentPulseCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    const LocalizedText(
                       'Stay on track and make\nyour day perfect ✨',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -1289,7 +1311,7 @@ class _PaymentPulseCard extends StatelessWidget {
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('View Schedule'),
+                      LocalizedText('View Schedule'),
                       SizedBox(width: 6),
                       Icon(CupertinoIcons.chevron_right),
                     ],
@@ -1356,7 +1378,7 @@ class _OverviewQuickActions extends StatelessWidget {
         Row(
           children: [
             const Expanded(
-              child: Text(
+              child: LocalizedText(
                 'Quick Actions',
                 style: TextStyle(
                   color: Color(0xFF421018),
@@ -1374,6 +1396,30 @@ class _OverviewQuickActions extends StatelessWidget {
               Expanded(child: _ActionCard(spec: actions[i])),
               if (i != actions.length - 1) const SizedBox(width: 8),
             ],
+          ],
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ActionChip(
+              avatar: const Icon(Icons.card_giftcard, size: 18),
+              label: const LocalizedText('Gift money'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      const PlanningPage(initialKind: PlanningKind.gift),
+                ),
+              ),
+            ),
+            ActionChip(
+              avatar: const Icon(Icons.checklist, size: 18),
+              label: const LocalizedText('Planning tools'),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const PlanningPage()),
+              ),
+            ),
           ],
         ),
       ],
@@ -1417,7 +1463,7 @@ class _ActionCard extends StatelessWidget {
             children: [
               Icon(spec.icon, color: ThemeColors.primary, size: 27),
               const SizedBox(height: 6),
-              Text(
+              LocalizedText(
                 spec.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1427,7 +1473,7 @@ class _ActionCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 3),
-              Text(
+              LocalizedText(
                 spec.subtitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -1480,7 +1526,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
           Row(
             children: [
               const Expanded(
-                child: Text(
+                child: LocalizedText(
                   'Budget Analytics',
                   style: TextStyle(
                     color: Color(0xFF421018),
@@ -1500,7 +1546,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    LocalizedText(
                       'View Report',
                       style: TextStyle(
                         fontSize: 11,
@@ -1535,7 +1581,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const Text(
+                    const LocalizedText(
                       'paid',
                       style: TextStyle(
                         color: Color(0xFF421018),
@@ -1554,7 +1600,7 @@ class _OverviewBudgetAnalytics extends StatelessWidget {
                     Row(
                       children: [
                         const Expanded(
-                          child: Text(
+                          child: LocalizedText(
                             'Top Spending Categories',
                             style: TextStyle(fontWeight: FontWeight.w600),
                           ),
@@ -1613,7 +1659,7 @@ class _CategorySpendEmptyState extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: LocalizedText(
               'No spending categories yet',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.outline,
@@ -1839,7 +1885,7 @@ class _OverviewGreetingCard extends StatelessWidget {
         : '$daysLeft days to forever';
     final dateText = weddingDate == null
         ? 'Set the wedding date for your countdown'
-        : '${formatDate(weddingDate!)}  |  $countdownText';
+        : '${formatDisplayDate(weddingDate!)}  |  $countdownText';
     return _PremiumSurface(
       padding: const EdgeInsets.all(18),
       gradient: const LinearGradient(
@@ -1868,7 +1914,7 @@ class _OverviewGreetingCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LocalizedText(
                       'Good evening',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
@@ -1876,7 +1922,7 @@ class _OverviewGreetingCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    LocalizedText(
                       title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -1938,7 +1984,7 @@ class _OverviewBudgetCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              LocalizedText(
                 'Wedding budget',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.76),
@@ -1952,7 +1998,7 @@ class _OverviewBudgetCard extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 builder: (context, value, _) => FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Text(
                     '${AppConfig.appCurrency}${formatMoney(value)}',
                     maxLines: 1,
@@ -1966,7 +2012,7 @@ class _OverviewBudgetCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
+              LocalizedText(
                 'Total allocation across expenses, dates, and shopping.',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -2018,7 +2064,7 @@ class _OverviewPulseCard extends StatelessWidget {
                   '${(progress * 100).round()}%',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                Text(
+                LocalizedText(
                   'paid',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.outline,
@@ -2045,7 +2091,7 @@ class _OverviewPulseCard extends StatelessWidget {
                     const SizedBox(width: 5),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 3),
-                      child: Text(
+                      child: LocalizedText(
                         weddingDate == null ? 'days' : 'days left',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.outline,
@@ -2056,14 +2102,14 @@ class _OverviewPulseCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text(
+                LocalizedText(
                   'Payment pulse',
                   style: TextStyle(
                     color: ThemeColors.logoDeep,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                Text(
+                LocalizedText(
                   'Countdown and budget analytics',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -2190,7 +2236,7 @@ class _QuickActionButtonState extends State<_QuickActionButton> {
                 child: Icon(widget.icon, color: ThemeColors.primary),
               ),
               const SizedBox(height: 7),
-              Text(
+              LocalizedText(
                 widget.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -2264,7 +2310,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Text(
+                    LocalizedText(
                       'paid',
                       style: TextStyle(
                         color: scheme.outline,
@@ -2291,7 +2337,7 @@ class _BudgetAnalyticsCard extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
+                    LocalizedText(
                       'Wedding allocation across vendors, dates, and shopping.',
                       maxLines: compact ? 3 : 2,
                       overflow: TextOverflow.ellipsis,
@@ -2382,7 +2428,7 @@ class _AnalyticsStatCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -2439,7 +2485,7 @@ class _TodayFocusCard extends StatelessWidget {
             title: nextBill?.name ?? 'No bill due next',
             subtitle: nextBill == null
                 ? 'Pending bills will appear here.'
-                : '${moneyOrDash(nextBill.pendingForSummary)} pending${nextBill.dueDate == null ? '' : ' | Due ${formatDate(nextBill.dueDate!)}'}',
+                : '${moneyOrDash(nextBill.pendingForSummary)} pending${nextBill.dueDate == null ? '' : ' | Due ${formatDisplayDate(nextBill.dueDate!)}'}',
           ),
           const SizedBox(height: 10),
           _FocusRow(
@@ -2448,7 +2494,7 @@ class _TodayFocusCard extends StatelessWidget {
             title: nextReminder?.title ?? 'No upcoming date',
             subtitle: nextReminder == null
                 ? 'Add reminders to track next actions.'
-                : '${nextReminder.category} | ${formatDate(nextReminder.dueDate)}',
+                : '${nextReminder.category} | ${formatDisplayDate(nextReminder.dueDate)}',
           ),
           if (repayment > 0) ...[
             const SizedBox(height: 10),
@@ -2496,14 +2542,14 @@ class _FocusRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 2),
-                Text(
+                LocalizedText(
                   subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -2549,7 +2595,7 @@ class _UpcomingEventsCarousel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
+                child: LocalizedText(
                   'Upcoming moments',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
@@ -2559,7 +2605,7 @@ class _UpcomingEventsCarousel extends StatelessWidget {
               TextButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('Add'),
+                label: const LocalizedText('Add'),
                 style: TextButton.styleFrom(
                   foregroundColor: theme.colorScheme.primary,
                   textStyle: const TextStyle(fontWeight: FontWeight.w600),
@@ -2582,7 +2628,7 @@ class _UpcomingEventsCarousel extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: onAdd,
                     icon: const Icon(Icons.add_rounded),
-                    label: const Text('Add first moment'),
+                    label: const LocalizedText('Add first moment'),
                   ),
                 ),
               ],
@@ -2650,7 +2696,7 @@ class _NextMomentCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            formatDate(item.dueDate),
+                            formatDisplayDate(item.dueDate),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -2663,7 +2709,7 @@ class _NextMomentCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LocalizedText(
                       item.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -2681,7 +2727,7 @@ class _NextMomentCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
+                  LocalizedText(
                     item.isDone ? 'Done' : _momentDayLabel(days),
                     textAlign: TextAlign.end,
                     style: TextStyle(
@@ -2692,7 +2738,7 @@ class _NextMomentCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
+                  LocalizedText(
                     item.isDone ? 'completed' : _momentDaySuffix(days),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.outline,
@@ -2764,7 +2810,7 @@ class _UpcomingMomentRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      LocalizedText(
                         item.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -2777,7 +2823,7 @@ class _UpcomingMomentRow extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${item.category}  |  ${formatDate(item.dueDate)}',
+                        '${item.category}  |  ${formatDisplayDate(item.dueDate)}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -2793,14 +2839,14 @@ class _UpcomingMomentRow extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
+                    LocalizedText(
                       item.isDone ? 'Done' : _momentDayLabel(days),
                       style: TextStyle(
                         color: effectiveColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Text(
+                    LocalizedText(
                       item.isDone ? 'set' : _momentDaySuffix(days),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
@@ -2943,7 +2989,7 @@ class _PaymentTimeline extends StatelessWidget {
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           const SizedBox(height: 3),
-                          Text(
+                          LocalizedText(
                             item.status,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.outline,
@@ -2999,7 +3045,7 @@ class CoupleCollaborationCard extends StatelessWidget {
               _CoupleAvatar(name: coupleName),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
+                child: LocalizedText(
                   coupleName == null
                       ? 'Invite your partner into the planning rhythm.'
                       : '$coupleName are planning with shared clarity.',
@@ -3032,7 +3078,7 @@ class CoupleCollaborationCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
+          LocalizedText(
             '$done completed moments | $open open decisions',
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,

@@ -1,3 +1,6 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
+import 'package:kalayanaexpresstracker/app/data/models/planning_entry.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/views/planning/planning_page.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -26,7 +29,7 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
         : item.notes.trim();
     final dueDate = item.dueDate == null
         ? 'No due date'
-        : formatDate(item.dueDate!);
+        : formatDisplayDate(item.dueDate!);
     final repayPerson = item.repayPerson.trim().isEmpty
         ? paidBy
         : item.repayPerson.trim();
@@ -60,7 +63,7 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LocalizedText(
                           item.name.isEmpty ? 'Untitled expense' : item.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -72,8 +75,8 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        Text(
-                          '${item.category} | Created ${formatDate(item.createdDate)}',
+                        LocalizedText(
+                          '${item.category} | Created ${formatDisplayDate(item.createdDate)}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -126,7 +129,7 @@ class ExpenseDetailOverview extends GetView<DashboardController> {
                     ),
                   ),
                   icon: const Icon(Icons.add_card_rounded, size: 20),
-                  label: const Text('Add Payment'),
+                  label: const LocalizedText('Add Payment'),
                 ),
               ),
             ),
@@ -205,18 +208,18 @@ Future<void> _confirmDeleteExpenseDetail(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete Expense'),
-      content: Text(
+      title: const LocalizedText('Delete Expense'),
+      content: LocalizedText(
         'Delete ${item.name.isEmpty ? 'this expense' : item.name}?',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),
@@ -253,7 +256,7 @@ class _ExpenseProgressSummary extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(
+              child: LocalizedText(
                 '${(progress * 100).round()}% paid',
                 style: const TextStyle(
                   color: ThemeColors.logoDeep,
@@ -262,7 +265,7 @@ class _ExpenseProgressSummary extends StatelessWidget {
                 ),
               ),
             ),
-            Text(
+            LocalizedText(
               '${moneyOrDash(item.pendingForSummary)} remaining',
               style: const TextStyle(
                 color: Color(0xFFD18A00),
@@ -290,7 +293,7 @@ class _ExpenseDetailAmount extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LocalizedText(
             label,
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,
@@ -397,7 +400,7 @@ class _ExpenseRepaymentPanel extends GetView<DashboardController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   completed ? 'Paid back' : 'You owe for this',
                   style: const TextStyle(
                     color: ThemeColors.logoDeep,
@@ -406,10 +409,10 @@ class _ExpenseRepaymentPanel extends GetView<DashboardController> {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
+                LocalizedText(
                   completed
                       ? '${moneyOrDash(repaymentAmount)} settled'
-                      : '${moneyOrDash(repaymentAmount)} to $repayPerson',
+                      : '${moneyOrDash(item.repaymentPending)} remaining to $repayPerson',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -423,13 +426,18 @@ class _ExpenseRepaymentPanel extends GetView<DashboardController> {
           ),
           if (!completed)
             TextButton.icon(
-              onPressed: () => controller.markRepaymentCompleted(item),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      const PlanningPage(initialKind: PlanningKind.repayment),
+                ),
+              ),
               style: TextButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
               ),
               icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
-              label: const Text('Mark Done'),
+              label: const LocalizedText('Repayments'),
             ),
         ],
       ),
@@ -510,7 +518,7 @@ class _ExpenseDetailMetaTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -587,7 +595,7 @@ class _ExpenseDetailInfoText extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        LocalizedText(
           label,
           style: TextStyle(
             color: Theme.of(context).colorScheme.outline,

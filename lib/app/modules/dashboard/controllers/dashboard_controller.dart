@@ -1,3 +1,6 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'dart:convert';
+import 'package:kalayanaexpresstracker/app/data/models/planning_entry.dart';
 import 'dart:async';
 import 'dart:math';
 
@@ -253,6 +256,7 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    TranslationService.onLocaleChanged = _resyncNotifications;
     _initialize();
     NotificationService.instance.requestPermission();
   }
@@ -299,6 +303,9 @@ class DashboardController extends GetxController {
 
   @override
   void onClose() {
+    if (TranslationService.onLocaleChanged == _resyncNotifications) {
+      TranslationService.onLocaleChanged = null;
+    }
     _dataSub?.cancel();
     _profileSub?.cancel();
     _workspaceSub?.cancel();
@@ -308,6 +315,11 @@ class DashboardController extends GetxController {
   }
 
   Future<void> logout() async {
+    await NotificationService.instance.syncSchedule(
+      WeddingData.empty(),
+      enabled: false,
+      events: const [],
+    );
     if (!kIsWeb) {
       await GoogleSignIn().signOut();
     }
@@ -317,7 +329,22 @@ class DashboardController extends GetxController {
     }
   }
 
-  Future<void> saveExpense(ExpenseItem item) async {
+  Future<void> saveExpense(ExpenseItem item, {ExpenseItem? expected}) async {
+    final current = data.value.expenses.firstWhereOrNull(
+      (entry) => entry.id == item.id,
+    );
+    if (expected != null &&
+        jsonEncode(current?.toJson()) != jsonEncode(expected.toJson())) {
+      throw StateError(
+        'This expense changed while you were editing. Reopen it before saving.',
+      );
+    }
+    if (item.repaymentPaidAmount > item.repaymentAmount ||
+        (!item.needsRepayment && item.repaymentPaidAmount > 0)) {
+      throw StateError(
+        'Edit or remove repayment history before reducing the amount owed.',
+      );
+    }
     final items = [...data.value.expenses];
     final index = items.indexWhere((entry) => entry.id == item.id);
     final isNew = index == -1;
@@ -333,6 +360,11 @@ class DashboardController extends GetxController {
   }
 
   Future<void> deleteExpense(ExpenseItem item) async {
+    if (data.value.planning.any((entry) => entry.linkedId == item.id)) {
+      throw StateError(
+        'Remove linked documents and repayment entries before deleting this expense.',
+      );
+    }
     await _save(
       data.value.copyWith(
         expenses: data.value.expenses
@@ -530,6 +562,15 @@ class DashboardController extends GetxController {
     ExpenseItem item, {
     required bool completed,
   }) async {
+    if (data.value
+        .entries(PlanningKind.repayment)
+        .any((entry) => entry.linkedId == item.id)) {
+      _showDashboardSnack(
+        'Repayment history',
+        'Add or edit repayments under Wedding Planning to update this balance.',
+      );
+      return;
+    }
     if (item.isRepaymentCompleted == completed) return;
 
     final nextStatus = completed
@@ -826,6 +867,118 @@ class DashboardController extends GetxController {
     );
   }
 
+  Future<void> savePlanning(
+    PlanningEntry entry, {
+    PlanningEntry? expected,
+  }) async {
+    final current = data.value.planning.firstWhereOrNull(
+      (item) => item.id == entry.id,
+    );
+    if (expected != null &&
+        jsonEncode(current?.toJson()) != jsonEncode(expected.toJson())) {
+      throw StateError(
+        'This record changed while you were editing. Reopen it before saving.',
+      );
+    }
+    final entries = [...data.value.planning];
+    final index = entries.indexWhere((item) => item.id == entry.id);
+    if (index < 0) {
+      entries.add(entry);
+    } else {
+      entries[index] = entry;
+    }
+    var next = data.value.copyWith(planning: entries);
+    if (entry.kind == PlanningKind.repayment) {
+      final expense = next.expenses.firstWhereOrNull(
+        (item) => item.id == entry.linkedId,
+      );
+      if (expense == null || !expense.needsRepayment) {
+        throw StateError('Select an expense with a repayment balance.');
+      }
+      final total =
+          entries
+              .where(
+                (item) =>
+                    item.kind == PlanningKind.repayment &&
+                    item.linkedId == expense.id,
+              )
+              .fold<int>(
+                0,
+                (totalMinor, item) => totalMinor + item.amountMinor,
+              ) /
+          100;
+      if (total > expense.repaymentAmount + 0.001) {
+        throw StateError('Repayments cannot exceed the amount owed.');
+      }
+      next = next.copyWith(
+        expenses: next.expenses
+            .map(
+              (item) => item.id == expense.id
+                  ? item.copyWith(
+                      repaymentPaidAmount: total,
+                      isRepaymentCompleted: total >= item.repaymentAmount,
+                    )
+                  : item,
+            )
+            .toList(),
+      );
+    }
+    await _save(next);
+    unawaited(_logActivity('saved ${entry.kind.name} "${entry.name}"'));
+  }
+
+  Future<void> deletePlanning(PlanningEntry entry) async {
+    final current = data.value.planning.firstWhereOrNull(
+      (item) => item.id == entry.id,
+    );
+    if (jsonEncode(current?.toJson()) != jsonEncode(entry.toJson())) {
+      throw StateError('This record changed. Review it before deleting.');
+    }
+    final referenced =
+        data.value.expenses.any((item) => item.vendorId == entry.id) ||
+        data.value.planning.any(
+          (item) =>
+              item.id != entry.id &&
+              (item.linkedId == entry.id ||
+                  item.dependencies.contains(entry.id)),
+        );
+    if (referenced) {
+      throw StateError('Remove linked records or dependencies first.');
+    }
+    final entries = data.value.planning
+        .where((item) => item.id != entry.id)
+        .toList();
+    var next = data.value.copyWith(planning: entries);
+    if (entry.kind == PlanningKind.repayment) {
+      final total =
+          entries
+              .where(
+                (item) =>
+                    item.kind == PlanningKind.repayment &&
+                    item.linkedId == entry.linkedId,
+              )
+              .fold<int>(
+                0,
+                (totalMinor, item) => totalMinor + item.amountMinor,
+              ) /
+          100;
+      next = next.copyWith(
+        expenses: next.expenses
+            .map(
+              (item) => item.id == entry.linkedId
+                  ? item.copyWith(
+                      repaymentPaidAmount: total,
+                      isRepaymentCompleted: total >= item.repaymentAmount,
+                    )
+                  : item,
+            )
+            .toList(),
+      );
+    }
+    await _save(next);
+    unawaited(_logActivity('deleted ${entry.kind.name} "${entry.name}"'));
+  }
+
   Future<void> setBudgetGoal(double amount) async {
     await _save(data.value.copyWith(budgetGoal: amount));
   }
@@ -1026,14 +1179,19 @@ class DashboardController extends GetxController {
 
   Future<void> _save(WeddingData value) async {
     try {
-      await repository.save(value);
+      await repository.saveChanges(
+        data.value,
+        value,
+        expectedWorkspaceId: workspaceId.value,
+      );
     } catch (exception) {
       Get.snackbar(
-        'Save failed',
-        exception.toString(),
+        TranslationService.translate('Save failed'),
+        TranslationService.translate(exception.toString()),
         snackPosition: SnackPosition.BOTTOM,
         margin: const EdgeInsets.all(16),
       );
+      rethrow;
     }
   }
 
@@ -1097,6 +1255,13 @@ class DashboardController extends GetxController {
   }
 
   void _bindWorkspace(String nextWorkspaceId) {
+    if (workspaceId.value != nextWorkspaceId) {
+      NotificationService.instance.syncSchedule(
+        WeddingData.empty(),
+        enabled: false,
+        events: const [],
+      );
+    }
     workspaceId.value = nextWorkspaceId;
     _activityLogSub?.cancel();
     activityLogLoading.value = true;
@@ -1396,8 +1561,8 @@ String _deriveExpenseStatus(double totalAmount, double paidAmount) {
 
 void _showDashboardSnack(String title, String message) {
   Get.snackbar(
-    title,
-    message,
+    TranslationService.translate(title),
+    TranslationService.translate(message),
     snackPosition: SnackPosition.BOTTOM,
     margin: const EdgeInsets.all(16),
   );
@@ -1473,6 +1638,8 @@ ExpenseItem buildExpense({
       : const <PaymentSplit>[];
   return ExpenseItem(
     id: existing?.id ?? newId(),
+    vendorId: existing?.vendorId ?? '',
+    repaymentPaidAmount: existing?.repaymentPaidAmount ?? 0,
     name: name.trim(),
     category: categoryValue,
     totalAmount: totalAmount,
@@ -1531,6 +1698,7 @@ PurchaseItem buildPurchase({
       ? category.trim()
       : purchaseCategories.first;
   return PurchaseItem(
+    dueDate: existing?.dueDate,
     id: existing?.id ?? newId(),
     name: name.trim(),
     category: categoryValue,

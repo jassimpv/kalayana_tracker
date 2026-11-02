@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config.dart';
@@ -44,17 +46,27 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
   Future<void> _saveReminder() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
-    await controller.saveReminder(
-      buildReminder(
-        title: _titleController.text,
-        category: _category,
-        dueDate: _dueDate,
-        amount: _amountController.text,
-      ),
-    );
-    if (!mounted) return;
-    setState(() => _isSaving = false);
-    controller.closeDashboardSubPage();
+    try {
+      await controller.saveReminder(
+        buildReminder(
+          title: _titleController.text,
+          category: _category,
+          dueDate: _dueDate,
+          amount: _amountController.text,
+        ),
+      );
+      if (!mounted) return;
+      setState(() => _isSaving = false);
+      controller.closeDashboardSubPage();
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: LocalizedText('Unable to save: $error')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -74,7 +86,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
                   ),
                 )
               : const Icon(Icons.check_rounded),
-          label: Text(_isSaving ? 'Saving' : 'Save Reminder'),
+          label: LocalizedText(_isSaving ? 'Saving' : 'Save Reminder'),
         ),
       ),
       children: [
@@ -92,7 +104,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       labelText: 'Reminder title',
                       prefixIcon: Icon(Icons.title_rounded),
                     ),
@@ -101,7 +113,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: _category,
-                    decoration: const InputDecoration(
+                    decoration: const LocalizedInputDecoration(
                       labelText: 'Category',
                       prefixIcon: Icon(Icons.category_rounded),
                     ),
@@ -109,7 +121,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
                         .map(
                           (value) => DropdownMenuItem(
                             value: value,
-                            child: Text(value),
+                            child: LocalizedText(value),
                           ),
                         )
                         .toList(),
@@ -121,7 +133,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _amountController,
-                    decoration: InputDecoration(
+                    decoration: LocalizedInputDecoration(
                       labelText: 'Amount (optional)',
                       prefixIcon: Icon(AppConfig.appCurrencyIcon),
                     ),
@@ -131,7 +143,7 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
                   DashboardDatePickerTile(
                     icon: Icons.calendar_month_rounded,
                     title: 'Due date',
-                    value: formatDate(_dueDate),
+                    value: formatDisplayDate(_dueDate),
                     onTap: _pickDueDate,
                   ),
                 ],
@@ -145,6 +157,8 @@ class _ReminderAddPageState extends State<ReminderAddPage> {
 }
 
 String? _required(String? value) {
-  if (value == null || value.trim().isEmpty) return 'This field is required';
+  if (value == null || value.trim().isEmpty) {
+    return TranslationService.translate('This field is required');
+  }
   return null;
 }

@@ -10,6 +10,11 @@
 analyzer:
   exclude:
     - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - linux/**
   errors:
     must_be_immutable: ignore
 include: package:flutter_lints/flutter.yaml

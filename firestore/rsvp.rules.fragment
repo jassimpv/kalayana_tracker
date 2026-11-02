@@ -1,0 +1,43 @@
+// Merge these functions and matches INSIDE the existing
+// match /databases/{database}/documents block. This is not a replacement for
+// the project's existing workspace security rules. Never add public access to
+// weddingWorkspaces, guests, or rsvpResponses.
+function rsvpMember(workspaceId) {
+  let workspace = get(/databases/$(database)/documents/weddingWorkspaces/$(workspaceId));
+  return request.auth != null &&
+    (workspace.data.ownerId == request.auth.uid || request.auth.uid in workspace.data.members);
+}
+function rsvpGuestExists(data) {
+  return exists(/databases/$(database)/documents/weddingWorkspaces/$(data.workspaceId)/guests/$(data.guestId)) &&
+    exists(/databases/$(database)/documents/weddingWorkspaces/$(data.workspaceId)/guestEvents/$(data.eventId));
+}
+match /publicRsvpInvitations/{token} {
+  allow get: if rsvpMember(resource.data.workspaceId) ||
+    (token.matches('^[A-Za-z0-9_-]{43}$') && resource.data.expiresAt > request.time && rsvpGuestExists(resource.data));
+  allow list: if rsvpMember(resource.data.workspaceId);
+  allow create: if token.matches('^[A-Za-z0-9_-]{43}$') &&
+    request.resource.data.keys().hasOnly(['workspaceId', 'guestId', 'eventId', 'guestName', 'eventName', 'venue', 'eventDate', 'maxAttendees', 'expiresAt', 'status', 'attendeeCount', 'specialRequirements']) &&
+    rsvpMember(request.resource.data.workspaceId) && rsvpGuestExists(request.resource.data) &&
+    request.resource.data.guestName is string && request.resource.data.eventName is string &&
+    request.resource.data.venue is string && request.resource.data.eventDate is string &&
+    request.resource.data.maxAttendees is int && request.resource.data.maxAttendees > 0 &&
+    request.resource.data.maxAttendees <= get(/databases/$(database)/documents/weddingWorkspaces/$(request.resource.data.workspaceId)/guests/$(request.resource.data.guestId)).data.numberInvited &&
+    request.resource.data.expiresAt is timestamp && request.resource.data.expiresAt > request.time &&
+    request.resource.data.expiresAt <= request.time + duration.value(31, 'd') &&
+    request.resource.data.status == 'Pending' && request.resource.data.attendeeCount == 0 &&
+    request.resource.data.specialRequirements == '';
+  allow update: if resource.data.expiresAt > request.time && rsvpGuestExists(resource.data) &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'attendeeCount', 'specialRequirements', 'respondedAt']) &&
+    request.resource.data.status in ['Confirmed', 'Declined', 'Maybe'] &&
+    request.resource.data.attendeeCount is int && request.resource.data.attendeeCount >= 0 &&
+    (request.resource.data.status == 'Declined' ? request.resource.data.attendeeCount == 0 : request.resource.data.attendeeCount >= 1) &&
+    request.resource.data.attendeeCount <= resource.data.maxAttendees &&
+    request.resource.data.attendeeCount <= get(/databases/$(database)/documents/weddingWorkspaces/$(resource.data.workspaceId)/guests/$(resource.data.guestId)).data.numberInvited &&
+    request.resource.data.specialRequirements is string && request.resource.data.specialRequirements.size() <= 1000 &&
+    request.resource.data.respondedAt == request.time &&
+    (!('respondedAt' in resource.data) || request.time > resource.data.respondedAt + duration.value(3, 's'));
+  allow delete: if rsvpMember(resource.data.workspaceId);
+}
+match /weddingWorkspaces/{workspaceId}/rsvpLinks/{id} {
+  allow read, write: if rsvpMember(workspaceId);
+}

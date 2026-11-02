@@ -9,6 +9,7 @@ class PurchaseItem {
     required this.status,
     required this.note,
     this.linkedExpenseId = '',
+    this.dueDate,
   });
 
   factory PurchaseItem.fromJson(Map<String, dynamic> json) {
@@ -20,6 +21,7 @@ class PurchaseItem {
       status: json['status'] as String? ?? 'Planned',
       note: json['note'] as String? ?? '',
       linkedExpenseId: json['linkedExpenseId'] as String? ?? '',
+      dueDate: dateFromJson(json['dueDate']),
     );
   }
 
@@ -30,6 +32,7 @@ class PurchaseItem {
   final String status;
   final String note;
   final String linkedExpenseId;
+  final DateTime? dueDate;
 
   PurchaseItem copyWith({
     String? name,
@@ -38,6 +41,8 @@ class PurchaseItem {
     String? status,
     String? note,
     String? linkedExpenseId,
+    DateTime? dueDate,
+    bool clearDueDate = false,
   }) => PurchaseItem(
     id: id,
     name: name ?? this.name,
@@ -46,6 +51,7 @@ class PurchaseItem {
     status: status ?? this.status,
     note: note ?? this.note,
     linkedExpenseId: linkedExpenseId ?? this.linkedExpenseId,
+    dueDate: clearDueDate ? null : dueDate ?? this.dueDate,
   );
 
   Map<String, dynamic> toJson() => {
@@ -56,5 +62,6 @@ class PurchaseItem {
     'status': status,
     'note': note,
     'linkedExpenseId': linkedExpenseId,
+    'dueDate': dueDate?.toIso8601String(),
   };
 }

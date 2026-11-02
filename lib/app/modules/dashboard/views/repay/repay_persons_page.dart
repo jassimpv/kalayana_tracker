@@ -1,3 +1,5 @@
+import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
@@ -35,7 +37,7 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
           backgroundColor: ThemeColors.primary,
           foregroundColor: Colors.white,
           icon: const Icon(Icons.person_add_alt_1_rounded),
-          label: const Text('Add Person'),
+          label: const LocalizedText('Add Person'),
         );
       }),
       body: SizedBox.expand(
@@ -105,7 +107,7 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
                         child: FilledButton.icon(
                           onPressed: () => _showRepayPersonDialog(context),
                           icon: const Icon(Icons.person_add_alt_1_rounded),
-                          label: const Text('Add Person'),
+                          label: const LocalizedText('Add Person'),
                         ),
                       ),
                     ],
@@ -185,8 +187,8 @@ class _RepayPersonTile extends GetView<DashboardController> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      'Created ${formatDate(person.createdAt)}',
+                    LocalizedText(
+                      'Created ${formatDisplayDate(person.createdAt)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -196,7 +198,7 @@ class _RepayPersonTile extends GetView<DashboardController> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
+                    LocalizedText(
                       'Amount owed: ${moneyOrDash(pending)}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -253,7 +255,7 @@ class _RepayPersonDetailView extends GetView<DashboardController> {
                     child: FilledButton.icon(
                       onPressed: controller.openExpenseAdd,
                       icon: const Icon(Icons.add_rounded),
-                      label: const Text('Add'),
+                      label: const LocalizedText('Add'),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -273,7 +275,7 @@ class _RepayPersonDetailView extends GetView<DashboardController> {
                 ],
               ),
               const SizedBox(height: 16),
-              Text(
+              LocalizedText(
                 'Pay History',
                 style: TextStyle(
                   color: ThemeColors.logoDeep,
@@ -342,8 +344,8 @@ class _RepayPersonDetailHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 3),
-                    Text(
-                      'Created ${formatDate(person.createdAt)}',
+                    LocalizedText(
+                      'Created ${formatDisplayDate(person.createdAt)}',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
                         fontSize: 11,
@@ -406,7 +408,7 @@ class _RepayPersonMetric extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          LocalizedText(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -501,7 +503,7 @@ class _RepayPersonHistoryTile extends GetView<DashboardController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                LocalizedText(
                   item.name.isEmpty ? 'Untitled expense' : item.name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -513,7 +515,7 @@ class _RepayPersonHistoryTile extends GetView<DashboardController> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${item.category} | ${formatDate(item.updatedDate)}',
+                  '${item.category} | ${formatDisplayDate(item.updatedDate)}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -530,7 +532,9 @@ class _RepayPersonHistoryTile extends GetView<DashboardController> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                moneyOrDash(item.repaymentAmount),
+                moneyOrDash(
+                  settled ? item.repaymentAmount : item.repaymentPending,
+                ),
                 style: const TextStyle(
                   color: ThemeColors.logoDeep,
                   fontSize: 12,
@@ -538,8 +542,12 @@ class _RepayPersonHistoryTile extends GetView<DashboardController> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                settled ? 'Settled' : 'Pending',
+              LocalizedText(
+                settled
+                    ? 'Settled'
+                    : item.repaymentPaidAmount > 0
+                    ? 'Partially repaid'
+                    : 'Pending',
                 style: TextStyle(
                   color: color,
                   fontSize: 11,
@@ -555,13 +563,19 @@ class _RepayPersonHistoryTile extends GetView<DashboardController> {
                   completed: completed,
                 ),
                 itemBuilder: (context) => const [
-                  PopupMenuItem<bool>(value: false, child: Text('Pending')),
-                  PopupMenuItem<bool>(value: true, child: Text('Settled')),
+                  PopupMenuItem<bool>(
+                    value: false,
+                    child: LocalizedText('Pending'),
+                  ),
+                  PopupMenuItem<bool>(
+                    value: true,
+                    child: LocalizedText('Settled'),
+                  ),
                 ],
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
+                    LocalizedText(
                       'Update',
                       style: TextStyle(
                         color: ThemeColors.logoDeep.withValues(alpha: 0.72),
@@ -732,7 +746,7 @@ Future<void> _showRepayPersonDialog(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                LocalizedText(
                                   title,
                                   style: const TextStyle(
                                     color: ThemeColors.logoDeep,
@@ -741,7 +755,7 @@ Future<void> _showRepayPersonDialog(
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
+                                LocalizedText(
                                   subtitle,
                                   style: TextStyle(
                                     color: ThemeColors.logoDeep.withValues(
@@ -770,7 +784,7 @@ Future<void> _showRepayPersonDialog(
                         autofocus: true,
                         textInputAction: TextInputAction.done,
                         textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
+                        decoration: LocalizedInputDecoration(
                           labelText: 'Person name',
                           hintText: 'Enter name',
                           helperText: 'This name will appear in paid-by lists.',
@@ -783,7 +797,9 @@ Future<void> _showRepayPersonDialog(
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Person name cannot be empty';
+                            return TranslationService.translate(
+                              'Person name cannot be empty',
+                            );
                           }
                           final duplicate = controller.repayPersons.any(
                             (entry) =>
@@ -792,7 +808,9 @@ Future<void> _showRepayPersonDialog(
                                     value.trim().toLowerCase(),
                           );
                           if (duplicate) {
-                            return 'A person with this name already exists';
+                            return TranslationService.translate(
+                              'A person with this name already exists',
+                            );
                           }
                           return null;
                         },
@@ -806,7 +824,7 @@ Future<void> _showRepayPersonDialog(
                               onPressed: saving
                                   ? null
                                   : Navigator.of(context).pop,
-                              child: const Text('Cancel'),
+                              child: const LocalizedText('Cancel'),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -825,7 +843,7 @@ Future<void> _showRepayPersonDialog(
                                       ),
                                     )
                                   : const Icon(Icons.check_rounded),
-                              label: Text(saving ? 'Saving' : 'Save'),
+                              label: LocalizedText(saving ? 'Saving' : 'Save'),
                             ),
                           ),
                         ],
@@ -858,16 +876,16 @@ Future<void> _confirmDeleteRepayPerson(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete Person'),
-      content: Text('Delete ${person.name}?'),
+      title: const LocalizedText('Delete Person'),
+      content: LocalizedText('Delete ${person.name}?'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: const LocalizedText('Cancel'),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('Delete'),
+          child: const LocalizedText('Delete'),
         ),
       ],
     ),

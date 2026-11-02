@@ -188,7 +188,7 @@ class _ExpensesHero extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     'Expenses',
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                       color: Colors.white,
@@ -198,7 +198,7 @@ class _ExpensesHero extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  const LocalizedText(
                     'Track every expense, stay on budget',
                     style: TextStyle(
                       color: Color(0xFFF7C859),
@@ -251,7 +251,7 @@ class _ExpenseSearchPanel extends StatelessWidget {
           _ExpenseSearchField(onChanged: onQueryChanged),
           const SizedBox(height: 12),
           Align(
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: Wrap(
               spacing: 8,
               runSpacing: 9,
@@ -287,7 +287,7 @@ class _ExpenseSearchField extends StatelessWidget {
         fontSize: 12,
         fontWeight: FontWeight.w600,
       ),
-      decoration: InputDecoration(
+      decoration: LocalizedInputDecoration(
         hintText: 'Search by bill, category, payer...',
         hintStyle: TextStyle(
           color: ThemeColors.logoDeep.withValues(alpha: 0.40),
@@ -330,7 +330,7 @@ class _ExpenseTaskHeader extends StatelessWidget {
     return Row(
       children: [
         const Expanded(
-          child: Text(
+          child: LocalizedText(
             'Expense List',
             style: TextStyle(
               color: ThemeColors.logoDeep,
@@ -408,7 +408,7 @@ class _ExpenseFilterChip extends StatelessWidget {
                   color: selected ? Colors.white : color,
                 ),
                 const SizedBox(width: 7),
-                Text(
+                LocalizedText(
                   filter.label,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -497,7 +497,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
               final title = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  LocalizedText(
                     '$billCount wedding bills',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.74),
@@ -517,7 +517,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  Text(
+                  LocalizedText(
                     pending <= 0
                         ? 'Every recorded bill is settled.'
                         : '${moneyOrDash(pending)} pending${repayment > 0 ? ' + ${moneyOrDash(repayment)} owed' : ''}',
@@ -544,7 +544,7 @@ class _ExpenseDashboardHero extends StatelessWidget {
                   ),
                 ),
                 icon: const Icon(Icons.add_card_rounded),
-                label: const Text('Add expense'),
+                label: const LocalizedText('Add expense'),
               );
               if (compact) {
                 return Column(
@@ -597,7 +597,7 @@ class _ExpenseEmptyLedger extends StatelessWidget {
             size: 34,
           ),
           const SizedBox(height: 10),
-          Text(
+          LocalizedText(
             title,
             textAlign: TextAlign.center,
             style: const TextStyle(
@@ -606,7 +606,7 @@ class _ExpenseEmptyLedger extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
+          LocalizedText(
             subtitle,
             textAlign: TextAlign.center,
             style: const TextStyle(
@@ -615,7 +615,10 @@ class _ExpenseEmptyLedger extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          TextButton(onPressed: onTap, child: const Text('Add expense')),
+          TextButton(
+            onPressed: onTap,
+            child: const LocalizedText('Add expense'),
+          ),
         ],
       ),
     );
@@ -669,11 +672,11 @@ class _ExpenseExportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    const LocalizedText(
                       'Export expenses',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    Text(
+                    LocalizedText(
                       'Copy CSV or generate a PDF report',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
@@ -694,14 +697,14 @@ class _ExpenseExportCard extends StatelessWidget {
                     ? null
                     : () => _copyExpenseCsv(context, expenses),
                 icon: const Icon(Icons.copy_rounded),
-                label: const Text('CSV'),
+                label: const LocalizedText('CSV'),
               ),
               FilledButton.icon(
                 onPressed: expenses.isEmpty
                     ? null
                     : () => _printExpensePdf(context, expenses),
                 icon: const Icon(Icons.picture_as_pdf_rounded),
-                label: const Text('PDF'),
+                label: const LocalizedText('PDF'),
               ),
             ],
           );
@@ -768,17 +771,17 @@ Future<void> _showReportActionSheet({
         children: [
           ListTile(
             leading: const Icon(Icons.visibility_outlined),
-            title: const Text('View report'),
+            title: const LocalizedText('View report'),
             onTap: () => Navigator.pop(sheetContext, _ReportAction.view),
           ),
           ListTile(
             leading: const Icon(Icons.ios_share_rounded),
-            title: const Text('Share report'),
+            title: const LocalizedText('Share report'),
             onTap: () => Navigator.pop(sheetContext, _ReportAction.share),
           ),
           ListTile(
             leading: const Icon(Icons.download_rounded),
-            title: const Text('Download report'),
+            title: const LocalizedText('Download report'),
             onTap: () => Navigator.pop(sheetContext, _ReportAction.download),
           ),
         ],
@@ -805,16 +808,16 @@ Future<void> _showReportActionSheet({
         );
         if (!context.mounted || savedPath == null) return;
         Get.snackbar(
-          'Report downloaded',
-          'Saved to $savedPath',
+          TranslationService.translate('Report downloaded'),
+          TranslationService.translate('Saved to $savedPath'),
           snackPosition: SnackPosition.BOTTOM,
         );
     }
   } catch (error) {
     if (!context.mounted) return;
     Get.snackbar(
-      'PDF export failed',
-      error.toString(),
+      TranslationService.translate('PDF export failed'),
+      TranslationService.translate(error.toString()),
       snackPosition: SnackPosition.BOTTOM,
     );
   }
@@ -829,7 +832,7 @@ class _ReportPreviewPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(title: LocalizedText(title)),
       body: PdfPreview(
         build: (format) => bytes,
         canChangeOrientation: false,
@@ -1214,8 +1217,8 @@ Future<void> _copyExpenseCsv(
   await Clipboard.setData(ClipboardData(text: csv));
   if (!context.mounted) return;
   Get.snackbar(
-    'Expenses exported',
-    'CSV copied to clipboard.',
+    TranslationService.translate('Expenses exported'),
+    TranslationService.translate('CSV copied to clipboard.'),
     snackPosition: SnackPosition.BOTTOM,
   );
 }
@@ -1269,7 +1272,7 @@ class _ExpenseSummaryCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Text(
+              LocalizedText(
                 'total bill value',
                 style: TextStyle(
                   color: scheme.outline,
@@ -1416,11 +1419,11 @@ class _PendingPaymentReminderCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    const LocalizedText(
                       'Pending payment reminders',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    Text(
+                    LocalizedText(
                       'Upcoming balances and amounts you owe',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.outline,
@@ -1451,7 +1454,7 @@ class _PendingPaymentRow extends StatelessWidget {
     final dueLabel = item.dueDate == null
         ? 'No due date'
         : days == null
-        ? formatDate(item.dueDate!)
+        ? formatDisplayDate(item.dueDate!)
         : days < 0
         ? '${days.abs()} days overdue'
         : days == 0
@@ -1467,7 +1470,7 @@ class _PendingPaymentRow extends StatelessWidget {
           Icon(Icons.schedule_rounded, color: color, size: 20),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
+            child: LocalizedText(
               item.name.isEmpty ? 'Untitled bill' : item.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1482,7 +1485,7 @@ class _PendingPaymentRow extends StatelessWidget {
                 moneyOrDash(item.pendingForSummary),
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
-              Text(
+              LocalizedText(
                 dueLabel,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.outline,
@@ -1535,7 +1538,7 @@ class _MiniExpenseMetric extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                Text(
+                LocalizedText(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -1613,7 +1616,7 @@ class _ExpenseBillCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
+                        LocalizedText(
                           item.name.isEmpty ? 'Untitled bill' : item.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1729,7 +1732,7 @@ class _ExpenseBillCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(
+                        child: LocalizedText(
                           item.isRepaymentCompleted
                               ? 'Paid back'
                               : 'You owe ${moneyOrDash(item.repaymentAmount)}${repaymentName.isEmpty ? '' : ' to $repaymentName'}',
@@ -1785,7 +1788,7 @@ class _ExpenseCardChip extends StatelessWidget {
             const SizedBox(width: 4),
           ],
           Flexible(
-            child: Text(
+            child: LocalizedText(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -1866,7 +1869,7 @@ class _PaymentProgressBar extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(
+              child: LocalizedText(
                 '${(progress * 100).round()}% paid',
                 style: const TextStyle(
                   color: ThemeColors.logoDeep,
@@ -1875,7 +1878,7 @@ class _PaymentProgressBar extends StatelessWidget {
                 ),
               ),
             ),
-            Text(
+            LocalizedText(
               '${moneyOrDash(item.pendingForSummary)} remaining',
               style: const TextStyle(
                 color: Color(0xFFD18A00),
@@ -1907,7 +1910,7 @@ class _ExpenseAmountBlock extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        LocalizedText(
           label,
           style: const TextStyle(
             color: Color(0xFF8E6D5D),

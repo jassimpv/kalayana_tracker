@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
@@ -86,18 +87,18 @@ class RemindersTab extends GetView<GuestsController> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Send bulk reminders'),
-        content: Text(
+        title: const LocalizedText('Send bulk reminders'),
+        content: LocalizedText(
           'This will open WhatsApp for each of the ${guests.length} pending guest(s) one by one. Continue?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const LocalizedText('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Send'),
+            child: const LocalizedText('Send'),
           ),
         ],
       ),
@@ -139,7 +140,7 @@ class _ReminderEmptyState extends StatelessWidget {
         children: [
           Icon(icon, color: ThemeColors.primary, size: 34),
           const SizedBox(height: 10),
-          Text(
+          LocalizedText(
             title,
             style: const TextStyle(
               color: ThemeColors.logoDeep,
@@ -147,7 +148,7 @@ class _ReminderEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
+          LocalizedText(
             subtitle,
             textAlign: TextAlign.center,
             style: const TextStyle(
@@ -157,7 +158,7 @@ class _ReminderEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          TextButton(onPressed: onTap, child: Text(actionLabel)),
+          TextButton(onPressed: onTap, child: LocalizedText(actionLabel)),
         ],
       ),
     );
@@ -214,7 +215,7 @@ class _ReminderHeaderPanel extends GetView<GuestsController> {
               color: ThemeColors.primary.withValues(alpha: 0.72),
               size: 18,
             ),
-            decoration: InputDecoration(
+            decoration: LocalizedInputDecoration(
               labelText: 'Event',
               labelStyle: TextStyle(
                 color: ThemeColors.logoDeep.withValues(alpha: 0.6),
@@ -281,7 +282,7 @@ class _ReminderHeaderPanel extends GetView<GuestsController> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    LocalizedText(
                       '$pendingCount pending',
                       style: const TextStyle(
                         color: ThemeColors.logoDeep,
@@ -289,7 +290,7 @@ class _ReminderHeaderPanel extends GetView<GuestsController> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    Text(
+                    LocalizedText(
                       pendingCount == 0
                           ? 'No reminders to send'
                           : 'Guest(s) yet to RSVP for this event',
@@ -320,7 +321,7 @@ class _ReminderHeaderPanel extends GetView<GuestsController> {
                 ),
               ),
               icon: const Icon(Icons.send_rounded, size: 18),
-              label: const Text(
+              label: const LocalizedText(
                 'Send Bulk Reminders',
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
               ),
@@ -389,7 +390,7 @@ class _ReminderRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    LocalizedText(
                       guest.name.isEmpty ? 'Unnamed guest' : guest.name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -473,7 +474,7 @@ class _ReminderTag extends StatelessWidget {
             : ThemeColors.logoGold.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Text(
+      child: LocalizedText(
         text,
         style: TextStyle(
           fontSize: 10.5,
