@@ -23,21 +23,32 @@ const navDestinations = [
     CupertinoIcons.creditcard,
     CupertinoIcons.creditcard_fill,
   ),
-  NavItem('Reminders', CupertinoIcons.calendar, CupertinoIcons.calendar),
+  NavItem(
+    'Reminders',
+    CupertinoIcons.calendar,
+    CupertinoIcons.calendar,
+    visibleInNavigation: false,
+  ),
   NavItem('Shopping', CupertinoIcons.bag, CupertinoIcons.bag_fill),
   NavItem(
     'RSVP',
     CupertinoIcons.person_crop_circle_badge_checkmark,
     CupertinoIcons.person_crop_circle_fill_badge_checkmark,
   ),
-  // NavItem('Profile', CupertinoIcons.person, CupertinoIcons.person_fill),
+  NavItem('Profile', CupertinoIcons.person, CupertinoIcons.person_fill),
 ];
 
 class NavItem {
-  const NavItem(this.label, this.icon, this.selectedIcon);
+  const NavItem(
+    this.label,
+    this.icon,
+    this.selectedIcon, {
+    this.visibleInNavigation = true,
+  });
   final String label;
   final IconData icon;
   final IconData selectedIcon;
+  final bool visibleInNavigation;
 }
 
 const sideMenuExternalLinks = [

@@ -10,16 +10,52 @@ class InvoiceScannerCard extends StatefulWidget {
     required this.onScanned,
     required this.onBusyChanged,
     this.enabled = true,
+    this.openOnStart = false,
   });
   final ValueChanged<InvoiceBillData> onScanned;
   final ValueChanged<bool> onBusyChanged;
   final bool enabled;
+  final bool openOnStart;
   @override
   State<InvoiceScannerCard> createState() => _InvoiceScannerCardState();
 }
 
 class _InvoiceScannerCardState extends State<InvoiceScannerCard> {
   bool busy = false;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.openOnStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _chooseSource();
+      });
+    }
+  }
+
+  Future<void> _chooseSource() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: const LocalizedText('Camera'),
+              onTap: () => Navigator.pop(context, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const LocalizedText('Choose image'),
+              onTap: () => Navigator.pop(context, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source != null && mounted) await _scan(source);
+  }
+
   Future<void> _scan(ImageSource source) async {
     if (busy || !widget.enabled) return;
     setState(() => busy = true);

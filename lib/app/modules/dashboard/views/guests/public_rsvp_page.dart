@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/widgets/app_page_app_bar.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/language_widget.dart';
 import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
@@ -73,7 +74,7 @@ class _PublicRsvpPageState extends State<PublicRsvpPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
+    appBar: AppPageAppBar(
       title: const LocalizedText('Wedding360 RSVP'),
       actions: const [LanguageWidget()],
       automaticallyImplyLeading: false,

@@ -122,6 +122,56 @@ class _DashboardOverviewScreen extends StatelessWidget {
       onPurchase: onPurchase,
       onGuest: onGuest,
     );
+    final pendingExpenses =
+        data.expenses.where((item) => item.pendingForSummary > 0).toList()
+          ..sort((a, b) {
+            if (a.dueDate == null && b.dueDate == null) {
+              return a.createdDate.compareTo(b.createdDate);
+            }
+            if (a.dueDate == null) return 1;
+            if (b.dueDate == null) return -1;
+            return a.dueDate!.compareTo(b.dueDate!);
+          });
+    final focusReminders = [
+      ...data.reminders.where((item) => !item.isDone),
+      ...data
+          .entries(PlanningKind.task)
+          .where((item) => !item.isDone && item.date != null)
+          .map(
+            (item) => EventReminder(
+              id: 'task:${item.id}',
+              title: item.name,
+              category: 'Checklist',
+              dueDate: item.date!,
+              isDone: false,
+            ),
+          ),
+    ]..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    final focus = _TodayFocusCard(
+      pendingExpenses: pendingExpenses,
+      reminders: focusReminders,
+      repayment: repayment,
+      onExpenseTap: () {
+        final controller = Get.find<DashboardController>();
+        pendingExpenses.isEmpty
+            ? controller.openExpenseAdd()
+            : controller.openExpenseDetail(pendingExpenses.first.id);
+      },
+      onReminderTap: () {
+        if (focusReminders.isNotEmpty &&
+            focusReminders.first.id.startsWith('task:')) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) =>
+                  const PlanningPage(initialKind: PlanningKind.task),
+            ),
+          );
+        } else {
+          focusReminders.isEmpty ? onReminder() : onShowReminders();
+        }
+      },
+      onRepaymentTap: Get.find<DashboardController>().openRepayPersons,
+    );
     final analytics = _OverviewBudgetAnalytics(
       progress: progress,
       categoryTotals: data.categoryTotals,
@@ -184,13 +234,15 @@ class _DashboardOverviewScreen extends StatelessWidget {
                         budget,
                         const SizedBox(height: 12),
                         metrics,
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
+                        actions,
+                        const SizedBox(height: 16),
                         gifts,
                         const SizedBox(height: 18),
                         pulse,
                         _RsvpHomeSummaryStrip(onTap: onShowRsvp),
                         const SizedBox(height: 20),
-                        actions,
+                        focus,
                         const InlineNativeAdCard(),
                         const SizedBox(height: 18),
                         analytics,
@@ -209,11 +261,13 @@ class _DashboardOverviewScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         metrics,
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
+                        actions,
+                        const SizedBox(height: 16),
                         gifts,
                         _RsvpHomeSummaryStrip(onTap: onShowRsvp),
                         const SizedBox(height: 20),
-                        actions,
+                        focus,
                         const SizedBox(height: 20),
                         analytics,
                       ],
@@ -251,7 +305,7 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final topInset = kIsWeb ? 90.00 : MediaQuery.paddingOf(context).top;
     final expandedHeight = topInset + 130;
-    final collapsedHeight = topInset + 70;
+    final collapsedHeight = expandedHeight;
 
     return SliverAppBar(
       automaticallyImplyLeading: false,
@@ -270,12 +324,12 @@ class _OverviewHeroSliverAppBar extends StatelessWidget {
               settings?.currentExtent ?? constraints.biggest.height;
           final minExtent = settings?.minExtent ?? collapsedHeight;
           final maxExtent = settings?.maxExtent ?? expandedHeight;
-          final expandProgress =
-              ((currentExtent - minExtent) / (maxExtent - minExtent)).clamp(
-                0.0,
-                1.0,
-              );
-          final bool isCollapsed = currentExtent <= minExtent + 1;
+          final extentRange = maxExtent - minExtent;
+          final expandProgress = extentRange <= 0
+              ? 1.0
+              : ((currentExtent - minExtent) / extentRange).clamp(0.0, 1.0);
+          final bool isCollapsed =
+              extentRange > 0 && currentExtent <= minExtent + 1;
 
           // Animate bottom corner radius: 0 when expanded → 24 when collapsed
           final bottomRadius = Radius.circular(
@@ -1357,6 +1411,12 @@ class _OverviewQuickActions extends StatelessWidget {
         onExpense,
       ),
       _ActionSpec(
+        CupertinoIcons.camera,
+        'Scan bill',
+        'Camera or gallery',
+        Get.find<DashboardController>().openScanBill,
+      ),
+      _ActionSpec(
         CupertinoIcons.person_add,
         'Add Guest',
         'RSVP invitee',
@@ -1372,6 +1432,23 @@ class _OverviewQuickActions extends StatelessWidget {
       _ActionSpec(CupertinoIcons.person_3, 'Pay Back', 'Manage people', () {
         Get.find<DashboardController>().openRepayPersons();
       }),
+      _ActionSpec(CupertinoIcons.gift, 'Gift money', 'Money received', () {
+        Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => const PlanningPage(initialKind: PlanningKind.gift),
+          ),
+        );
+      }),
+      _ActionSpec(
+        CupertinoIcons.list_bullet,
+        'Planning tools',
+        'Checklist',
+        () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute<void>(builder: (_) => const PlanningPage()));
+        },
+      ),
     ];
     return Column(
       children: [
@@ -1390,37 +1467,22 @@ class _OverviewQuickActions extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            for (var i = 0; i < actions.length; i++) ...[
-              Expanded(child: _ActionCard(spec: actions[i])),
-              if (i != actions.length - 1) const SizedBox(width: 8),
-            ],
-          ],
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            ActionChip(
-              avatar: const Icon(Icons.card_giftcard, size: 18),
-              label: const LocalizedText('Gift money'),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) =>
-                      const PlanningPage(initialKind: PlanningKind.gift),
-                ),
-              ),
-            ),
-            ActionChip(
-              avatar: const Icon(Icons.checklist, size: 18),
-              label: const LocalizedText('Planning tools'),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const PlanningPage()),
-              ),
-            ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth >= 600 ? 6 : 3;
+            final width = (constraints.maxWidth - 8 * (columns - 1)) / columns;
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final action in actions)
+                  SizedBox(
+                    width: width,
+                    child: _ActionCard(spec: action),
+                  ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -2463,11 +2525,17 @@ class _TodayFocusCard extends StatelessWidget {
     required this.pendingExpenses,
     required this.reminders,
     required this.repayment,
+    required this.onExpenseTap,
+    required this.onReminderTap,
+    required this.onRepaymentTap,
   });
 
   final List<ExpenseItem> pendingExpenses;
   final List<EventReminder> reminders;
   final double repayment;
+  final VoidCallback onExpenseTap;
+  final VoidCallback onReminderTap;
+  final VoidCallback onRepaymentTap;
 
   @override
   Widget build(BuildContext context) {
@@ -2480,6 +2548,7 @@ class _TodayFocusCard extends StatelessWidget {
           const _SectionHeader(title: 'Today focus', action: 'Priority'),
           const SizedBox(height: 14),
           _FocusRow(
+            onTap: onExpenseTap,
             icon: Icons.receipt_long_rounded,
             color: ThemeColors.logoGold,
             title: nextBill?.name ?? 'No bill due next',
@@ -2489,6 +2558,7 @@ class _TodayFocusCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _FocusRow(
+            onTap: onReminderTap,
             icon: Icons.event_available_rounded,
             color: ThemeColors.primary,
             title: nextReminder?.title ?? 'No upcoming date',
@@ -2499,6 +2569,7 @@ class _TodayFocusCard extends StatelessWidget {
           if (repayment > 0) ...[
             const SizedBox(height: 10),
             _FocusRow(
+              onTap: onRepaymentTap,
               icon: Icons.assignment_return_rounded,
               color: const Color(0xFFB85D75),
               title: 'Money you owe',
@@ -2518,51 +2589,60 @@ class _FocusRow extends StatelessWidget {
     required this.color,
     required this.title,
     required this.subtitle,
+    this.onTap,
   });
 
   final IconData icon;
   final Color color;
   final String title;
   final String subtitle;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: color.withValues(alpha: 0.12)),
-      ),
-      child: Row(
-        children: [
-          SoftIcon(icon: icon, color: color),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                LocalizedText(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 2),
-                LocalizedText(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+        child: Ink(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: color.withValues(alpha: 0.12)),
           ),
-        ],
+          child: Row(
+            children: [
+              SoftIcon(icon: icon, color: color),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LocalizedText(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 2),
+                    LocalizedText(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

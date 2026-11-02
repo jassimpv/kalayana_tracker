@@ -155,6 +155,12 @@ class DashboardController extends GetxController {
   void openExpenseAdd() =>
       _openDashboardSubPage(DashboardPageKind.expenseAdd, selectedTab: 1);
 
+  void openScanBill() => _openDashboardSubPage(
+    DashboardPageKind.expenseAdd,
+    selectedTab: 1,
+    argument: 'scan:bill',
+  );
+
   void openExpenseEdit(String expenseId) => _openDashboardSubPage(
     DashboardPageKind.expenseAdd,
     selectedTab: 1,

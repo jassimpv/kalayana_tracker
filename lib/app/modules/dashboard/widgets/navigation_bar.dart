@@ -58,59 +58,69 @@ class BottomNav extends StatelessWidget {
         ),
         child: Obx(
           () => Row(
-            children: navDestinations.asMap().entries.map((entry) {
-              final selected = controller.selectedIndex.value == entry.key;
-              final item = entry.value;
-              return Expanded(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(24),
-                  onTap: () => onItemClick(entry.key),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 260),
-                    curve: Curves.easeOutCubic,
-                    height: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: selected
-                          ? const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF7A1230), Color(0xFF9D1740)],
-                            )
-                          : null,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          selected ? item.selectedIcon : item.icon,
-                          size: 21,
-                          color: selected ? Colors.white : ThemeColors.primary,
+            children: navDestinations
+                .asMap()
+                .entries
+                .where((entry) => entry.value.visibleInNavigation)
+                .map((entry) {
+                  final selected = controller.selectedIndex.value == entry.key;
+                  final item = entry.value;
+                  return Expanded(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(24),
+                      onTap: () => onItemClick(entry.key),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOutCubic,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: selected
+                              ? const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF7A1230),
+                                    Color(0xFF9D1740),
+                                  ],
+                                )
+                              : null,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 2),
-                        AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 220),
-                          style: TextStyle(
-                            color: selected
-                                ? Colors.white
-                                : ThemeColors.primary,
-                            fontSize: 10.5,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w500,
-                          ),
-                          child: LocalizedText(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              selected ? item.selectedIcon : item.icon,
+                              size: 21,
+                              color: selected
+                                  ? Colors.white
+                                  : ThemeColors.primary,
+                            ),
+                            const SizedBox(height: 2),
+                            AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 220),
+                              style: TextStyle(
+                                color: selected
+                                    ? Colors.white
+                                    : ThemeColors.primary,
+                                fontSize: 10.5,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                              ),
+                              child: LocalizedText(
+                                item.label,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-              );
-            }).toList(),
+                  );
+                })
+                .toList(),
           ),
         ),
       ),
@@ -173,31 +183,24 @@ class DashboardSideMenu extends StatelessWidget {
               Obx(
                 () => Column(
                   children: [
-                    ...navDestinations.asMap().entries.map((entry) {
-                      final selected =
-                          controller.selectedIndex.value == entry.key;
-                      final item = entry.value;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: _SideMenuItem(
-                          label: item.label,
-                          icon: selected ? item.selectedIcon : item.icon,
-                          selected: selected,
-                          onTap: () => onItemClick(entry.key),
-                        ),
-                      );
-                    }),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _SideMenuItem(
-                        label: 'Profile',
-                        icon: controller.selectedIndex.value == 5
-                            ? Icons.person_rounded
-                            : Icons.person_outline_rounded,
-                        selected: controller.selectedIndex.value == 5,
-                        onTap: controller.openProfile,
-                      ),
-                    ),
+                    ...navDestinations
+                        .asMap()
+                        .entries
+                        .where((entry) => entry.value.visibleInNavigation)
+                        .map((entry) {
+                          final selected =
+                              controller.selectedIndex.value == entry.key;
+                          final item = entry.value;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _SideMenuItem(
+                              label: item.label,
+                              icon: selected ? item.selectedIcon : item.icon,
+                              selected: selected,
+                              onTap: () => onItemClick(entry.key),
+                            ),
+                          );
+                        }),
                   ],
                 ),
               ),

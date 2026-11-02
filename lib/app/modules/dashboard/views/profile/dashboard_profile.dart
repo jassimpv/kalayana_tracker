@@ -106,8 +106,7 @@ class ProfilePanel extends GetView<DashboardController> {
                     _ProfileMenuRow(
                       icon: Icons.checklist_rounded,
                       label: 'Wedding Planning',
-                      subtitle:
-                          'Vendors, checklist, contributions, documents & budgets',
+                      subtitle: 'Vendors, checklist, contributions & budgets',
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => const PlanningPage(),

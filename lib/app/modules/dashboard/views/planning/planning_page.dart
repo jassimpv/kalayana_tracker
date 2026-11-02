@@ -1,3 +1,6 @@
+import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
+import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/expense_widgets.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/app_page_app_bar.dart';
 import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
 import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'dart:math' as math;
@@ -33,7 +36,8 @@ const _icons = {
   PlanningKind.categoryBudget: Icons.pie_chart_outline,
   PlanningKind.repayment: Icons.currency_exchange,
 };
-String _money(double value) => '${AppConfig.appCurrency}${formatMoney(value)}';
+String _money(double value) =>
+    '${value < 0 ? '-' : ''}${AppConfig.appCurrency}${formatMoney(value.abs())}';
 
 /// Additional planning tools use the existing workspace and its access controls.
 class PlanningPage extends StatelessWidget {
@@ -44,86 +48,197 @@ class PlanningPage extends StatelessWidget {
   Widget build(BuildContext context) {
     if (initialKind != null) return _PlanningList(kind: initialKind!);
     return Scaffold(
-      appBar: AppBar(title: const LocalizedText('Wedding planning')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Obx(() {
-            final data = Get.find<DashboardController>().data.value;
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    LocalizedText(
-                      'Money received',
-                      style: Theme.of(context).textTheme.titleLarge,
+      appBar: AppPageAppBar(title: const LocalizedText('Wedding planning')),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+              children: [
+                Obx(() {
+                  final data = Get.find<DashboardController>().data.value;
+                  final receivedAfterPayments = data.fundsReceived - data.paid;
+                  return ExpenseDetailSurface(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            SoftIcon(
+                              icon: Icons.account_balance_wallet_outlined,
+                              color: ThemeColors.primary,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  LocalizedText(
+                                    'Money received',
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleSmall,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _money(data.fundsReceived),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall
+                                        ?.copyWith(
+                                          color: ThemeColors.primary,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        _PlanningMetrics(
+                          values: [
+                            ('Received gifts', _money(data.giftsReceived)),
+                            (
+                              'Received contributions',
+                              _money(data.contributionsReceived),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          child: Divider(
+                            height: 1,
+                            color: ThemeColors.primary.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        LocalizedText(
+                          'Received less recorded payments',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: ThemeColors.logoDeep.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _money(receivedAfterPayments),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: receivedAfterPayments < 0
+                                    ? ThemeColors.terracotta
+                                    : ThemeColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        const SizedBox(height: 10),
+                        LocalizedText(
+                          'Received money is tracked separately from your spending budget.',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: ThemeColors.logoDeep.withValues(
+                                  alpha: 0.65,
+                                ),
+                              ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    LocalizedText('Gifts: ${_money(data.giftsReceived)}'),
-                    LocalizedText(
-                      'Family contributions: ${_money(data.contributionsReceived)}',
+                  );
+                }),
+                const SizedBox(height: 20),
+                ...PlanningKind.values
+                    .where((kind) => kind != PlanningKind.document)
+                    .map(
+                      (kind) => _PlanningToolTile(
+                        icon: _icons[kind]!,
+                        title: _titles[kind]!,
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => _PlanningList(kind: kind),
+                          ),
+                        ),
+                      ),
                     ),
-                    LocalizedText(
-                      'Total received: ${_money(data.fundsReceived)}',
+                _PlanningToolTile(
+                  icon: Icons.show_chart,
+                  title: 'Spending trends',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const _SpendingInsights(),
                     ),
-                    LocalizedText(
-                      'Received less recorded payments: ${_money(data.fundsReceived - data.paid)}',
-                    ),
-                    const SizedBox(height: 8),
-                    const LocalizedText(
-                      'Received money is tracked separately from your spending budget.',
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-          ...PlanningKind.values.map(
-            (kind) => Card(
-              child: ListTile(
-                leading: Icon(_icons[kind]),
-                title: LocalizedText(_titles[kind]!),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => _PlanningList(kind: kind),
                   ),
                 ),
-              ),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.show_chart),
-              title: const LocalizedText('Spending trends'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const _SpendingInsights(),
+                _PlanningToolTile(
+                  icon: Icons.backup_outlined,
+                  title: 'Backup & restore',
+                  subtitle: 'Export or merge a workspace backup',
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const WorkspaceBackupPage(),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.backup_outlined),
-              title: const LocalizedText('Backup & restore'),
-              subtitle: const LocalizedText(
-                'Export or merge a workspace backup',
-              ),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const WorkspaceBackupPage(),
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+class _PlanningToolTile extends StatelessWidget {
+  const _PlanningToolTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+  });
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: const EdgeInsets.only(bottom: 10),
+    color: Colors.white.withValues(alpha: 0.82),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(18),
+      side: BorderSide(color: ThemeColors.primary.withValues(alpha: 0.1)),
+    ),
+    child: ListTile(
+      contentPadding: const EdgeInsetsDirectional.fromSTEB(14, 6, 12, 6),
+      leading: SoftIcon(icon: icon, color: ThemeColors.primary),
+      title: LocalizedText(
+        title,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+          color: ThemeColors.logoDeep,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: subtitle == null
+          ? null
+          : LocalizedText(
+              subtitle!,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: ThemeColors.logoDeep.withValues(alpha: 0.65),
+              ),
+            ),
+      trailing: Icon(
+        Directionality.of(context) == TextDirection.rtl
+            ? Icons.chevron_left
+            : Icons.chevron_right,
+        color: ThemeColors.primary.withValues(alpha: 0.75),
+        size: 22,
+      ),
+      onTap: onTap,
+    ),
+  );
 }
 
 class _PlanningList extends StatefulWidget {
@@ -135,14 +250,21 @@ class _PlanningList extends StatefulWidget {
 
 class _PlanningListState extends State<_PlanningList> {
   final controller = Get.find<DashboardController>();
+  final searchController = TextEditingController();
   String query = '';
   bool openOnly = false;
   bool exporting = false;
   bool templateBusy = false;
 
   @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
+    appBar: AppPageAppBar(
       title: LocalizedText(_titles[widget.kind]!),
       actions: [
         PopupMenuButton<String>(
@@ -170,7 +292,7 @@ class _PlanningListState extends State<_PlanningList> {
                     (!openOnly || !entry.isDone) &&
                     '${entry.name} ${entry.category} ${entry.contact} ${entry.notes} ${entry.assignee}'
                         .toLowerCase()
-                        .contains(query.toLowerCase()),
+                        .contains(query.trim().toLowerCase()),
               )
               .toList()
             ..sort(
@@ -178,67 +300,110 @@ class _PlanningListState extends State<_PlanningList> {
                 a.date ?? DateTime(1970),
               ),
             );
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-        children: [
-          TextField(
-            decoration: const LocalizedInputDecoration(
-              prefixIcon: Icon(Icons.search),
-              labelText: 'Search',
-            ),
-            onChanged: (value) => setState(() => query = value),
-          ),
-          const SizedBox(height: 12),
-          _summary(data, all),
-          if (widget.kind == PlanningKind.task)
-            Wrap(
-              spacing: 8,
+      return SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
               children: [
-                FilterChip(
-                  label: const LocalizedText('Open tasks'),
-                  selected: openOnly,
-                  onSelected: (value) => setState(() => openOnly = value),
+                TextField(
+                  controller: searchController,
+                  decoration: LocalizedInputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: 'Search',
+                    suffixIcon: query.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: TranslationService.translate(
+                              'Clear search',
+                            ),
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              searchController.clear();
+                              setState(() => query = '');
+                            },
+                          ),
+                  ),
+                  onChanged: (value) => setState(() => query = value),
                 ),
-                ActionChip(
-                  label: const LocalizedText('Add wedding checklist template'),
-                  onPressed: templateBusy ? null : _template,
+                const SizedBox(height: 12),
+                _summary(data, all),
+                if (widget.kind == PlanningKind.task)
+                  Wrap(
+                    spacing: 8,
+                    children: [
+                      FilterChip(
+                        label: const LocalizedText('Open tasks'),
+                        selected: openOnly,
+                        onSelected: (value) => setState(() => openOnly = value),
+                      ),
+                      ActionChip(
+                        label: const LocalizedText(
+                          'Add wedding checklist template',
+                        ),
+                        onPressed: templateBusy ? null : _template,
+                      ),
+                    ],
+                  ),
+                if (entries.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: PremiumEmptyState(
+                      icon: _icons[widget.kind]!,
+                      title: all.isNotEmpty
+                          ? 'No matching records'
+                          : widget.kind == PlanningKind.gift
+                          ? 'No gifts yet'
+                          : 'No records yet',
+                      subtitle: all.isNotEmpty
+                          ? 'Try clearing the search or filters above.'
+                          : 'No records yet. Tap Add to get started.',
+                    ),
+                  ),
+                ...entries.map(
+                  (entry) => Card(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: ListTile(
+                      contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                        14,
+                        8,
+                        8,
+                        8,
+                      ),
+                      leading: SoftIcon(
+                        icon: _icons[entry.kind]!,
+                        color: ThemeColors.primary,
+                      ),
+                      title: Text(entry.name),
+                      subtitle: LocalizedText(_description(entry, data)),
+                      isThreeLine: true,
+                      onTap: () => _edit(entry),
+                      trailing: PopupMenuButton<String>(
+                        onSelected: (action) {
+                          if (action == 'delete') _delete(entry);
+                          if (action == 'open') _open(entry.url);
+                        },
+                        itemBuilder: (_) => [
+                          if (entry.url.isNotEmpty)
+                            const PopupMenuItem(
+                              value: 'open',
+                              child: LocalizedText('Open document'),
+                            ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: LocalizedText('Delete'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-          if (entries.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(32),
-              child: LocalizedText('No records yet. Tap Add to get started.'),
-            ),
-          ...entries.map(
-            (entry) => Card(
-              child: ListTile(
-                leading: Icon(_icons[entry.kind]),
-                title: Text(entry.name),
-                subtitle: LocalizedText(_description(entry, data)),
-                isThreeLine: true,
-                onTap: () => _edit(entry),
-                trailing: PopupMenuButton<String>(
-                  onSelected: (action) {
-                    if (action == 'delete') _delete(entry);
-                    if (action == 'open') _open(entry.url);
-                  },
-                  itemBuilder: (_) => [
-                    if (entry.url.isNotEmpty)
-                      const PopupMenuItem(
-                        value: 'open',
-                        child: LocalizedText('Open document'),
-                      ),
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: LocalizedText('Delete'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
-        ],
+        ),
       );
     }),
   );
@@ -269,10 +434,50 @@ class _PlanningListState extends State<_PlanningList> {
         text = '${entries.length} records';
     }
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: LocalizedText(
-        text,
-        style: Theme.of(context).textTheme.titleMedium,
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ExpenseDetailSurface(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            SoftIcon(icon: _icons[widget.kind]!, color: ThemeColors.primary),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LocalizedText(
+                    widget.kind == PlanningKind.gift
+                        ? 'Money received'
+                        : _titles[widget.kind]!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: ThemeColors.logoDeep.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  if (widget.kind == PlanningKind.gift) ...[
+                    Text(
+                      _money(data.giftsReceived),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: ThemeColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    LocalizedText(
+                      '${entries.length} records',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ] else
+                    LocalizedText(
+                      text,
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -697,7 +902,7 @@ class _PlanningEditorState extends State<_PlanningEditor> {
           expense.id: 'Expense: ${expense.name}',
     };
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppPageAppBar(
         title: Text(
           '${TranslationService.translate(widget.entry == null ? 'Add' : 'Edit')} ${TranslationService.translate(_titles[kind]!)}',
         ),
@@ -1016,7 +1221,7 @@ class _SpendingInsightsState extends State<_SpendingInsights> {
   bool weekly = false;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const LocalizedText('Spending trends')),
+    appBar: AppPageAppBar(title: const LocalizedText('Spending trends')),
     body: Obx(() {
       final data = Get.find<DashboardController>().data.value;
       final now = DateTime.now();
@@ -1050,56 +1255,192 @@ class _SpendingInsightsState extends State<_SpendingInsights> {
       final maxTotal = math.max(1.0, totals.reduce(math.max));
       final previous = totals[4];
       final difference = totals[5] - previous;
-      return ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          SegmentedButton<bool>(
-            segments: const [
-              ButtonSegment(value: false, label: LocalizedText('Monthly')),
-              ButtonSegment(value: true, label: LocalizedText('Weekly')),
-            ],
-            selected: {weekly},
-            onSelectionChanged: (values) =>
-                setState(() => weekly = values.first),
-          ),
-          const SizedBox(height: 20),
-          const LocalizedText(
-            'Actual payments by payment date. The current period is still in progress.',
-          ),
-          LocalizedText(
-            'Current period ${_money(totals[5])} · Previous ${_money(previous)}',
-          ),
-          LocalizedText(
-            'Change ${difference >= 0 ? '+' : '-'}${_money(difference.abs())}${previous == 0 ? '' : ' (${(difference / previous * 100).toStringAsFixed(1)}%)'}',
-          ),
-          const SizedBox(height: 20),
-          ...List.generate(
-            6,
-            (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${weekly ? formatDisplayDate(starts[index]) : '${starts[index].year}-${starts[index].month.toString().padLeft(2, '0')}'} · ${_money(totals[index])}',
+      return SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+              children: [
+                SegmentedButton<bool>(
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.selected)
+                          ? ThemeColors.themeColor
+                          : Colors.white.withValues(alpha: 0.8),
+                    ),
+                    foregroundColor: WidgetStateProperty.resolveWith(
+                      (states) => states.contains(WidgetState.selected)
+                          ? Colors.white
+                          : ThemeColors.logoDeep,
+                    ),
+                    side: WidgetStatePropertyAll(
+                      BorderSide(
+                        color: ThemeColors.primary.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    padding: const WidgetStatePropertyAll(
+                      EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  LinearProgressIndicator(
-                    value: totals[index] / maxTotal,
-                    minHeight: 14,
+                  segments: const [
+                    ButtonSegment(
+                      value: false,
+                      label: LocalizedText('Monthly'),
+                    ),
+                    ButtonSegment(value: true, label: LocalizedText('Weekly')),
+                  ],
+                  selected: {weekly},
+                  onSelectionChanged: (values) =>
+                      setState(() => weekly = values.first),
+                ),
+                const SizedBox(height: 16),
+                ExpenseDetailSurface(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _PlanningMetrics(
+                        values: [
+                          ('Current period', _money(totals[5])),
+                          ('Previous period', _money(previous)),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      LocalizedText(
+                        'Change ${difference > 0
+                            ? '+'
+                            : difference < 0
+                            ? '-'
+                            : ''}${_money(difference.abs())}${previous == 0 ? '' : ' (${(difference / previous * 100).toStringAsFixed(1)}%)'}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      LocalizedText(
+                        'Actual payments by payment date. The current period is still in progress.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: ThemeColors.logoDeep.withValues(alpha: 0.65),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 16),
+                ExpenseDetailSurface(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LocalizedText(
+                        'Spending by period',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 16),
+                      if (totals.every((amount) => amount == 0))
+                        const PremiumEmptyState(
+                          icon: Icons.bar_chart_rounded,
+                          title: 'No payments in this period',
+                          subtitle:
+                              'Recorded payments outside this range still appear in the financial summary.',
+                        )
+                      else
+                        ...List.generate(6, (index) {
+                          final period = weekly
+                              ? formatDisplayDate(starts[index])
+                              : '${TranslationService.translate(months[starts[index].month - 1])} ${starts[index].year}';
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: index == 5 ? 0 : 20,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: Wrap(
+                                    alignment: WrapAlignment.spaceBetween,
+                                    spacing: 12,
+                                    runSpacing: 4,
+                                    children: [
+                                      Text(
+                                        period,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium,
+                                      ),
+                                      Text(
+                                        _money(totals[index]),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: totals[index] == 0
+                                                  ? ThemeColors.logoDeep
+                                                        .withValues(alpha: 0.55)
+                                                  : ThemeColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                LinearProgressIndicator(
+                                  value: (totals[index] / maxTotal).clamp(
+                                    0.0,
+                                    1.0,
+                                  ),
+                                  color: ThemeColors.themeColor,
+                                  backgroundColor: ThemeColors.logoDeep
+                                      .withValues(alpha: 0.08),
+                                  minHeight: 10,
+                                  borderRadius: BorderRadius.circular(6),
+                                  stopIndicatorRadius: 0,
+                                  trackGap: 0,
+                                  semanticsLabel: period,
+                                  semanticsValue: _money(totals[index]),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ExpenseDetailSurface(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      LocalizedText(
+                        'Financial summary',
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 16),
+                      _PlanningMetrics(
+                        values: [
+                          ('Received gifts', _money(data.giftsReceived)),
+                          (
+                            'Received contributions',
+                            _money(data.contributionsReceived),
+                          ),
+                          ('Committed expenses', _money(data.totalBudget)),
+                          ('Recorded payments', _money(data.paid)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          const Divider(),
-          LocalizedText('Received gifts ${_money(data.giftsReceived)}'),
-          LocalizedText(
-            'Received contributions ${_money(data.contributionsReceived)}',
-          ),
-          LocalizedText('Committed expenses ${_money(data.totalBudget)}'),
-          LocalizedText('Recorded payments ${_money(data.paid)}'),
-        ],
+        ),
       );
     }),
   );
@@ -1121,4 +1462,46 @@ class _SpendingInsightsState extends State<_SpendingInsights> {
       }
     }
   }
+}
+
+class _PlanningMetrics extends StatelessWidget {
+  const _PlanningMetrics({required this.values});
+  final List<(String, String)> values;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final columns = constraints.maxWidth < 280 ? 1 : 2;
+      final width = (constraints.maxWidth - 16 * (columns - 1)) / columns;
+      return Wrap(
+        spacing: 16,
+        runSpacing: 16,
+        children: [
+          for (final value in values)
+            SizedBox(
+              width: width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LocalizedText(
+                    value.$1,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: ThemeColors.logoDeep.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    value.$2,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: ThemeColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      );
+    },
+  );
 }

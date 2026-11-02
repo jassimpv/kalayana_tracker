@@ -256,6 +256,7 @@ class _ExpenseAddPageState extends State<ExpenseAddPage> {
           ),
           const SizedBox(height: 12),
           InvoiceScannerCard(
+            openOnStart: widget.sourceArgument == 'scan:bill',
             enabled: !_isSaving,
             onBusyChanged: (value) {
               if (mounted) setState(() => _isScanning = value);

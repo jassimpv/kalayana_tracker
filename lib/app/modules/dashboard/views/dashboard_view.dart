@@ -570,7 +570,11 @@ class _DashboardBody extends StatelessWidget {
 String _dashboardPageTitle(DashboardPageKind page, [String? argument]) =>
     switch (page) {
       DashboardPageKind.expenseAdd =>
-        argument?.startsWith('edit:') == true ? 'Edit Expense' : 'Add Expense',
+        argument == 'scan:bill'
+            ? 'Scan bill'
+            : argument?.startsWith('edit:') == true
+            ? 'Edit Expense'
+            : 'Add Expense',
       DashboardPageKind.reminderAdd => 'Add Reminder',
       DashboardPageKind.purchaseAdd => 'Add Shopping',
       DashboardPageKind.expenseDetail => 'Expense Detail',

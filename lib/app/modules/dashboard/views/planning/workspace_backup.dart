@@ -1,3 +1,4 @@
+import 'package:kalayanaexpresstracker/app/core/widgets/app_page_app_bar.dart';
 import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'package:kalayanaexpresstracker/app/core/services/guest_rsvp_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -310,7 +311,7 @@ class _WorkspaceBackupPageState extends State<WorkspaceBackupPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const LocalizedText('Backup & restore')),
+    appBar: AppPageAppBar(title: const LocalizedText('Backup & restore')),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
