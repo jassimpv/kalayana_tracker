@@ -1356,4 +1356,7 @@ const Map<String, String> enUs = {
       "Vendors, checklist, contributions & budgets",
   "Scan bill": "Scan bill",
   "Camera or gallery": "Camera or gallery",
+  "Add collaborator": "Add collaborator",
+  "Invitation copied. Share it with your collaborator.":
+      "Invitation copied. Share it with your collaborator.",
 };

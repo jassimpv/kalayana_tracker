@@ -5,6 +5,8 @@
 class AdsConfig {
   AdsConfig._();
 
+  static const bool _debugAdsEnabled = !bool.fromEnvironment('dart.vm.product');
+
   /// AdMob App ID (also declared natively in AndroidManifest.xml and
   /// ios/Runner/Info.plist — update both places together if this changes).
   static const String appId = 'ca-app-pub-1869067456074705~1827059897';
@@ -23,6 +25,21 @@ class AdsConfig {
   /// Rewarded ad unit shown before generating a PDF report.
   static const String rewardedReportUnitId =
       'ca-app-pub-1869067456074705/7157812588';
+
+  /// Google sample ad unit IDs used in debug/profile sessions so development
+  /// requests never generate traffic against the production placements.
+  static String get dashboardBannerUnitIdForBuild => _debugAdsEnabled
+      ? 'ca-app-pub-3940256099942544/6300978111'
+      : dashboardBannerUnitId;
+  static String get nativeInlineUnitIdForBuild => _debugAdsEnabled
+      ? 'ca-app-pub-3940256099942544/1044960115'
+      : nativeInlineUnitId;
+  static String get appOpenUnitIdForBuild => _debugAdsEnabled
+      ? 'ca-app-pub-3940256099942544/5575463023'
+      : appOpenUnitId;
+  static String get rewardedReportUnitIdForBuild => _debugAdsEnabled
+      ? 'ca-app-pub-3940256099942544/5224354917'
+      : rewardedReportUnitId;
 
   /// Height reserved for [DashboardBannerAd] (matches AdSize.banner).
   static const double bannerHeight = 50;

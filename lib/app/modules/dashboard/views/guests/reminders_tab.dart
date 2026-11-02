@@ -1,4 +1,5 @@
 import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/inline_native_ad.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
@@ -69,9 +70,20 @@ class RemindersTab extends GetView<GuestsController> {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.fromLTRB(14, 0, 14, 110),
-                    itemCount: pending.length,
-                    itemBuilder: (context, index) =>
-                        _ReminderRow(guest: pending[index], event: event!),
+                    itemCount: pending.length + (pending.length >= 2 ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      final adIndex = pending.length ~/ 2;
+                      if (pending.length >= 2 && index == adIndex) {
+                        return const InlineNativeAdCard();
+                      }
+                      final guestIndex = pending.length >= 2 && index > adIndex
+                          ? index - 1
+                          : index;
+                      return _ReminderRow(
+                        guest: pending[guestIndex],
+                        event: event!,
+                      );
+                    },
                   ),
           ),
         ],

@@ -50,6 +50,12 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
         .where((item) => _matchesExpenseFilter(item, _selectedFilter))
         .where((item) => _matchesExpenseQuery(item, _query))
         .toList();
+    final expenseCards = filteredExpenses
+        .map<Widget>((item) => _ExpenseBillCard(item: item))
+        .toList();
+    if (expenseCards.length >= 2) {
+      expenseCards.insert(expenseCards.length ~/ 2, const InlineNativeAdCard());
+    }
     final mobile = isMobile(context);
     final desktop = isDesktop(context);
 
@@ -101,9 +107,7 @@ class _ExpenseListMockupState extends State<_ExpenseListMockup> {
                     desktopCount: 2,
                     spacing: 14,
                     runSpacing: 14,
-                    children: filteredExpenses
-                        .map((item) => _ExpenseBillCard(item: item))
-                        .toList(),
+                    children: expenseCards,
                   ),
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/expense_widgets.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/app_page_app_bar.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/inline_native_ad.dart';
 import 'package:kalayanaexpresstracker/app/core/localization/translation_service.dart';
 import 'package:kalayanaexpresstracker/app/core/localization/localized_widgets.dart';
 import 'dart:math' as math;
@@ -300,6 +301,46 @@ class _PlanningListState extends State<_PlanningList> {
                 a.date ?? DateTime(1970),
               ),
             );
+      final recordWidgets = <Widget>[];
+      for (var index = 0; index < entries.length; index++) {
+        if (entries.length >= 2 && index == entries.length ~/ 2) {
+          recordWidgets.add(const InlineNativeAdCard());
+        }
+        final entry = entries[index];
+        recordWidgets.add(
+          Card(
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListTile(
+              contentPadding: const EdgeInsetsDirectional.fromSTEB(14, 8, 8, 8),
+              leading: SoftIcon(
+                icon: _icons[entry.kind]!,
+                color: ThemeColors.primary,
+              ),
+              title: Text(entry.name),
+              subtitle: LocalizedText(_description(entry, data)),
+              isThreeLine: true,
+              onTap: () => _edit(entry),
+              trailing: PopupMenuButton<String>(
+                onSelected: (action) {
+                  if (action == 'delete') _delete(entry);
+                  if (action == 'open') _open(entry.url);
+                },
+                itemBuilder: (_) => [
+                  if (entry.url.isNotEmpty)
+                    const PopupMenuItem(
+                      value: 'open',
+                      child: LocalizedText('Open document'),
+                    ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: LocalizedText('Delete'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      }
       return SafeArea(
         top: false,
         child: Center(
@@ -362,44 +403,7 @@ class _PlanningListState extends State<_PlanningList> {
                           : 'No records yet. Tap Add to get started.',
                     ),
                   ),
-                ...entries.map(
-                  (entry) => Card(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: ListTile(
-                      contentPadding: const EdgeInsetsDirectional.fromSTEB(
-                        14,
-                        8,
-                        8,
-                        8,
-                      ),
-                      leading: SoftIcon(
-                        icon: _icons[entry.kind]!,
-                        color: ThemeColors.primary,
-                      ),
-                      title: Text(entry.name),
-                      subtitle: LocalizedText(_description(entry, data)),
-                      isThreeLine: true,
-                      onTap: () => _edit(entry),
-                      trailing: PopupMenuButton<String>(
-                        onSelected: (action) {
-                          if (action == 'delete') _delete(entry);
-                          if (action == 'open') _open(entry.url);
-                        },
-                        itemBuilder: (_) => [
-                          if (entry.url.isNotEmpty)
-                            const PopupMenuItem(
-                              value: 'open',
-                              child: LocalizedText('Open document'),
-                            ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: LocalizedText('Delete'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                ...recordWidgets,
               ],
             ),
           ),

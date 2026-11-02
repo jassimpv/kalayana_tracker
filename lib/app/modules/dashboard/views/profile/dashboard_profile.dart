@@ -533,6 +533,10 @@ class ReportsPanel extends GetView<DashboardController> {
                     ],
                   ),
                 ),
+                if (data.expenses.length >= 2) ...[
+                  const SizedBox(height: 8),
+                  const InlineNativeAdCard(),
+                ],
                 const SizedBox(height: 10),
                 _ReportSurface(
                   child: Column(
@@ -918,9 +922,9 @@ class CollaboratorsPanel extends GetView<DashboardController> {
                               child: FilledButton.icon(
                                 onPressed: controller.joinCode.value == null
                                     ? null
-                                    : () => _copyJoinKey(joinKey),
+                                    : () => _copyCollaboratorInvite(joinKey),
                                 icon: const Icon(Icons.ios_share_rounded),
-                                label: const LocalizedText('Share'),
+                                label: const LocalizedText('Add collaborator'),
                                 style: FilledButton.styleFrom(
                                   backgroundColor: ThemeColors.primary,
                                   foregroundColor: Colors.white,
@@ -2384,6 +2388,17 @@ String _profileInitials(String name) {
 void _copyJoinKey(String key) {
   Clipboard.setData(ClipboardData(text: key));
   _showProfileSnack('Join key copied.');
+}
+
+void _copyCollaboratorInvite(String key) {
+  Clipboard.setData(
+    ClipboardData(
+      text:
+          'Join my wedding plan in Kalyana using this code: $key. '
+          'Sign in to the app, open Profile > Collaborators, and choose Join.',
+    ),
+  );
+  _showProfileSnack('Invitation copied. Share it with your collaborator.');
 }
 
 Future<void> _showJoinWorkspaceDialog(BuildContext context) async {

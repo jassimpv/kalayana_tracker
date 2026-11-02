@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/inline_native_ad.dart';
 import 'package:kalayanaexpresstracker/app/data/models/expense_item.dart';
 import 'package:kalayanaexpresstracker/app/data/models/repay_person.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
@@ -119,7 +120,14 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
             return ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
               itemBuilder: (context, index) {
-                final person = people[index];
+                final adIndex = people.length ~/ 2;
+                if (people.length >= 2 && index == adIndex) {
+                  return const InlineNativeAdCard();
+                }
+                final personIndex = people.length >= 2 && index > adIndex
+                    ? index - 1
+                    : index;
+                final person = people[personIndex];
                 return ResponsivePageContainer(
                   maxWidth: 900,
                   child: _RepayPersonTile(
@@ -129,7 +137,7 @@ class _RepayPersonsPageState extends State<RepayPersonsPage> {
                 );
               },
               separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemCount: people.length,
+              itemCount: people.length + (people.length >= 2 ? 1 : 0),
             );
           }),
         ),

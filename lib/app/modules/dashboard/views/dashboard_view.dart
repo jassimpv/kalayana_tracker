@@ -12,13 +12,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:kalayanaexpresstracker/app/core/config/ads_config.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/currency_symbols.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/app_logo.dart';
-import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/inline_native_ad.dart';
 import 'package:kalayanaexpresstracker/app/core/services/rewarded_ad_manager.dart';
 import 'package:kalayanaexpresstracker/app/data/models/event_reminder.dart';
@@ -125,21 +123,9 @@ class DashboardView extends GetView<DashboardController> {
                             child: AnimatedOpacity(
                               duration: const Duration(milliseconds: 180),
                               opacity: controller.isDashboardSubPage ? 0 : 1,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Obx(
-                                    () => DashboardBannerAdSlot(
-                                      key: ValueKey(
-                                        'dashboard_banner_${controller.selectedIndex.value}',
-                                      ),
-                                    ),
-                                  ),
-                                  BottomNav(
-                                    controller: controller,
-                                    onItemClick: controller.openDashboardTab,
-                                  ),
-                                ],
+                              child: BottomNav(
+                                controller: controller,
+                                onItemClick: controller.openDashboardTab,
                               ),
                             ),
                           ),
@@ -158,13 +144,7 @@ class DashboardView extends GetView<DashboardController> {
                           controller.selectedIndex.value == 5
                       ? const SizedBox.shrink()
                       : Padding(
-                          padding: EdgeInsets.only(
-                            bottom:
-                                84 +
-                                (isMobileAdsSupported
-                                    ? AdsConfig.bannerHeight
-                                    : 0),
-                          ),
+                          padding: const EdgeInsets.only(bottom: 84),
                           child: FloatingActionButton(
                             onPressed: () => _handlePrimaryAction(
                               controller.selectedIndex.value,

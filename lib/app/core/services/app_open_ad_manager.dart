@@ -39,7 +39,7 @@ class AppOpenAdManager with WidgetsBindingObserver {
     _isLoadingAd = true;
     _lastLoadAttemptAt = DateTime.now();
     AppOpenAd.load(
-      adUnitId: AdsConfig.appOpenUnitId,
+      adUnitId: AdsConfig.appOpenUnitIdForBuild,
       request: const AdRequest(),
       adLoadCallback: AppOpenAdLoadCallback(
         onAdLoaded: (ad) {

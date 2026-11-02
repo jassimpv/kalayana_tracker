@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/config/ads_config.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/widgets/dashboard_banner_ad.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/inline_native_ad.dart';
 import 'package:kalayanaexpresstracker/app/data/models/wedding_event.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/guests_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/views/guests/dashboard_guests.dart';
@@ -41,10 +42,15 @@ class EventsTab extends GetView<GuestsController> {
             ),
           );
         }
+        final adIndex = events.length >= 2 ? events.length ~/ 2 : -1;
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(14, 8, 14, 110),
-          itemCount: events.length,
-          itemBuilder: (context, index) => _EventCard(event: events[index]),
+          itemCount: events.length + (adIndex >= 0 ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == adIndex) return const InlineNativeAdCard();
+            final eventIndex = index > adIndex ? index - 1 : index;
+            return _EventCard(event: events[eventIndex]);
+          },
         );
       }),
     );

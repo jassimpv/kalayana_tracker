@@ -46,6 +46,15 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
         if (aDone != bDone) return aDone ? 1 : -1;
         return a.name.compareTo(b.name);
       });
+    final purchaseCards = visible
+        .map<Widget>((item) => _PurchaseListCard(item: item))
+        .toList();
+    if (purchaseCards.length >= 2) {
+      purchaseCards.insert(
+        purchaseCards.length ~/ 2,
+        const InlineNativeAdCard(),
+      );
+    }
     final mobile = isMobile(context);
     final desktop = isDesktop(context);
     final horizontalPadding = mobile ? 18.0 : 24.0;
@@ -114,9 +123,7 @@ class _PurchasesPanelState extends State<PurchasesPanel> {
                       desktopCount: 2,
                       spacing: 14,
                       runSpacing: 4,
-                      children: visible
-                          .map((item) => _PurchaseListCard(item: item))
-                          .toList(),
+                      children: purchaseCards,
                     ),
             ),
           ],

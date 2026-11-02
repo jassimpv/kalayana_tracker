@@ -1349,4 +1349,7 @@ const Map<String, String> arAe = {
       "الموردون والمهام والمساهمات والميزانيات",
   "Scan bill": "مسح فاتورة",
   "Camera or gallery": "الكاميرا أو المعرض",
+  "Add collaborator": "إضافة متعاون",
+  "Invitation copied. Share it with your collaborator.":
+      "تم نسخ الدعوة. شاركها مع المتعاون.",
 };

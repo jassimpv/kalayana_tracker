@@ -37,7 +37,7 @@ class _InlineNativeAdCardState extends State<InlineNativeAdCard> {
 
   void _loadAd() {
     final ad = NativeAd(
-      adUnitId: AdsConfig.nativeInlineUnitId,
+      adUnitId: AdsConfig.nativeInlineUnitIdForBuild,
       factoryId: _inlineNativeAdFactoryId,
       request: const AdRequest(),
       listener: NativeAdListener(

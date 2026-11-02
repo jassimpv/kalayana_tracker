@@ -116,9 +116,7 @@ class RemindersPanel extends GetView<DashboardController> {
                       desktopCount: 2,
                       spacing: 14,
                       runSpacing: 4,
-                      children: taskReminders
-                          .map((item) => _WeddingTaskCard(item: item))
-                          .toList(),
+                      children: _reminderCardsWithAd(taskReminders),
                     ),
             ),
           ],
@@ -126,6 +124,16 @@ class RemindersPanel extends GetView<DashboardController> {
       ),
     );
   }
+}
+
+List<Widget> _reminderCardsWithAd(List<EventReminder> reminders) {
+  final cards = reminders
+      .map<Widget>((item) => _WeddingTaskCard(item: item))
+      .toList();
+  if (cards.length >= 2) {
+    cards.insert(cards.length ~/ 2, const InlineNativeAdCard());
+  }
+  return cards;
 }
 
 class _ReminderHero extends StatelessWidget {

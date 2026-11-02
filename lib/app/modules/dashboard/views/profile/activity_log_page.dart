@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:kalayanaexpresstracker/app/core/theme/app_theme.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/formatters.dart';
 import 'package:kalayanaexpresstracker/app/core/utils/responsive_layout.dart';
+import 'package:kalayanaexpresstracker/app/core/widgets/inline_native_ad.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:kalayanaexpresstracker/app/modules/dashboard/widgets/expense_widgets.dart';
 
@@ -52,14 +53,24 @@ class ActivityLogPage extends GetView<DashboardController> {
             return ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 18, 16, 120),
               itemBuilder: (context, index) {
-                final entry = entries[index];
+                final adIndex = entries.length ~/ 2;
+                if (entries.length >= 2 && index == adIndex) {
+                  return const ResponsivePageContainer(
+                    maxWidth: 900,
+                    child: InlineNativeAdCard(),
+                  );
+                }
+                final entryIndex = entries.length >= 2 && index > adIndex
+                    ? index - 1
+                    : index;
+                final entry = entries[entryIndex];
                 return ResponsivePageContainer(
                   maxWidth: 900,
                   child: _ActivityLogTile(entry: entry),
                 );
               },
               separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemCount: entries.length,
+              itemCount: entries.length + (entries.length >= 2 ? 1 : 0),
             );
           }),
         ),

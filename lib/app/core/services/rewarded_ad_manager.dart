@@ -27,7 +27,7 @@ class RewardedAdManager {
     _isLoading = true;
 
     RewardedAd.load(
-      adUnitId: AdsConfig.rewardedReportUnitId,
+      adUnitId: AdsConfig.rewardedReportUnitIdForBuild,
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
@@ -43,9 +43,7 @@ class RewardedAdManager {
               onEarnedReward();
             },
           );
-          ad.show(
-            onUserEarnedReward: (ad, reward) => rewardEarned = true,
-          );
+          ad.show(onUserEarnedReward: (ad, reward) => rewardEarned = true);
         },
         onAdFailedToLoad: (error) {
           _isLoading = false;

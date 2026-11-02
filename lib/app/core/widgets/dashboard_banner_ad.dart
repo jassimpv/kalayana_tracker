@@ -12,9 +12,12 @@ import 'package:kalayanaexpresstracker/app/core/config/ads_config.dart';
 bool get isMobileAdsSupported =>
     !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
-/// Ads are kept out of debug/emulator sessions because Google Play Services
-/// can restart the process while loading the ads Dynamite module.
-bool get shouldLoadMobileAds => kReleaseMode && isMobileAdsSupported;
+/// Use Google's sample ads while debugging; production inventory is release
+/// only. Set `--dart-define=SHOW_DEBUG_ADS=false` to disable debug placements.
+bool get shouldLoadMobileAds =>
+    isMobileAdsSupported &&
+    (kReleaseMode ||
+        const bool.fromEnvironment('SHOW_DEBUG_ADS', defaultValue: true));
 
 /// A banner ad anchored above the bottom navigation bar.
 ///
@@ -44,7 +47,7 @@ class _DashboardBannerAdState extends State<DashboardBannerAd> {
   void _loadAd() {
     final ad = BannerAd(
       size: AdSize.banner,
-      adUnitId: AdsConfig.dashboardBannerUnitId,
+      adUnitId: AdsConfig.dashboardBannerUnitIdForBuild,
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {
